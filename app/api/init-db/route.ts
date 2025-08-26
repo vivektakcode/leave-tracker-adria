@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { initializeDatabase } from '../../../lib/jsonAuthService'
+import { initializeDatabase } from '../../../lib/vercelKVService'
 
 export async function POST() {
   try {

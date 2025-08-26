@@ -1,11 +1,11 @@
 'use client'
 
 import { createContext, useContext, useState, ReactNode } from 'react'
-import { Employee, authenticateUser } from '../lib/jsonAuthService'
+import { Employee, authenticateUser } from '../lib/vercelKVService'
 
 interface JsonAuthContextType {
   currentUser: Employee | null
-  login: (username: string, password: string) => Promise<Employee | null>
+  login: (username: string, password: string) => Employee | null
   logout: () => void
   loading: boolean
 }
@@ -24,7 +24,7 @@ export function JsonAuthProvider({ children }: { children: ReactNode }) {
   const [currentUser, setCurrentUser] = useState<Employee | null>(null)
   const [loading, setLoading] = useState(false)
 
-  async function login(username: string, password: string): Promise<Employee | null> {
+  function login(username: string, password: string): Employee | null {
     setLoading(true)
     
     try {

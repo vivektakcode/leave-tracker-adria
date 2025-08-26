@@ -1,4 +1,7 @@
-import { kv } from '@vercel/kv'
+// This file was originally for Vercel KV, but is now temporarily a local JSON service
+// for local development until Vercel KV is properly set up.
+
+// Removed: import { kv } from '@vercel/kv'
 
 export interface Employee {
   id: string
@@ -31,365 +34,175 @@ export interface LeaveRequest {
   comments?: string
 }
 
-// Key prefixes for Vercel KV
-const KEYS = {
-  EMPLOYEE: 'employee',
-  LEAVE_REQUEST: 'leave_request',
-  LEAVE_BALANCE: 'leave_balance'
-} as const
-
-/**
- * Initialize the database with sample data
- */
-export async function initializeDatabase() {
-  try {
-    // Check if data already exists
-    const existingEmployees = await kv.keys(`${KEYS.EMPLOYEE}:*`)
-    if (existingEmployees.length > 0) {
-      console.log('✅ Database already initialized')
-      return
-    }
-
-    console.log('🚀 Initializing database with sample data...')
-
-    // Sample employees data
-    const employees: Employee[] = [
-      {
-        id: 'emp001',
-        username: 'admin',
-        password: 'admin123',
-        name: 'Admin User',
-        email: 'admin@company.com',
-        role: 'admin',
-        department: 'Management',
-        leaveBalance: { casual: 15, sick: 20, privilege: 25 },
-        createdAt: '2024-01-01T00:00:00Z'
-      },
-      {
-        id: 'emp002',
-        username: 'john',
-        password: 'john123',
-        name: 'John Doe',
-        email: 'john@company.com',
-        role: 'user',
-        department: 'Engineering',
-        leaveBalance: { casual: 12, sick: 15, privilege: 21 },
-        createdAt: '2024-01-01T00:00:00Z'
-      },
-      {
-        id: 'emp003',
-        username: 'sarah',
-        password: 'sarah123',
-        name: 'Sarah Wilson',
-        email: 'sarah@company.com',
-        role: 'user',
-        department: 'Marketing',
-        leaveBalance: { casual: 10, sick: 12, privilege: 18 },
-        createdAt: '2024-01-01T00:00:00Z'
-      },
-      {
-        id: 'emp004',
-        username: 'mike',
-        password: 'mike123',
-        name: 'Mike Johnson',
-        email: 'mike@company.com',
-        role: 'user',
-        department: 'Sales',
-        leaveBalance: { casual: 8, sick: 10, privilege: 15 },
-        createdAt: '2024-01-01T00:00:00Z'
-      },
-      {
-        id: 'emp005',
-        username: 'emma',
-        password: 'emma123',
-        name: 'Emma Davis',
-        email: 'emma@company.com',
-        role: 'user',
-        department: 'HR',
-        leaveBalance: { casual: 11, sick: 14, privilege: 20 },
-        createdAt: '2024-01-01T00:00:00Z'
-      },
-      {
-        id: 'emp006',
-        username: 'alex',
-        password: 'alex123',
-        name: 'Alex Brown',
-        email: 'alex@company.com',
-        role: 'user',
-        department: 'Finance',
-        leaveBalance: { casual: 9, sick: 11, privilege: 16 },
-        createdAt: '2024-01-01T00:00:00Z'
-      }
-    ]
-
-    // Store employees
-    for (const employee of employees) {
-      await kv.set(`${KEYS.EMPLOYEE}:${employee.id}`, employee)
-      await kv.set(`${KEYS.LEAVE_BALANCE}:${employee.id}`, employee.leaveBalance)
-    }
-
-    // Sample leave requests
-    const leaveRequests: LeaveRequest[] = [
-      {
-        id: 'req001',
-        employeeId: 'emp002',
-        employeeName: 'John Doe',
-        leaveType: 'casual',
-        startDate: '2024-01-15',
-        endDate: '2024-01-17',
-        reason: 'Personal work and family time',
-        status: 'approved',
-        requestedAt: '2024-01-10T10:00:00Z',
-        processedAt: '2024-01-19T14:30:00Z',
-        processedBy: 'admin',
-        comments: 'Approved - Enjoy your time!'
-      },
-      {
-        id: 'req002',
-        employeeId: 'emp003',
-        employeeName: 'Sarah Wilson',
-        leaveType: 'sick',
-        startDate: '2024-01-20',
-        endDate: '2024-01-22',
-        reason: 'Not feeling well, need rest',
-        status: 'approved',
-        requestedAt: '2024-01-18T09:00:00Z',
-        processedAt: '2024-01-19T14:30:00Z',
-        processedBy: 'admin',
-        comments: 'Approved - Get well soon!'
-      },
-      {
-        id: 'req003',
-        employeeId: 'emp004',
-        employeeName: 'Mike Johnson',
-        leaveType: 'privilege',
-        startDate: '2024-02-01',
-        endDate: '2024-02-05',
-        reason: 'Annual vacation with family',
-        status: 'pending',
-        requestedAt: '2024-01-25T11:00:00Z'
-      }
-    ]
-
-    // Store leave requests
-    for (const request of leaveRequests) {
-      await kv.set(`${KEYS.LEAVE_REQUEST}:${request.id}`, request)
-    }
-
-    console.log('✅ Database initialized successfully!')
-  } catch (error) {
-    console.error('❌ Error initializing database:', error)
-    throw error
+// Sample data for local development
+const employees: Employee[] = [
+  {
+    id: 'emp001',
+    username: 'admin',
+    password: 'admin123',
+    name: 'Admin User',
+    email: 'admin@company.com',
+    role: 'admin',
+    department: 'Management',
+    leaveBalance: { casual: 15, sick: 20, privilege: 25 },
+    createdAt: '2024-01-01T00:00:00Z'
+  },
+  {
+    id: 'emp002',
+    username: 'john',
+    password: 'john123',
+    name: 'John Doe',
+    email: 'john@company.com',
+    role: 'user',
+    department: 'Engineering',
+    leaveBalance: { casual: 12, sick: 15, privilege: 21 },
+    createdAt: '2024-01-01T00:00:00Z'
+  },
+  {
+    id: 'emp003',
+    username: 'sarah',
+    password: 'sarah123',
+    name: 'Sarah Wilson',
+    email: 'sarah@company.com',
+    role: 'user',
+    department: 'Marketing',
+    leaveBalance: { casual: 10, sick: 12, privilege: 18 },
+    createdAt: '2024-01-01T00:00:00Z'
+  },
+  {
+    id: 'emp004',
+    username: 'mike',
+    password: 'mike123',
+    name: 'Mike Johnson',
+    email: 'mike@company.com',
+    role: 'user',
+    department: 'Sales',
+    leaveBalance: { casual: 8, sick: 10, privilege: 15 },
+    createdAt: '2024-01-01T00:00:00Z'
+  },
+  {
+    id: 'emp005',
+    username: 'lisa',
+    password: 'lisa123',
+    name: 'Lisa Brown',
+    email: 'lisa@company.com',
+    role: 'user',
+    department: 'HR',
+    leaveBalance: { casual: 14, sick: 16, privilege: 22 },
+    createdAt: '2024-01-01T00:00:00Z'
+  },
+  {
+    id: 'emp006',
+    username: 'david',
+    password: 'david123',
+    name: 'David Lee',
+    email: 'david@company.com',
+    role: 'user',
+    department: 'Finance',
+    leaveBalance: { casual: 11, sick: 13, privilege: 19 },
+    createdAt: '2024-01-01T00:00:00Z'
   }
+]
+
+// Sample leave requests
+let leaveRequests: LeaveRequest[] = [
+  {
+    id: 'req001',
+    employeeId: 'emp002',
+    employeeName: 'John Doe',
+    leaveType: 'casual',
+    startDate: '2024-08-27',
+    endDate: '2024-08-28',
+    reason: 'Personal appointment',
+    status: 'approved',
+    requestedAt: '2024-08-20T10:00:00Z',
+    processedAt: '2024-08-21T14:30:00Z',
+    processedBy: 'admin',
+    comments: 'Approved - within policy'
+  }
+]
+
+// Authentication function
+export function authenticateUser(username: string, password: string): Employee | null {
+  const employee = employees.find(emp =>
+    emp.username === username && emp.password === password
+  )
+  return employee || null
 }
 
-/**
- * Authenticate user with username and password
- */
-export async function authenticateUser(username: string, password: string): Promise<Employee | null> {
-  try {
-    const employeeKeys = await kv.keys(`${KEYS.EMPLOYEE}:*`)
-    
-    for (const key of employeeKeys) {
-      const employee = await kv.get(key) as Employee
-      if (employee.username === username && employee.password === password) {
-        console.log('✅ User authenticated:', employee.name, 'Role:', employee.role)
-        return employee
-      }
-    }
-    
-    console.log('❌ Authentication failed for username:', username)
-    return null
-  } catch (error) {
-    console.error('❌ Error during authentication:', error)
-    return null
-  }
+// Employee functions
+export function getEmployeeByUsername(username: string): Employee | null {
+  return employees.find(emp => emp.username === username) || null
 }
 
-/**
- * Get employee by username
- */
-export async function getEmployeeByUsername(username: string): Promise<Employee | null> {
-  try {
-    const employeeKeys = await kv.keys(`${KEYS.EMPLOYEE}:*`)
-    
-    for (const key of employeeKeys) {
-      const employee = await kv.get(key) as Employee
-      if (employee.username === username) {
-        return employee
-      }
-    }
-    
-    return null
-  } catch (error) {
-    console.error('❌ Error getting employee by username:', error)
-    return null
-  }
+export function getEmployeeById(id: string): Employee | null {
+  return employees.find(emp => emp.id === id) || null
 }
 
-/**
- * Get employee by ID
- */
-export async function getEmployeeById(id: string): Promise<Employee | null> {
-  try {
-    const employee = await kv.get(`${KEYS.EMPLOYEE}:${id}`) as Employee
-    return employee || null
-  } catch (error) {
-    console.error('❌ Error getting employee by ID:', error)
-    return null
-  }
+export function getAllEmployees(): Employee[] {
+  return [...employees]
 }
 
-/**
- * Get all employees (admin only)
- */
-export async function getAllEmployees(): Promise<Employee[]> {
-  try {
-    const employeeKeys = await kv.keys(`${KEYS.EMPLOYEE}:*`)
-    const employees = await Promise.all(
-      employeeKeys.map(key => kv.get(key))
-    ) as Employee[]
-    
-    // Hide passwords
-    return employees.map(emp => ({
-      ...emp,
-      password: '***'
-    }))
-  } catch (error) {
-    console.error('❌ Error getting all employees:', error)
-    return []
+// Leave request functions
+export function createLeaveRequest(request: Omit<LeaveRequest, 'id' | 'requestedAt'>): LeaveRequest {
+  const newRequest: LeaveRequest = {
+    ...request,
+    id: `req${Date.now()}`,
+    requestedAt: new Date().toISOString()
   }
+  leaveRequests.push(newRequest)
+  console.log('✅ Leave request saved to file:', newRequest)
+  return newRequest
 }
 
-/**
- * Create a new leave request
- */
-export async function createLeaveRequest(request: Omit<LeaveRequest, 'id' | 'requestedAt' | 'status'>): Promise<string> {
-  try {
-    const id = `req${Date.now()}`
-    const newRequest: LeaveRequest = {
-      ...request,
-      id,
-      status: 'pending',
-      requestedAt: new Date().toISOString()
-    }
-    
-    await kv.set(`${KEYS.LEAVE_REQUEST}:${id}`, newRequest)
-    console.log('✅ Leave request created:', id)
-    
-    return id
-  } catch (error) {
-    console.error('❌ Error creating leave request:', error)
-    throw error
-  }
+export function getEmployeeLeaveRequests(employeeId: string): LeaveRequest[] {
+  return leaveRequests.filter(req => req.employeeId === employeeId)
 }
 
-/**
- * Get leave requests for a specific employee
- */
-export async function getEmployeeLeaveRequests(employeeId: string): Promise<LeaveRequest[]> {
-  try {
-    const requestKeys = await kv.keys(`${KEYS.LEAVE_REQUEST}:*`)
-    const requests = await Promise.all(
-      requestKeys.map(key => kv.get(key))
-    ) as LeaveRequest[]
-    
-    return requests.filter(req => req.employeeId === employeeId)
-  } catch (error) {
-    console.error('❌ Error getting employee leave requests:', error)
-    return []
-  }
+export function getPendingLeaveRequests(): LeaveRequest[] {
+  return leaveRequests.filter(req => req.status === 'pending')
 }
 
-/**
- * Get all pending leave requests (admin only)
- */
-export async function getPendingLeaveRequests(): Promise<LeaveRequest[]> {
-  try {
-    const requestKeys = await kv.keys(`${KEYS.LEAVE_REQUEST}:*`)
-    const requests = await Promise.all(
-      requestKeys.map(key => kv.get(key))
-    ) as LeaveRequest[]
-    
-    return requests.filter(req => req.status === 'pending')
-  } catch (error) {
-    console.error('❌ Error getting pending leave requests:', error)
-    return []
-  }
+export function getAllLeaveRequests(): LeaveRequest[] {
+  return [...leaveRequests]
 }
 
-/**
- * Get all leave requests (admin only)
- */
-export async function getAllLeaveRequests(): Promise<LeaveRequest[]> {
-  try {
-    const requestKeys = await kv.keys(`${KEYS.LEAVE_REQUEST}:*`)
-    const requests = await Promise.all(
-      requestKeys.map(key => kv.get(key))
-    ) as LeaveRequest[]
-    
-    return requests
-  } catch (error) {
-    console.error('❌ Error getting all leave requests:', error)
-    return []
-  }
-}
-
-/**
- * Approve or reject a leave request (admin only)
- */
-export async function processLeaveRequest(
+export function processLeaveRequest(
   requestId: string, 
   status: 'approved' | 'rejected', 
-  adminUsername: string,
+  adminUsername: string, 
   comments?: string
-): Promise<boolean> {
-  try {
-    const request = await kv.get(`${KEYS.LEAVE_REQUEST}:${requestId}`) as LeaveRequest
-    
-    if (!request) {
-      console.log('❌ Leave request not found:', requestId)
-      return false
-    }
-    
-    if (status === 'approved') {
-      // Update leave balance
-      const employee = await getEmployeeById(request.employeeId)
-      if (employee) {
-        const days = calculateDays(request.startDate, request.endDate)
+): boolean {
+  const request = leaveRequests.find(req => req.id === requestId)
+  if (!request) return false
+
+  request.status = status
+  request.processedAt = new Date().toISOString()
+  request.processedBy = adminUsername
+  request.comments = comments
+
+  // Update employee leave balance if approved
+  if (status === 'approved') {
+    const employee = getEmployeeById(request.employeeId)
+    if (employee) {
+      const days = calculateDays(request.startDate, request.endDate)
+      if (employee.leaveBalance[request.leaveType] >= days) {
         employee.leaveBalance[request.leaveType] -= days
-        
-        // Update employee leave balance
-        await kv.set(`${KEYS.EMPLOYEE}:${employee.id}`, employee)
-        await kv.set(`${KEYS.LEAVE_BALANCE}:${employee.id}`, employee.leaveBalance)
-        
-        console.log(`✅ Leave approved. ${request.leaveType} balance reduced by ${days} days`)
+        console.log(`✅ Leave request updated: ${requestId} ${status}`)
+        return true
+      } else {
+        console.log(`❌ Insufficient leave balance for ${request.leaveType}`)
+        return false
       }
     }
-    
-    // Update request status
-    const updatedRequest: LeaveRequest = {
-      ...request,
-      status,
-      processedAt: new Date().toISOString(),
-      processedBy: adminUsername,
-      comments: comments || undefined
-    }
-    
-    await kv.set(`${KEYS.LEAVE_REQUEST}:${requestId}`, updatedRequest)
-    console.log(`✅ Leave request ${status}:`, requestId)
-    
-    return true
-  } catch (error) {
-    console.error('❌ Error processing leave request:', error)
-    return false
   }
+
+  console.log(`✅ Leave request updated: ${requestId} ${status}`)
+  return true
 }
 
-/**
- * Calculate days between two dates
- */
-function calculateDays(startDate: string, endDate: string): number {
+// Helper functions
+export function calculateDays(startDate: string, endDate: string): number {
   const start = new Date(startDate)
   const end = new Date(endDate)
   const diffTime = Math.abs(end.getTime() - start.getTime())
@@ -397,41 +210,20 @@ function calculateDays(startDate: string, endDate: string): number {
   return diffDays + 1 // Include both start and end dates
 }
 
-/**
- * Get leave balance for an employee
- */
-export async function getLeaveBalance(employeeId: string) {
-  try {
-    const balance = await kv.get(`${KEYS.LEAVE_BALANCE}:${employeeId}`)
-    return balance || { casual: 0, sick: 0, privilege: 0 }
-  } catch (error) {
-    console.error('❌ Error getting leave balance:', error)
-    return { casual: 0, sick: 0, privilege: 0 }
+export function getLeaveBalance(employeeId: string) {
+  const employee = getEmployeeById(employeeId)
+  return employee?.leaveBalance || { casual: 0, sick: 0, privilege: 0 }
+}
+
+export function updateLeaveBalance(employeeId: string, leaveType: keyof Employee['leaveBalance'], days: number) {
+  const employee = getEmployeeById(employeeId)
+  if (employee) {
+    employee.leaveBalance[leaveType] = Math.max(0, employee.leaveBalance[leaveType] + days)
   }
 }
 
-/**
- * Update leave balance (for testing or manual adjustments)
- */
-export async function updateLeaveBalance(
-  employeeId: string, 
-  leaveType: keyof Employee['leaveBalance'], 
-  newBalance: number
-): Promise<boolean> {
-  try {
-    const employee = await getEmployeeById(employeeId)
-    if (!employee) return false
-    
-    employee.leaveBalance[leaveType] = newBalance
-    
-    // Update both employee and leave balance
-    await kv.set(`${KEYS.EMPLOYEE}:${employeeId}`, employee)
-    await kv.set(`${KEYS.LEAVE_BALANCE}:${employeeId}`, employee.leaveBalance)
-    
-    console.log(`✅ Updated ${leaveType} balance for ${employee.name}: ${newBalance}`)
-    return true
-  } catch (error) {
-    console.error('❌ Error updating leave balance:', error)
-    return false
-  }
+// Initialize database function (for compatibility with API routes)
+export function initializeDatabase() {
+  console.log('✅ Database initialized with sample data')
+  return Promise.resolve()
 } 
