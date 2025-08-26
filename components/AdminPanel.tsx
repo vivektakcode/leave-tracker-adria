@@ -7,7 +7,7 @@ import {
   getAllLeaveRequests,
   getAllEmployees,
   processLeaveRequest
-} from '../lib/vercelKVService'
+} from '../lib/jsonAuthService'
 
 interface AdminPanelProps {
   currentUser: Employee

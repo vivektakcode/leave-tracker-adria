@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Employee, createLeaveRequest } from '../lib/vercelKVService'
+import { Employee, createLeaveRequest } from '../lib/jsonAuthService'
 
 interface LeaveRequestFormProps {
   employee: Employee

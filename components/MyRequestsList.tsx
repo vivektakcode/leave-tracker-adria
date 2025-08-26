@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { LeaveRequest, getEmployeeLeaveRequests } from '../lib/vercelKVService'
+import { LeaveRequest, getEmployeeLeaveRequests } from '../lib/jsonAuthService'
 
 interface MyRequestsListProps {
   employeeId: string

@@ -1,7 +1,7 @@
 'use client'
 
 import { createContext, useContext, useState, ReactNode } from 'react'
-import { Employee, authenticateUser } from '../lib/vercelKVService'
+import { Employee, authenticateUser } from '../lib/jsonAuthService'
 
 interface JsonAuthContextType {
   currentUser: Employee | null
