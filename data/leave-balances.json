@@ -1,0 +1,26 @@
+{
+  "users": [
+    {
+      "email": "user1@example.com",
+      "balances": {
+        "casual": 12,
+        "sick": 15,
+        "privilege": 21
+      }
+    },
+    {
+      "email": "user2@example.com",
+      "balances": {
+        "casual": 10,
+        "sick": 12,
+        "privilege": 18
+      }
+    }
+  ],
+  "admins": [
+    {
+      "email": "admin@example.com",
+      "password": "admin123"
+    }
+  ]
+} 
