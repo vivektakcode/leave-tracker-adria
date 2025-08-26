@@ -3,7 +3,7 @@ import {
   createLeaveRequest, 
   getAllLeaveRequests, 
   processLeaveRequest 
-} from '../../../lib/jsonAuthService'
+} from '../../../lib/vercelKVService'
 
 export async function GET() {
   try {

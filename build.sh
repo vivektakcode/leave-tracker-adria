@@ -7,5 +7,5 @@ export PATH="$HOME/.nvm/versions/node/v18.20.8/bin:$PATH"
 echo "Using Node.js version: $(node --version)"
 echo "Using npm version: $(npm --version)"
 
-# Start the development server
-npm run dev 
+# Build the project
+npm run build 

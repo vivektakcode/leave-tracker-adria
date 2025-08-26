@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Employee, getEmployeeLeaveRequests } from '../lib/jsonAuthService'
+import { Employee, getEmployeeLeaveRequests } from '../lib/vercelKVService'
 import AdminPanel from './AdminPanel'
 import LeaveRequestForm from './LeaveRequestForm'
 import MyRequestsList from './MyRequestsList'
