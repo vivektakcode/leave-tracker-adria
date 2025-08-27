@@ -62,11 +62,11 @@ export default function LeaveBalanceDashboard({ employee }: LeaveBalanceDashboar
     fetchData()
   }, [employee.id])
 
-  // Calculate total allocated days for each leave type based on actual database values
+  // Calculate total allocated days for each leave type - these are FIXED allocations
   const totalAllocated = {
-    casual: leaveBalance.casual_leave,
-    sick: leaveBalance.sick_leave,
-    privilege: leaveBalance.privilege_leave
+    casual: 6,      // Fixed allocation for casual leave
+    sick: 6,        // Fixed allocation for sick leave
+    privilege: 18   // Fixed allocation for privilege leave
   }
 
   if (showAdminPanel) {
@@ -133,8 +133,8 @@ export default function LeaveBalanceDashboard({ employee }: LeaveBalanceDashboar
                 <p className="text-sm text-gray-600">All leave types combined</p>
               </div>
               <div className="text-right">
-                <div className="text-3xl font-bold text-orange-400">{leaveBalance.casual_leave + leaveBalance.sick_leave + leaveBalance.privilege_leave}</div>
-                <div className="text-sm text-gray-500">days available</div>
+                <div className="text-3xl font-bold text-orange-400">30</div>
+                <div className="text-sm text-gray-500">days allocated</div>
               </div>
             </div>
           </div>
