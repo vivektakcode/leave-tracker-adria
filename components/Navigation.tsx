@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 
 interface NavigationProps {
   userEmail: string
-  role: 'admin' | 'user'
+  role: 'manager' | 'employee'
 }
 
 export default function Navigation({ userEmail, role }: NavigationProps) {
@@ -36,7 +36,7 @@ export default function Navigation({ userEmail, role }: NavigationProps) {
                 Leave Tracker
               </h1>
               <p className="text-primary-100 text-sm">
-                {role === 'admin' ? 'Administrator Portal' : 'Employee Portal'}
+                {role === 'manager' ? 'Manager Portal' : 'Employee Portal'}
               </p>
             </div>
           </div>

@@ -3,7 +3,7 @@ import {
   createLeaveRequest, 
   getAllLeaveRequests, 
   processLeaveRequest 
-} from '../../../lib/vercelKVService'
+} from '../../../lib/supabaseService'
 
 export async function GET() {
   try {
@@ -18,27 +18,26 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { employeeId, employeeName, leaveType, startDate, endDate, reason } = body
+    const { user_id, leave_type, start_date, end_date, reason } = body
 
     // Validate required fields
-    if (!employeeId || !employeeName || !leaveType || !startDate || !endDate || !reason) {
+    if (!user_id || !leave_type || !start_date || !end_date || !reason) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
       )
     }
 
-    // Create leave request via Vercel KV service
+    // Create leave request via Supabase service
     const requestId = await createLeaveRequest({
-      employeeId,
-      employeeName,
-      leaveType,
-      startDate,
-      endDate,
+      user_id,
+      leave_type,
+      start_date,
+      end_date,
       reason
     })
 
-    console.log('✅ Leave request created via KV:', requestId)
+    console.log('✅ Leave request created via Supabase:', requestId)
     return NextResponse.json({ id: requestId }, { status: 201 })
 
   } catch (error) {
@@ -53,21 +52,21 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json()
-    const { requestId, status, adminUsername, comments } = body
+    const { requestId, status, managerId, comments } = body
 
     // Validate required fields
-    if (!requestId || !status || !adminUsername) {
+    if (!requestId || !status || !managerId) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
       )
     }
 
-    // Process leave request via Vercel KV service
-    const success = await processLeaveRequest(requestId, status, adminUsername, comments)
+    // Process leave request via Supabase service
+    const success = await processLeaveRequest(requestId, status, managerId, comments)
 
     if (success) {
-      console.log('✅ Leave request processed via KV:', requestId, status)
+      console.log('✅ Leave request processed via Supabase:', requestId, status)
       return NextResponse.json({ success: true })
     } else {
       return NextResponse.json(

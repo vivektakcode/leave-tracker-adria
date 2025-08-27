@@ -1,63 +1,52 @@
 'use client'
 
 import { createContext, useContext, useState, ReactNode } from 'react'
-import { Employee, authenticateUser } from '../lib/vercelKVService'
+import { User, authenticateUser } from '../lib/supabaseService'
 
-interface JsonAuthContextType {
-  currentUser: Employee | null
-  login: (username: string, password: string) => Promise<Employee | null>
+interface AuthContextType {
+  currentUser: User | null
+  login: (username: string, password: string) => Promise<User | null>
   logout: () => void
-  loading: boolean
 }
 
-const JsonAuthContext = createContext<JsonAuthContextType | undefined>(undefined)
+const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-export function useJsonAuth() {
-  const context = useContext(JsonAuthContext)
+export function useAuth() {
+  const context = useContext(AuthContext)
   if (context === undefined) {
-    throw new Error('useJsonAuth must be used within a JsonAuthProvider')
+    throw new Error('useAuth must be used within an AuthProvider')
   }
   return context
 }
 
-export function JsonAuthProvider({ children }: { children: ReactNode }) {
-  const [currentUser, setCurrentUser] = useState<Employee | null>(null)
-  const [loading, setLoading] = useState(false)
+interface AuthProviderProps {
+  children: ReactNode
+}
 
-  async function login(username: string, password: string): Promise<Employee | null> {
-    setLoading(true)
-    
-    try {
-      const user = await authenticateUser(username, password)
-      if (user) {
-        setCurrentUser(user)
-        return user
-      }
-      return null
-    } catch (error) {
-      console.error('Login error:', error)
-      return null
-    } finally {
-      setLoading(false)
+export function AuthProvider({ children }: AuthProviderProps) {
+  const [currentUser, setCurrentUser] = useState<User | null>(null)
+
+  async function login(username: string, password: string): Promise<User | null> {
+    const user = await authenticateUser(username, password)
+    if (user) {
+      setCurrentUser(user)
     }
+    return user
   }
 
   function logout() {
     setCurrentUser(null)
-    // Clear any stored data
-    localStorage.removeItem('currentUser')
   }
 
   const value = {
     currentUser,
     login,
-    logout,
-    loading
+    logout
   }
 
   return (
-    <JsonAuthContext.Provider value={value}>
+    <AuthContext.Provider value={value}>
       {children}
-    </JsonAuthContext.Provider>
+    </AuthContext.Provider>
   )
 } 

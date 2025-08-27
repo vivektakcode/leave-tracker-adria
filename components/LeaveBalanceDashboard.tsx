@@ -1,33 +1,45 @@
 'use client'
 
-import { useState } from 'react'
-import { Employee, getEmployeeLeaveRequests } from '../lib/vercelKVService'
+import { useState, useEffect } from 'react'
+import { User, getLeaveBalance, getUserLeaveRequests } from '../lib/supabaseService'
 import AdminPanel from './AdminPanel'
 import LeaveRequestForm from './LeaveRequestForm'
 import MyRequestsList from './MyRequestsList'
 
 interface LeaveBalanceDashboardProps {
-  employee: Employee
+  employee: User
 }
 
 export default function LeaveBalanceDashboard({ employee }: LeaveBalanceDashboardProps) {
   const [showAdminPanel, setShowAdminPanel] = useState(false)
   const [showLeaveRequestForm, setShowLeaveRequestForm] = useState(false)
   const [showMyRequests, setShowMyRequests] = useState(false)
-  const { leaveBalance, name, department, role } = employee
+  const [leaveBalance, setLeaveBalance] = useState({ casual_leave: 0, sick_leave: 0, privilege_leave: 0 })
+  const { name, department, role } = employee
+
+  // Fetch leave balance when component mounts
+  useEffect(() => {
+    const fetchLeaveBalance = async () => {
+      const balance = await getLeaveBalance(employee.id)
+      if (balance) {
+        setLeaveBalance(balance)
+      }
+    }
+    fetchLeaveBalance()
+  }, [employee.id])
 
   // Calculate total allocated days for each leave type
   const totalAllocated = {
-    casual: 12,
-    sick: 15,
-    privilege: 21
+    casual: 20,
+    sick: 10,
+    privilege: 15
   }
 
   // Calculate used days
   const usedDays = {
-    casual: totalAllocated.casual - leaveBalance.casual,
-    sick: totalAllocated.sick - leaveBalance.sick,
-    privilege: totalAllocated.privilege - leaveBalance.privilege
+    casual: totalAllocated.casual - leaveBalance.casual_leave,
+    sick: totalAllocated.sick - leaveBalance.sick_leave,
+    privilege: totalAllocated.privilege - leaveBalance.privilege_leave
   }
 
   if (showAdminPanel) {
@@ -80,7 +92,7 @@ export default function LeaveBalanceDashboard({ employee }: LeaveBalanceDashboar
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Welcome, {name}!</h1>
           <p className="text-gray-600 mt-2">
-            {department} • {role === 'admin' ? 'Administrator' : 'Employee'}
+            {department} • {role === 'manager' ? 'Manager' : 'Employee'}
           </p>
         </div>
 
@@ -94,7 +106,7 @@ export default function LeaveBalanceDashboard({ employee }: LeaveBalanceDashboar
                 <p className="text-sm text-gray-600">Personal and casual time off</p>
               </div>
               <div className="text-right">
-                <div className="text-3xl font-bold text-blue-600">{leaveBalance.casual}</div>
+                <div className="text-3xl font-bold text-blue-600">{leaveBalance.casual_leave}</div>
                 <div className="text-sm text-gray-500">days remaining</div>
               </div>
             </div>
@@ -119,7 +131,7 @@ export default function LeaveBalanceDashboard({ employee }: LeaveBalanceDashboar
                 <p className="text-sm text-gray-600">Medical and health-related leave</p>
               </div>
               <div className="text-right">
-                <div className="text-3xl font-bold text-red-600">{leaveBalance.sick}</div>
+                <div className="text-3xl font-bold text-red-600">{leaveBalance.sick_leave}</div>
                 <div className="text-sm text-gray-500">days remaining</div>
               </div>
             </div>
@@ -144,7 +156,7 @@ export default function LeaveBalanceDashboard({ employee }: LeaveBalanceDashboar
                 <p className="text-sm text-gray-600">Annual and earned leave</p>
               </div>
               <div className="text-right">
-                <div className="text-3xl font-bold text-green-600">{leaveBalance.privilege}</div>
+                <div className="text-3xl font-bold text-green-600">{leaveBalance.privilege_leave}</div>
                 <div className="text-sm text-gray-500">days remaining</div>
               </div>
             </div>
@@ -180,7 +192,7 @@ export default function LeaveBalanceDashboard({ employee }: LeaveBalanceDashboar
               >
                 📋 View My Requests
               </button>
-              {role === 'admin' && (
+              {role === 'manager' && (
                 <button 
                   onClick={() => setShowAdminPanel(true)}
                   className="w-full bg-orange-600 hover:bg-orange-700 text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200"
@@ -216,19 +228,19 @@ export default function LeaveBalanceDashboard({ employee }: LeaveBalanceDashboar
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Leave Summary</h3>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">{leaveBalance.casual + leaveBalance.sick + leaveBalance.privilege}</div>
+              <div className="text-2xl font-bold text-blue-600">{leaveBalance.casual_leave + leaveBalance.sick_leave + leaveBalance.privilege_leave}</div>
               <div className="text-sm text-gray-500">Total Days Available</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">{leaveBalance.casual}</div>
+              <div className="text-2xl font-bold text-green-600">{leaveBalance.casual_leave}</div>
               <div className="text-sm text-gray-500">Casual Leave</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-red-600">{leaveBalance.sick}</div>
+              <div className="text-2xl font-bold text-red-600">{leaveBalance.sick_leave}</div>
               <div className="text-sm text-gray-500">Sick Leave</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-purple-600">{leaveBalance.privilege}</div>
+              <div className="text-2xl font-bold text-purple-600">{leaveBalance.privilege_leave}</div>
               <div className="text-sm text-gray-500">Privilege Leave</div>
             </div>
           </div>

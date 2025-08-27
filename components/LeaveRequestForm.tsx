@@ -1,10 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Employee, createLeaveRequest } from '../lib/vercelKVService'
+import { User, createLeaveRequest, getLeaveBalance } from '../lib/supabaseService'
 
 interface LeaveRequestFormProps {
-  employee: Employee
+  employee: User
   onBack: () => void
 }
 
@@ -17,6 +17,18 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [leaveBalance, setLeaveBalance] = useState({ casual_leave: 0, sick_leave: 0, privilege_leave: 0 })
+
+  // Fetch leave balance when component mounts
+  useEffect(() => {
+    const fetchLeaveBalance = async () => {
+      const balance = await getLeaveBalance(employee.id)
+      if (balance) {
+        setLeaveBalance(balance)
+      }
+    }
+    fetchLeaveBalance()
+  }, [employee.id])
 
   // Calculate number of days when dates change
   useEffect(() => {
@@ -33,7 +45,12 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
 
   // Get available leave balance for selected type
   const getAvailableBalance = () => {
-    return employee.leaveBalance[leaveType]
+    switch (leaveType) {
+      case 'casual': return leaveBalance.casual_leave
+      case 'sick': return leaveBalance.sick_leave
+      case 'privilege': return leaveBalance.privilege_leave
+      default: return 0
+    }
   }
 
   // Check if request is valid
@@ -59,12 +76,11 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
 
     try {
       // Create leave request
-      const requestId = createLeaveRequest({
-        employeeId: employee.id,
-        employeeName: employee.name,
-        leaveType,
-        startDate,
-        endDate,
+      const requestId = await createLeaveRequest({
+        user_id: employee.id,
+        leave_type: leaveType,
+        start_date: startDate,
+        end_date: endDate,
         reason: reason.trim()
       })
 
@@ -148,7 +164,7 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
                   >
                     <div className="text-lg font-semibold capitalize">{type}</div>
                     <div className="text-sm text-gray-600">
-                      {employee.leaveBalance[type]} days available
+                      {leaveBalance[`${type}_leave` as keyof typeof leaveBalance]} days available
                     </div>
                   </button>
                 ))}
@@ -271,15 +287,15 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Current Leave Balance</h3>
           <div className="grid grid-cols-3 gap-4">
             <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">{employee.leaveBalance.casual}</div>
+              <div className="text-2xl font-bold text-blue-600">{leaveBalance.casual_leave}</div>
               <div className="text-sm text-gray-500">Casual Leave</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-red-600">{employee.leaveBalance.sick}</div>
+              <div className="text-2xl font-bold text-red-600">{leaveBalance.sick_leave}</div>
               <div className="text-sm text-gray-500">Sick Leave</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">{employee.leaveBalance.privilege}</div>
+              <div className="text-2xl font-bold text-green-600">{leaveBalance.privilege_leave}</div>
               <div className="text-sm text-gray-500">Privilege Leave</div>
             </div>
           </div>

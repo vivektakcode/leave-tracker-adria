@@ -1,64 +1,82 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { 
-  LeaveRequest, 
-  Employee,
+import {
+  User,
+  getAllUsers,
   getAllLeaveRequests,
-  getAllEmployees,
   processLeaveRequest
-} from '../lib/vercelKVService'
+} from '../lib/supabaseService'
 
 interface AdminPanelProps {
-  currentUser: Employee
-  onBack?: () => void
+  currentUser: User
+  onBack: () => void
 }
 
 export default function AdminPanel({ currentUser, onBack }: AdminPanelProps) {
-  const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([])
-  const [employees, setEmployees] = useState<Employee[]>([])
-  const [selectedRequest, setSelectedRequest] = useState<LeaveRequest | null>(null)
+  const [users, setUsers] = useState<User[]>([])
+  const [requests, setRequests] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [selectedRequest, setSelectedRequest] = useState<any>(null)
+  const [showApprovalModal, setShowApprovalModal] = useState(false)
+  const [approvalStatus, setApprovalStatus] = useState<'approved' | 'rejected'>('approved')
   const [comments, setComments] = useState('')
-  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    // Load data
-    async function loadData() {
+    const fetchData = async () => {
       try {
-        const [requests, employees] = await Promise.all([
+        const [requestsData, usersData] = await Promise.all([
           getAllLeaveRequests(),
-          getAllEmployees()
+          getAllUsers()
         ])
-        setLeaveRequests(requests)
-        setEmployees(employees)
+        setRequests(requestsData)
+        setUsers(usersData)
       } catch (error) {
-        console.error('Error loading data:', error)
+        console.error('Error fetching data:', error)
+      } finally {
+        setLoading(false)
       }
     }
-    
-    loadData()
+
+    fetchData()
   }, [])
 
-  const handleProcessRequest = async (requestId: string, status: 'approved' | 'rejected') => {
+  const handleRefresh = async () => {
     setLoading(true)
-    
     try {
-      const success = await processLeaveRequest(requestId, status, currentUser.username, comments)
+      const [requestsData, usersData] = await Promise.all([
+        getAllLeaveRequests(),
+        getAllUsers()
+      ])
+      setRequests(requestsData)
+      setUsers(usersData)
+    } catch (error) {
+      console.error('Error refreshing data:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleProcessRequest = async () => {
+    if (!selectedRequest) return
+
+    try {
+      const success = await processLeaveRequest(
+        selectedRequest.id,
+        approvalStatus,
+        currentUser.id,
+        comments
+      )
+
       if (success) {
-        // Refresh data
-        const [requests, employees] = await Promise.all([
-          getAllLeaveRequests(),
-          getAllEmployees()
-        ])
-        setLeaveRequests(requests)
-        setEmployees(employees)
+        setShowApprovalModal(false)
         setSelectedRequest(null)
         setComments('')
+        // Refresh data
+        handleRefresh()
       }
     } catch (error) {
       console.error('Error processing request:', error)
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -80,6 +98,19 @@ export default function AdminPanel({ currentUser, onBack }: AdminPanelProps) {
     }
   }
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-500">Loading admin panel...</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -89,167 +120,178 @@ export default function AdminPanel({ currentUser, onBack }: AdminPanelProps) {
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Admin Panel</h1>
               <p className="text-gray-600 mt-2">
-                Manage leave requests and employee information
+                Manage leave requests and user information
               </p>
             </div>
-            {onBack && (
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={handleRefresh}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
+              >
+                🔄 Refresh
+              </button>
               <button
                 onClick={onBack}
                 className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
               >
                 ← Back to Dashboard
               </button>
-            )}
+            </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Leave Requests */}
-          <div className="lg:col-span-2">
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Leave Requests</h2>
-              
-              {leaveRequests.length === 0 ? (
-                <p className="text-gray-500 text-center py-8">No leave requests found.</p>
-              ) : (
-                <div className="space-y-4">
-                  {leaveRequests.map((request) => (
-                    <div key={request.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center space-x-3">
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(request.status)}`}>
-                            {request.status}
-                          </span>
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getLeaveTypeColor(request.leaveType)}`}>
-                            {request.leaveType}
-                          </span>
-                        </div>
-                        <span className="text-sm text-gray-500">
-                          {new Date(request.requestedAt).toLocaleDateString()}
+        {/* Leave Requests */}
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Leave Requests</h2>
+          <div className="bg-white rounded-lg shadow-md overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Employee
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Leave Type
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Dates
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {requests.map((request) => (
+                    <tr key={request.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <h4 className="font-medium text-gray-900">{request.user_id}</h4>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getLeaveTypeColor(request.leave_type)}`}>
+                          {request.leave_type}
                         </span>
-                      </div>
-                      
-                      <div className="mb-3">
-                        <h4 className="font-medium text-gray-900">{request.employeeName}</h4>
-                        <p className="text-sm text-gray-600">
-                          {new Date(request.startDate).toLocaleDateString()} - {new Date(request.endDate).toLocaleDateString()}
-                        </p>
-                        <p className="text-sm text-gray-700 mt-1">{request.reason}</p>
-                      </div>
-
-                      {request.status === 'pending' && (
-                        <div className="flex space-x-2">
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {request.start_date} - {request.end_date}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(request.status)}`}>
+                          {request.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        {request.status === 'pending' && (
                           <button
-                            onClick={() => setSelectedRequest(request)}
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded text-sm font-medium transition-colors duration-200"
+                            onClick={() => {
+                              setSelectedRequest(request)
+                              setShowApprovalModal(true)
+                            }}
+                            className="text-blue-600 hover:text-blue-900"
                           >
                             Process
                           </button>
-                        </div>
-                      )}
-
-                      {request.status !== 'pending' && (
-                        <div className="text-sm text-gray-600">
-                          <p>Processed by: {request.processedBy}</p>
-                          <p>Processed at: {new Date(request.processedAt!).toLocaleDateString()}</p>
-                          {request.comments && <p>Comments: {request.comments}</p>}
-                        </div>
-                      )}
-                    </div>
+                        )}
+                        {request.status !== 'pending' && (
+                          <span className="text-gray-500">Processed</span>
+                        )}
+                      </td>
+                    </tr>
                   ))}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Employee List */}
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Employees</h2>
-              
-              <div className="space-y-3">
-                {employees.map((employee) => (
-                  <div key={employee.id} className="border rounded-lg p-3">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="font-medium text-gray-900">{employee.name}</h4>
-                        <p className="text-sm text-gray-600">{employee.department}</p>
-                        <p className="text-xs text-gray-500">{employee.role}</p>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-sm font-medium text-gray-900">
-                          {employee.leaveBalance.casual + employee.leaveBalance.sick + employee.leaveBalance.privilege}
-                        </div>
-                        <div className="text-xs text-gray-500">days left</div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
 
-        {/* Process Request Modal */}
-        {selectedRequest && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-lg p-6 max-w-md w-full">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Process Leave Request
-              </h3>
+        {/* User List */}
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Users</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {users.map((user) => (
+              <div key={user.id} className="border rounded-lg p-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="font-medium text-gray-900">{user.name}</h4>
+                    <p className="text-sm text-gray-600">{user.department}</p>
+                    <p className="text-xs text-gray-500">{user.role}</p>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-sm text-gray-500">
+                      N/A
+                    </div>
+                    <div className="text-xs text-gray-400">Total Days</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Approval Modal */}
+      {showApprovalModal && selectedRequest && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div className="mt-3">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Process Leave Request</h3>
+              <p className="text-sm text-gray-600 mb-4">
+                <strong>User {selectedRequest.user_id}</strong> is requesting {selectedRequest.leave_type} leave
+              </p>
               
               <div className="mb-4">
-                <p className="text-sm text-gray-600 mb-2">
-                  <strong>{selectedRequest.employeeName}</strong> is requesting {selectedRequest.leaveType} leave
-                </p>
-                <p className="text-sm text-gray-600">
-                  {new Date(selectedRequest.startDate).toLocaleDateString()} - {new Date(selectedRequest.endDate).toLocaleDateString()}
-                </p>
-                <p className="text-sm text-gray-700 mt-2">{selectedRequest.reason}</p>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Status
+                </label>
+                <select
+                  value={approvalStatus}
+                  onChange={(e) => setApprovalStatus(e.target.value as 'approved' | 'rejected')}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="approved">Approve</option>
+                  <option value="rejected">Reject</option>
+                </select>
               </div>
 
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Comments (optional)
+                  Comments (Optional)
                 </label>
                 <textarea
                   value={comments}
                   onChange={(e) => setComments(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Add any comments..."
                 />
               </div>
 
-              <div className="flex space-x-3">
+              <div className="flex justify-end space-x-3">
                 <button
-                  onClick={() => handleProcessRequest(selectedRequest.id, 'approved')}
-                  disabled={loading}
-                  className="flex-1 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md font-medium transition-colors duration-200 disabled:opacity-50"
-                >
-                  {loading ? 'Processing...' : 'Approve'}
-                </button>
-                <button
-                  onClick={() => handleProcessRequest(selectedRequest.id, 'rejected')}
-                  disabled={loading}
-                  className="flex-1 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md font-medium transition-colors duration-200 disabled:opacity-50"
-                >
-                  {loading ? 'Processing...' : 'Reject'}
-                </button>
-                <button
-                  onClick={() => {
-                    setSelectedRequest(null)
-                    setComments('')
-                  }}
-                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors duration-200"
+                  onClick={() => setShowApprovalModal(false)}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"
                 >
                   Cancel
+                </button>
+                <button
+                  onClick={handleProcessRequest}
+                  className={`px-4 py-2 text-sm font-medium text-white rounded-md ${
+                    approvalStatus === 'approved' 
+                      ? 'bg-green-600 hover:bg-green-700' 
+                      : 'bg-red-600 hover:bg-red-700'
+                  }`}
+                >
+                  {approvalStatus === 'approved' ? 'Approve' : 'Reject'}
                 </button>
               </div>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   )
 } 

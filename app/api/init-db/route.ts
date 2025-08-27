@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { initializeDatabase } from '../../../lib/vercelKVService'
+import { initializeDatabase } from '../../../lib/supabaseService'
 
 export async function POST() {
   try {

@@ -1,14 +1,14 @@
 'use client'
 
 import { useState } from 'react'
-import { useJsonAuth } from '../contexts/JsonAuthContext'
+import { useAuth } from '../contexts/JsonAuthContext'
 import LeaveBalanceDashboard from '../components/LeaveBalanceDashboard'
 
 export default function LoginPage() {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
-  const { login, logout, currentUser, loading } = useJsonAuth()
+  const { login, logout, currentUser } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -121,17 +121,9 @@ export default function LoginPage() {
 
             <button
               type="submit"
-              disabled={loading}
-              className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold py-3 px-4 rounded-lg hover:from-orange-600 hover:to-orange-700 focus:ring-4 focus:ring-orange-200 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold py-3 px-4 rounded-lg hover:from-orange-600 hover:to-orange-700 focus:ring-4 focus:ring-orange-200 transition-all duration-200"
             >
-              {loading ? (
-                <div className="flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                  Signing in...
-                </div>
-              ) : (
-                'Sign In'
-              )}
+              Sign In
             </button>
           </form>
 
@@ -140,9 +132,8 @@ export default function LoginPage() {
               Demo Credentials:
             </p>
             <div className="mt-2 space-y-1 text-xs text-gray-500">
-              <p><strong>Admin:</strong> admin / admin123</p>
-              <p><strong>Employee:</strong> john / john123</p>
-              <p><strong>Employee:</strong> sarah / sarah123</p>
+              <p><strong>Manager:</strong> manager1 / manager123</p>
+              <p><strong>Employee:</strong> employee1 / emp123</p>
             </div>
           </div>
         </div>

@@ -6,103 +6,128 @@ const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
 const supabase = createClient(supabaseUrl, supabaseKey)
 
-export interface Employee {
+export interface User {
   id: string
   username: string
   password: string
   name: string
   email: string
-  role: 'admin' | 'user'
+  role: 'manager' | 'employee'
   department: string
-  leaveBalance: {
-    casual: number
-    sick: number
-    privilege: number
-  }
-  createdAt: string
+  created_at: string
+}
+
+export interface LeaveBalance {
+  id: string
+  user_id: string
+  casual_leave: number
+  sick_leave: number
+  privilege_leave: number
+  created_at: string
+  updated_at: string
 }
 
 export interface LeaveRequest {
   id: string
-  employeeId: string
-  employeeName: string
-  leaveType: 'casual' | 'sick' | 'privilege'
-  startDate: string
-  endDate: string
+  user_id: string
+  leave_type: 'casual' | 'sick' | 'privilege'
+  start_date: string
+  end_date: string
   reason: string
   status: 'pending' | 'approved' | 'rejected'
-  requestedAt: string
-  processedAt?: string
-  processedBy?: string
+  requested_at: string
+  processed_at?: string
+  processed_by?: string
   comments?: string
 }
 
-// Employee functions
-export async function getEmployeeByUsername(username: string): Promise<Employee | null> {
+// User functions
+export async function getUserByUsername(username: string): Promise<User | null> {
   try {
     const { data, error } = await supabase
-      .from('employees')
+      .from('users')
       .select('*')
       .eq('username', username)
       .single()
 
     if (error) {
-      console.error('Error getting employee by username:', error)
+      console.error('Error getting user by username:', error)
       return null
     }
 
-    return data as Employee
+    return data as User
   } catch (error) {
-    console.error('Error getting employee by username:', error)
+    console.error('Error getting user by username:', error)
     return null
   }
 }
 
-export async function getEmployeeById(id: string): Promise<Employee | null> {
+export async function getUserById(id: string): Promise<User | null> {
   try {
     const { data, error } = await supabase
-      .from('employees')
+      .from('users')
       .select('*')
       .eq('id', id)
       .single()
 
     if (error) {
-      console.error('Error getting employee by ID:', error)
+      console.error('Error getting user by ID:', error)
       return null
     }
 
-    return data as Employee
+    return data as User
   } catch (error) {
-    console.error('Error getting employee by ID:', error)
+    console.error('Error getting user by ID:', error)
     return null
   }
 }
 
-export async function getAllEmployees(): Promise<Employee[]> {
+export async function getAllUsers(): Promise<User[]> {
   try {
     const { data, error } = await supabase
-      .from('employees')
+      .from('users')
       .select('*')
-      .order('createdAt', { ascending: false })
+      .order('created_at', { ascending: false })
 
     if (error) {
-      console.error('Error getting all employees:', error)
+      console.error('Error getting all users:', error)
       return []
     }
 
-    return data as Employee[] || []
+    return data as User[] || []
   } catch (error) {
-    console.error('Error getting all employees:', error)
+    console.error('Error getting all users:', error)
     return []
   }
 }
 
-// Authentication function
-export async function authenticateUser(username: string, password: string): Promise<Employee | null> {
+export async function createUser(userData: Omit<User, 'id' | 'created_at'>): Promise<string> {
   try {
-    const employee = await getEmployeeByUsername(username)
-    if (employee && employee.password === password) {
-      return employee
+    const { data, error } = await supabase
+      .from('users')
+      .insert([userData])
+      .select('id')
+      .single()
+
+    if (error) {
+      console.error('Error creating user:', error)
+      throw new Error('Failed to create user')
+    }
+
+    console.log('✅ User created:', data.id)
+    return data.id
+  } catch (error) {
+    console.error('Error creating user:', error)
+    throw new Error('Failed to create user')
+  }
+}
+
+// Authentication function
+export async function authenticateUser(username: string, password: string): Promise<User | null> {
+  try {
+    const user = await getUserByUsername(username)
+    if (user && user.password === password) {
+      return user
     }
     return null
   } catch (error) {
@@ -111,14 +136,61 @@ export async function authenticateUser(username: string, password: string): Prom
   }
 }
 
+// Leave balance functions
+export async function getLeaveBalance(userId: string): Promise<LeaveBalance | null> {
+  try {
+    const { data, error } = await supabase
+      .from('leave_balances')
+      .select('*')
+      .eq('user_id', userId)
+      .single()
+
+    if (error) {
+      console.error('Error getting leave balance:', error)
+      return null
+    }
+
+    return data as LeaveBalance
+  } catch (error) {
+    console.error('Error getting leave balance:', error)
+    return null
+  }
+}
+
+export async function updateLeaveBalance(
+  userId: string, 
+  leaveType: 'casual_leave' | 'sick_leave' | 'privilege_leave', 
+  days: number
+): Promise<boolean> {
+  try {
+    const { error } = await supabase
+      .from('leave_balances')
+      .update({ 
+        [leaveType]: days,
+        updated_at: new Date().toISOString()
+      })
+      .eq('user_id', userId)
+
+    if (error) {
+      console.error('Error updating leave balance:', error)
+      return false
+    }
+
+    return true
+  } catch (error) {
+    console.error('Error updating leave balance:', error)
+    return false
+  }
+}
+
 // Leave request functions
-export async function createLeaveRequest(request: Omit<LeaveRequest, 'id' | 'status' | 'requestedAt'>): Promise<string> {
+export async function createLeaveRequest(request: Omit<LeaveRequest, 'id' | 'status' | 'requested_at'>): Promise<string> {
   try {
     const newRequest: LeaveRequest = {
       ...request,
-      id: `req${Date.now()}`,
+      id: crypto.randomUUID(),
       status: 'pending',
-      requestedAt: new Date().toISOString()
+      requested_at: new Date().toISOString()
     }
     
     const { error } = await supabase
@@ -138,22 +210,22 @@ export async function createLeaveRequest(request: Omit<LeaveRequest, 'id' | 'sta
   }
 }
 
-export async function getEmployeeLeaveRequests(employeeId: string): Promise<LeaveRequest[]> {
+export async function getUserLeaveRequests(userId: string): Promise<LeaveRequest[]> {
   try {
     const { data, error } = await supabase
       .from('leave_requests')
       .select('*')
-      .eq('employeeId', employeeId)
-      .order('requestedAt', { ascending: false })
+      .eq('user_id', userId)
+      .order('requested_at', { ascending: false })
 
     if (error) {
-      console.error('Error getting employee leave requests:', error)
+      console.error('Error getting user leave requests:', error)
       return []
     }
 
     return data as LeaveRequest[] || []
   } catch (error) {
-    console.error('Error getting employee leave requests:', error)
+    console.error('Error getting user leave requests:', error)
     return []
   }
 }
@@ -164,7 +236,7 @@ export async function getPendingLeaveRequests(): Promise<LeaveRequest[]> {
       .from('leave_requests')
       .select('*')
       .eq('status', 'pending')
-      .order('requestedAt', { ascending: false })
+      .order('requested_at', { ascending: false })
 
     if (error) {
       console.error('Error getting pending leave requests:', error)
@@ -183,7 +255,7 @@ export async function getAllLeaveRequests(): Promise<LeaveRequest[]> {
     const { data, error } = await supabase
       .from('leave_requests')
       .select('*')
-      .order('requestedAt', { ascending: false })
+      .order('requested_at', { ascending: false })
 
     if (error) {
       console.error('Error getting all leave requests:', error)
@@ -200,7 +272,7 @@ export async function getAllLeaveRequests(): Promise<LeaveRequest[]> {
 export async function processLeaveRequest(
   requestId: string, 
   status: 'approved' | 'rejected', 
-  adminUsername: string, 
+  managerId: string, 
   comments?: string
 ): Promise<boolean> {
   try {
@@ -219,8 +291,8 @@ export async function processLeaveRequest(
     // Update the request
     const updateData: Partial<LeaveRequest> = {
       status,
-      processedAt: new Date().toISOString(),
-      processedBy: adminUsername
+      processed_at: new Date().toISOString(),
+      processed_by: managerId
     }
     
     if (comments) {
@@ -237,30 +309,21 @@ export async function processLeaveRequest(
       return false
     }
 
-    // Update employee leave balance if approved
+    // Update user leave balance if approved
     if (status === 'approved') {
-      const employee = await getEmployeeById(request.employeeId)
-      if (employee) {
-        const days = calculateDays(request.startDate, request.endDate)
-        if (employee.leaveBalance[request.leaveType as keyof typeof employee.leaveBalance] >= days) {
-          const newBalance = {
-            ...employee.leaveBalance,
-            [request.leaveType as keyof typeof employee.leaveBalance]: employee.leaveBalance[request.leaveType as keyof typeof employee.leaveBalance] - days
-          }
-
-          const { error: balanceError } = await supabase
-            .from('employees')
-            .update({ leaveBalance: newBalance })
-            .eq('id', employee.id)
-
-          if (balanceError) {
-            console.error('Error updating leave balance:', balanceError)
-            return false
-          }
-
+      const days = calculateDays(request.start_date, request.end_date)
+      const leaveBalance = await getLeaveBalance(request.user_id)
+      
+      if (leaveBalance) {
+        const leaveTypeKey = `${request.leave_type}_leave` as 'casual_leave' | 'sick_leave' | 'privilege_leave'
+        const currentBalance = leaveBalance[leaveTypeKey]
+        
+        if (currentBalance >= days) {
+          const newBalance = currentBalance - days
+          await updateLeaveBalance(request.user_id, leaveTypeKey, newBalance)
           console.log(`✅ Leave request approved: ${requestId}, balance updated`)
         } else {
-          console.log(`❌ Insufficient leave balance for ${request.leaveType}`)
+          console.log(`❌ Insufficient leave balance for ${request.leave_type}`)
           return false
         }
       }
@@ -283,125 +346,45 @@ export function calculateDays(startDate: string, endDate: string): number {
   return diffDays + 1 // Include both start and end dates
 }
 
-export async function getLeaveBalance(employeeId: string) {
-  try {
-    const employee = await getEmployeeById(employeeId)
-    return employee?.leaveBalance || { casual: 0, sick: 0, privilege: 0 }
-  } catch (error) {
-    console.error('Error getting leave balance:', error)
-    return { casual: 0, sick: 0, privilege: 0 }
-  }
-}
-
-export async function updateLeaveBalance(employeeId: string, leaveType: keyof Employee['leaveBalance'], days: number) {
-  try {
-    const employee = await getEmployeeById(employeeId)
-    if (employee) {
-      const newBalance = {
-        ...employee.leaveBalance,
-        [leaveType]: Math.max(0, employee.leaveBalance[leaveType] + days)
-      }
-
-      const { error } = await supabase
-        .from('employees')
-        .update({ leaveBalance: newBalance })
-        .eq('id', employeeId)
-
-      if (error) {
-        console.error('Error updating leave balance:', error)
-      }
-    }
-  } catch (error) {
-    console.error('Error updating leave balance:', error)
-  }
-}
-
 // Initialize database function with sample data
 export async function initializeDatabase(): Promise<void> {
   try {
     console.log('🚀 Initializing Supabase database...')
     
     // Check if already initialized
-    const { data: existingEmployees } = await supabase
-      .from('employees')
+    const { data: existingUsers } = await supabase
+      .from('users')
       .select('count')
       .limit(1)
 
-    if (existingEmployees && existingEmployees.length > 0) {
+    if (existingUsers && existingUsers.length > 0) {
       console.log('✅ Database already initialized')
       return
     }
 
-    // Sample employees
-    const employees: Employee[] = [
+    // Sample users
+    const users = [
       {
-        id: 'emp001',
-        username: 'admin',
-        password: 'admin123',
-        name: 'Admin User',
-        email: 'admin@company.com',
-        role: 'admin',
-        department: 'Management',
-        leaveBalance: { casual: 15, sick: 20, privilege: 25 },
-        createdAt: '2024-01-01T00:00:00Z'
+        username: 'manager1',
+        password: 'manager123',
+        name: 'John Manager',
+        email: 'manager@company.com',
+        role: 'manager' as const,
+        department: 'Management'
       },
       {
-        id: 'emp002',
-        username: 'john',
-        password: 'john123',
-        name: 'John Doe',
-        email: 'john@company.com',
-        role: 'user',
-        department: 'Engineering',
-        leaveBalance: { casual: 12, sick: 15, privilege: 21 },
-        createdAt: '2024-01-01T00:00:00Z'
-      },
-      {
-        id: 'emp003',
-        username: 'sarah',
-        password: 'sarah123',
-        name: 'Sarah Wilson',
-        email: 'sarah@company.com',
-        role: 'user',
-        department: 'Marketing',
-        leaveBalance: { casual: 10, sick: 12, privilege: 18 },
-        createdAt: '2024-01-01T00:00:00Z'
+        username: 'employee1',
+        password: 'emp123',
+        name: 'Jane Employee',
+        email: 'employee@company.com',
+        role: 'employee' as const,
+        department: 'Engineering'
       }
     ]
 
-    // Insert employees
-    const { error: employeeError } = await supabase
-      .from('employees')
-      .insert(employees)
-
-    if (employeeError) {
-      console.error('Error inserting employees:', employeeError)
-      throw employeeError
-    }
-
-    // Sample leave request
-    const sampleRequest: LeaveRequest = {
-      id: 'req001',
-      employeeId: 'emp002',
-      employeeName: 'John Doe',
-      leaveType: 'casual',
-      startDate: '2024-08-27',
-      endDate: '2024-08-28',
-      reason: 'Personal appointment',
-      status: 'approved',
-      requestedAt: '2024-08-20T10:00:00Z',
-      processedAt: '2024-08-21T14:30:00Z',
-      processedBy: 'admin',
-      comments: 'Approved - within policy'
-    }
-
-    const { error: requestError } = await supabase
-      .from('leave_requests')
-      .insert([sampleRequest])
-
-    if (requestError) {
-      console.error('Error inserting sample request:', requestError)
-      throw requestError
+    // Insert users (leave balances will be created automatically by trigger)
+    for (const userData of users) {
+      await createUser(userData)
     }
 
     console.log('✅ Supabase database initialized with sample data')
