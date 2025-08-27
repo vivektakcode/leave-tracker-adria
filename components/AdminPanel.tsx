@@ -91,9 +91,9 @@ export default function AdminPanel({ currentUser, onBack }: AdminPanelProps) {
 
   const getLeaveTypeColor = (type: string) => {
     switch (type) {
-      case 'casual': return 'bg-blue-100 text-blue-800'
-      case 'sick': return 'bg-red-100 text-red-800'
-      case 'privilege': return 'bg-green-100 text-green-800'
+      case 'casual': return 'bg-orange-100 text-orange-800'
+      case 'sick': return 'bg-gray-100 text-gray-800'
+      case 'privilege': return 'bg-orange-100 text-orange-800'
       default: return 'bg-gray-100 text-gray-800'
     }
   }
@@ -126,7 +126,7 @@ export default function AdminPanel({ currentUser, onBack }: AdminPanelProps) {
             <div className="flex items-center space-x-4">
               <button
                 onClick={handleRefresh}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
+                className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
               >
                 🔄 Refresh
               </button>
@@ -186,15 +186,15 @@ export default function AdminPanel({ currentUser, onBack }: AdminPanelProps) {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         {request.status === 'pending' && (
-                          <button
-                            onClick={() => {
-                              setSelectedRequest(request)
-                              setShowApprovalModal(true)
-                            }}
-                            className="text-blue-600 hover:text-blue-900"
-                          >
-                            Process
-                          </button>
+                                          <button
+                  onClick={() => {
+                    setSelectedRequest(request)
+                    setShowApprovalModal(true)
+                  }}
+                  className="text-orange-600 hover:text-orange-700"
+                >
+                  Process
+                </button>
                         )}
                         {request.status !== 'pending' && (
                           <span className="text-gray-500">Processed</span>
@@ -281,8 +281,8 @@ export default function AdminPanel({ currentUser, onBack }: AdminPanelProps) {
                   onClick={handleProcessRequest}
                   className={`px-4 py-2 text-sm font-medium text-white rounded-md ${
                     approvalStatus === 'approved' 
-                      ? 'bg-green-600 hover:bg-green-700' 
-                      : 'bg-red-600 hover:bg-red-700'
+                      ? 'bg-orange-500 hover:bg-orange-600' 
+                      : 'bg-gray-600 hover:bg-gray-700'
                   }`}
                 >
                   {approvalStatus === 'approved' ? 'Approve' : 'Reject'}

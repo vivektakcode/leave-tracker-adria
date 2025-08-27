@@ -107,9 +107,9 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
 
   const getLeaveTypeColor = (type: string) => {
     switch (type) {
-      case 'casual': return 'border-blue-500 text-blue-700'
-      case 'sick': return 'border-red-500 text-red-700'
-      case 'privilege': return 'border-green-500 text-green-700'
+      case 'casual': return 'border-orange-500 text-orange-700'
+      case 'sick': return 'border-gray-500 text-gray-700'
+      case 'privilege': return 'border-orange-600 text-orange-700'
       default: return 'border-gray-300 text-gray-700'
     }
   }
@@ -285,20 +285,20 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
         {/* Leave Balance Summary */}
         <div className="mt-6 bg-white rounded-lg shadow-md p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Current Leave Balance</h3>
-          <div className="grid grid-cols-3 gap-4">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">{leaveBalance.casual_leave}</div>
-              <div className="text-sm text-gray-500">Casual Leave</div>
+                      <div className="grid grid-cols-3 gap-4">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-orange-500">{leaveBalance.casual_leave}</div>
+                <div className="text-sm text-gray-500">Casual Leave</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-gray-500">{leaveBalance.sick_leave}</div>
+                <div className="text-sm text-gray-500">Sick Leave</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-orange-600">{leaveBalance.privilege_leave}</div>
+                <div className="text-sm text-gray-500">Privilege Leave</div>
+              </div>
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-red-600">{leaveBalance.sick_leave}</div>
-              <div className="text-sm text-gray-500">Sick Leave</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">{leaveBalance.privilege_leave}</div>
-              <div className="text-sm text-gray-500">Privilege Leave</div>
-            </div>
-          </div>
         </div>
       </div>
     </div>

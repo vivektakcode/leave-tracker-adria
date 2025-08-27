@@ -99,21 +99,21 @@ export default function LeaveBalanceDashboard({ employee }: LeaveBalanceDashboar
         {/* Leave Balance Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           {/* Casual Leave */}
-          <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500">
+          <div className="card-professional shadow-elevated border-l-4 border-orange-500 hover:border-orange-600 transition-all duration-300">
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Casual Leave</h3>
                 <p className="text-sm text-gray-600">Personal and casual time off</p>
               </div>
               <div className="text-right">
-                <div className="text-3xl font-bold text-blue-600">{leaveBalance.casual_leave}</div>
+                <div className="text-3xl font-bold text-orange-500">{leaveBalance.casual_leave}</div>
                 <div className="text-sm text-gray-500">days remaining</div>
               </div>
             </div>
             <div className="mt-4">
               <div className="w-full bg-gray-200 rounded-full h-2">
                 <div 
-                  className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                  className="bg-orange-500 h-2 rounded-full transition-all duration-300"
                   style={{ width: `${(usedDays.casual / totalAllocated.casual) * 100}%` }}
                 ></div>
               </div>
@@ -124,21 +124,21 @@ export default function LeaveBalanceDashboard({ employee }: LeaveBalanceDashboar
           </div>
 
           {/* Sick Leave */}
-          <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-red-500">
+          <div className="card-professional shadow-elevated border-l-4 border-gray-500 hover:border-gray-600 transition-all duration-300">
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Sick Leave</h3>
                 <p className="text-sm text-gray-600">Medical and health-related leave</p>
               </div>
               <div className="text-right">
-                <div className="text-3xl font-bold text-red-600">{leaveBalance.sick_leave}</div>
+                <div className="text-3xl font-bold text-gray-500">{leaveBalance.sick_leave}</div>
                 <div className="text-sm text-gray-500">days remaining</div>
               </div>
             </div>
             <div className="mt-4">
               <div className="w-full bg-gray-200 rounded-full h-2">
                 <div 
-                  className="bg-red-500 h-2 rounded-full transition-all duration-300"
+                  className="bg-gray-500 h-2 rounded-full transition-all duration-300"
                   style={{ width: `${(usedDays.sick / totalAllocated.sick) * 100}%` }}
                 ></div>
               </div>
@@ -149,21 +149,21 @@ export default function LeaveBalanceDashboard({ employee }: LeaveBalanceDashboar
           </div>
 
           {/* Privilege Leave */}
-          <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500">
+          <div className="card-professional shadow-elevated border-l-4 border-orange-600 hover:border-orange-700 transition-all duration-300">
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Privilege Leave</h3>
-                <p className="text-sm text-gray-600">Annual and earned leave</p>
+                <p className="text-sm text-gray-600">Annual and special leave</p>
               </div>
               <div className="text-right">
-                <div className="text-3xl font-bold text-green-600">{leaveBalance.privilege_leave}</div>
+                <div className="text-3xl font-bold text-orange-600">{leaveBalance.privilege_leave}</div>
                 <div className="text-sm text-gray-500">days remaining</div>
               </div>
             </div>
             <div className="mt-4">
               <div className="w-full bg-gray-200 rounded-full h-2">
                 <div 
-                  className="bg-green-500 h-2 rounded-full transition-all duration-300"
+                  className="bg-orange-600 h-2 rounded-full transition-all duration-300"
                   style={{ width: `${(usedDays.privilege / totalAllocated.privilege) * 100}%` }}
                 ></div>
               </div>
@@ -174,75 +174,65 @@ export default function LeaveBalanceDashboard({ employee }: LeaveBalanceDashboar
           </div>
         </div>
 
-        {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Request Leave */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
-            <div className="space-y-3">
-              <button 
-                onClick={() => setShowLeaveRequestForm(true)}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200"
-              >
-                📝 Request Leave
-              </button>
-              <button 
-                onClick={() => setShowMyRequests(true)}
-                className="w-full bg-gray-600 hover:bg-gray-700 text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200"
-              >
-                📋 View My Requests
-              </button>
-              {role === 'manager' && (
-                <button 
-                  onClick={() => setShowAdminPanel(true)}
-                  className="w-full bg-orange-600 hover:bg-orange-700 text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200"
-                >
-                  ⚡ Admin Panel
-                </button>
-              )}
+        {/* Action Buttons */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <button
+            onClick={() => setShowLeaveRequestForm(true)}
+            className="bg-orange-500 hover:bg-orange-600 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 shadow-elevated hover:shadow-floating transform hover:-translate-y-1"
+          >
+            <div className="flex items-center justify-center space-x-3">
+              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+              <span className="text-lg">Request Leave</span>
             </div>
-          </div>
+          </button>
 
-          {/* Recent Activity */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
-            <div className="space-y-3">
-              <div className="flex items-center text-sm text-gray-600">
-                <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
-                <span>Last login: {new Date().toLocaleDateString()}</span>
-              </div>
-              <div className="flex items-center text-sm text-gray-600">
-                <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
-                <span>Leave balance updated</span>
-              </div>
-              <div className="flex items-center text-sm text-gray-600">
-                <div className="w-2 h-2 bg-gray-400 rounded-full mr-3"></div>
-                <span>No pending requests</span>
-              </div>
+          <button
+            onClick={() => setShowMyRequests(true)}
+            className="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 shadow-elevated hover:shadow-floating transform hover:-translate-y-1"
+          >
+            <div className="flex items-center justify-center space-x-3">
+              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <span className="text-lg">View My Requests</span>
             </div>
-          </div>
+          </button>
+
+          {role === 'manager' && (
+            <button 
+              onClick={() => setShowAdminPanel(true)}
+              className="bg-orange-600 hover:bg-orange-700 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 shadow-elevated hover:shadow-floating transform hover:-translate-y-1"
+            >
+              <div className="flex items-center justify-center space-x-3">
+                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                <span className="text-lg">Admin Panel</span>
+              </div>
+            </button>
+          )}
         </div>
 
-        {/* Summary Stats */}
-        <div className="mt-8 bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Leave Summary</h3>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">{leaveBalance.casual_leave + leaveBalance.sick_leave + leaveBalance.privilege_leave}</div>
-              <div className="text-sm text-gray-500">Total Days Available</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">{leaveBalance.casual_leave}</div>
-              <div className="text-sm text-gray-500">Casual Leave</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-red-600">{leaveBalance.sick_leave}</div>
-              <div className="text-sm text-gray-500">Sick Leave</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-purple-600">{leaveBalance.privilege_leave}</div>
-              <div className="text-sm text-gray-500">Privilege Leave</div>
-            </div>
+        {/* Summary Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="card-professional shadow-elevated text-center">
+            <div className="text-2xl font-bold text-orange-500">{leaveBalance.casual_leave + leaveBalance.sick_leave + leaveBalance.privilege_leave}</div>
+            <div className="text-sm text-gray-500">Total Days Available</div>
+          </div>
+          <div className="card-professional shadow-elevated text-center">
+            <div className="text-2xl font-bold text-orange-500">{leaveBalance.casual_leave}</div>
+            <div className="text-sm text-gray-500">Casual Leave</div>
+          </div>
+          <div className="card-professional shadow-elevated text-center">
+            <div className="text-2xl font-bold text-gray-500">{leaveBalance.sick_leave}</div>
+            <div className="text-sm text-gray-500">Sick Leave</div>
+          </div>
+          <div className="card-professional shadow-elevated text-center">
+            <div className="text-2xl font-bold text-orange-600">{leaveBalance.privilege_leave}</div>
+            <div className="text-sm text-gray-500">Privilege Leave</div>
           </div>
         </div>
       </div>
