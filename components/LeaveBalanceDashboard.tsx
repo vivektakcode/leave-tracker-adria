@@ -15,31 +15,58 @@ export default function LeaveBalanceDashboard({ employee }: LeaveBalanceDashboar
   const [showLeaveRequestForm, setShowLeaveRequestForm] = useState(false)
   const [showMyRequests, setShowMyRequests] = useState(false)
   const [leaveBalance, setLeaveBalance] = useState({ casual_leave: 0, sick_leave: 0, privilege_leave: 0 })
+  const [usedDays, setUsedDays] = useState({ casual: 0, sick: 0, privilege: 0 })
   const { name, department, role } = employee
 
-  // Fetch leave balance when component mounts
+  // Fetch leave balance and calculate used days when component mounts
   useEffect(() => {
-    const fetchLeaveBalance = async () => {
-      const balance = await getLeaveBalance(employee.id)
-      if (balance) {
-        setLeaveBalance(balance)
+    const fetchData = async () => {
+      try {
+        // Fetch leave balance
+        const balance = await getLeaveBalance(employee.id)
+        if (balance) {
+          setLeaveBalance(balance)
+        }
+
+        // Fetch leave requests to calculate used days
+        const requests = await getUserLeaveRequests(employee.id)
+        const approvedRequests = requests.filter(req => req.status === 'approved')
+        
+        const calculatedUsedDays = {
+          casual: 0,
+          sick: 0,
+          privilege: 0
+        }
+
+        approvedRequests.forEach(request => {
+          const days = request.is_half_day ? 0.5 : 1
+          switch (request.leave_type) {
+            case 'casual':
+              calculatedUsedDays.casual += days
+              break
+            case 'sick':
+              calculatedUsedDays.sick += days
+              break
+            case 'privilege':
+              calculatedUsedDays.privilege += days
+              break
+          }
+        })
+
+        setUsedDays(calculatedUsedDays)
+      } catch (error) {
+        console.error('Error fetching data:', error)
       }
     }
-    fetchLeaveBalance()
+
+    fetchData()
   }, [employee.id])
 
-  // Calculate total allocated days for each leave type
+  // Calculate total allocated days for each leave type based on actual database values
   const totalAllocated = {
-    casual: 20,
-    sick: 10,
-    privilege: 15
-  }
-
-  // Calculate used days
-  const usedDays = {
-    casual: totalAllocated.casual - leaveBalance.casual_leave,
-    sick: totalAllocated.sick - leaveBalance.sick_leave,
-    privilege: totalAllocated.privilege - leaveBalance.privilege_leave
+    casual: leaveBalance.casual_leave,
+    sick: leaveBalance.sick_leave,
+    privilege: leaveBalance.privilege_leave
   }
 
   if (showAdminPanel) {
@@ -114,7 +141,7 @@ export default function LeaveBalanceDashboard({ employee }: LeaveBalanceDashboar
               <div className="w-full bg-gray-200 rounded-full h-2">
                 <div 
                   className="bg-orange-500 h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${(usedDays.casual / totalAllocated.casual) * 100}%` }}
+                  style={{ width: `${totalAllocated.casual > 0 ? (usedDays.casual / totalAllocated.casual) * 100 : 0}%` }}
                 ></div>
               </div>
               <p className="text-xs text-gray-500 mt-1">
@@ -139,7 +166,7 @@ export default function LeaveBalanceDashboard({ employee }: LeaveBalanceDashboar
               <div className="w-full bg-gray-200 rounded-full h-2">
                 <div 
                   className="bg-gray-500 h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${(usedDays.sick / totalAllocated.sick) * 100}%` }}
+                  style={{ width: `${totalAllocated.sick > 0 ? (usedDays.sick / totalAllocated.sick) * 100 : 0}%` }}
                 ></div>
               </div>
               <p className="text-xs text-gray-500 mt-1">
@@ -164,7 +191,7 @@ export default function LeaveBalanceDashboard({ employee }: LeaveBalanceDashboar
               <div className="w-full bg-gray-200 rounded-full h-2">
                 <div 
                   className="bg-orange-600 h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${(usedDays.privilege / totalAllocated.privilege) * 100}%` }}
+                  style={{ width: `${totalAllocated.privilege > 0 ? (usedDays.privilege / totalAllocated.privilege) * 100 : 0}%` }}
                 ></div>
               </div>
               <p className="text-xs text-gray-500 mt-1">
@@ -224,15 +251,15 @@ export default function LeaveBalanceDashboard({ employee }: LeaveBalanceDashboar
           </div>
           <div className="card-professional shadow-elevated text-center">
             <div className="text-2xl font-bold text-orange-500">{leaveBalance.casual_leave}</div>
-            <div className="text-sm text-gray-500">Casual Leave</div>
+            <div className="text-sm text-gray-500">Casual Leave (Used: {usedDays.casual})</div>
           </div>
           <div className="card-professional shadow-elevated text-center">
             <div className="text-2xl font-bold text-gray-500">{leaveBalance.sick_leave}</div>
-            <div className="text-sm text-gray-500">Sick Leave</div>
+            <div className="text-sm text-gray-500">Sick Leave (Used: {usedDays.sick})</div>
           </div>
           <div className="card-professional shadow-elevated text-center">
             <div className="text-2xl font-bold text-orange-600">{leaveBalance.privilege_leave}</div>
-            <div className="text-sm text-gray-500">Privilege Leave</div>
+            <div className="text-sm text-gray-500">Privilege Leave (Used: {usedDays.privilege})</div>
           </div>
         </div>
       </div>

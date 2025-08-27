@@ -60,6 +60,17 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
 
   // Check if request is valid
   const isRequestValid = () => {
+    console.log('Validation check:', {
+      startDate,
+      endDate,
+      reason: reason.trim(),
+      numberOfDays,
+      availableBalance: getAvailableBalance(),
+      dateValid: new Date(startDate) <= new Date(endDate),
+      futureDate: new Date(startDate) >= new Date(),
+      balanceValid: numberOfDays <= getAvailableBalance()
+    })
+    
     if (!startDate || !endDate || !reason.trim()) return false
     if (new Date(startDate) > new Date(endDate)) return false
     if (numberOfDays > getAvailableBalance()) return false
@@ -278,6 +289,19 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
                 {success}
               </div>
             )}
+
+            {/* Debug Info */}
+            <div className="bg-gray-100 border border-gray-300 rounded-lg p-3 text-xs">
+              <div className="font-semibold text-gray-700 mb-2">Debug Info:</div>
+              <div className="grid grid-cols-2 gap-2 text-gray-600">
+                <div>Start Date: {startDate || 'Not set'}</div>
+                <div>End Date: {endDate || 'Not set'}</div>
+                <div>Reason: {reason.trim() || 'Not set'}</div>
+                <div>Days: {numberOfDays}</div>
+                <div>Available: {getAvailableBalance()}</div>
+                <div>Valid: {isRequestValid() ? 'Yes' : 'No'}</div>
+              </div>
+            </div>
 
             {/* Submit Button */}
             <div className="flex space-x-3">
