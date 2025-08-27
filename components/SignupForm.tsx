@@ -115,24 +115,24 @@ export default function SignupForm({}: SignupFormProps) {
   }
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="max-w-4xl mx-auto">
       {/* Header */}
-      <div className="text-center mb-8">
+      <div className="text-center mb-8 lg:mb-12">
         <div className="mx-auto h-16 w-16 bg-gradient-to-br from-orange-400 to-orange-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
           <svg className="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
           </svg>
         </div>
-        <h1 className="text-4xl font-bold text-gray-900 mb-3">Join Leave Tracker</h1>
+        <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-3">Join Leave Tracker</h1>
         <p className="text-lg text-gray-600">Create your professional account</p>
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-8">
         {/* Name and Username Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
           <div>
-            <label htmlFor="name" className="block text-sm font-semibold text-gray-700 mb-2">
+            <label htmlFor="name" className="block text-sm font-semibold text-gray-700 mb-3">
               Full Name *
             </label>
             <input
@@ -148,7 +148,7 @@ export default function SignupForm({}: SignupFormProps) {
           </div>
 
           <div>
-            <label htmlFor="username" className="block text-sm font-semibold text-gray-700 mb-2">
+            <label htmlFor="username" className="block text-sm font-semibold text-gray-700 mb-3">
               Username *
             </label>
             <input
@@ -165,9 +165,9 @@ export default function SignupForm({}: SignupFormProps) {
         </div>
 
         {/* Email and Department Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
           <div>
-            <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
+            <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-3">
               Email *
             </label>
             <input
@@ -183,7 +183,7 @@ export default function SignupForm({}: SignupFormProps) {
           </div>
 
           <div>
-            <label htmlFor="department" className="block text-sm font-semibold text-gray-700 mb-2">
+            <label htmlFor="department" className="block text-sm font-semibold text-gray-700 mb-3">
               Department *
             </label>
             <select
@@ -204,22 +204,22 @@ export default function SignupForm({}: SignupFormProps) {
 
         {/* Role Selection */}
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-3">
+          <label className="block text-sm font-semibold text-gray-700 mb-4">
             Role *
           </label>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6">
             {(['employee', 'manager'] as const).map((role) => (
               <button
                 key={role}
                 type="button"
                 onClick={() => setFormData({ ...formData, role, manager_id: role === 'manager' ? '' : formData.manager_id })}
-                className={`p-4 border-2 rounded-xl text-center transition-all duration-200 ${
+                className={`p-6 border-2 rounded-xl text-center transition-all duration-200 ${
                   formData.role === role 
                     ? 'border-orange-500 bg-orange-50 text-orange-700 shadow-md' 
                     : 'border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-50'
                 }`}
               >
-                <div className="text-lg font-semibold capitalize mb-1">{role}</div>
+                <div className="text-lg font-semibold capitalize mb-2">{role}</div>
                 <div className="text-sm text-gray-600">
                   {role === 'manager' ? 'Can approve requests' : 'Can submit requests'}
                 </div>
@@ -231,7 +231,7 @@ export default function SignupForm({}: SignupFormProps) {
         {/* Manager Selection (only for employees) */}
         {formData.role === 'employee' && managers.length > 0 && (
           <div>
-            <label htmlFor="manager_id" className="block text-sm font-semibold text-gray-700 mb-2">
+            <label htmlFor="manager_id" className="block text-sm font-semibold text-gray-700 mb-3">
               Manager *
             </label>
             <select
@@ -257,7 +257,7 @@ export default function SignupForm({}: SignupFormProps) {
 
         {/* Password */}
         <div>
-          <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
+          <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-3">
             Password *
           </label>
           <input

@@ -28,22 +28,22 @@ export default function LoginForm() {
   }
 
   return (
-    <div className="max-w-md mx-auto">
+    <div className="max-w-lg mx-auto">
       {/* Header */}
-      <div className="text-center mb-8">
+      <div className="text-center mb-8 lg:mb-10">
         <div className="mx-auto h-16 w-16 bg-gradient-to-br from-orange-400 to-orange-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
           <svg className="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 5v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
           </svg>
         </div>
-        <h1 className="text-4xl font-bold text-gray-900 mb-3">Welcome Back</h1>
+        <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-3">Welcome Back</h1>
         <p className="text-lg text-gray-600">Sign in to your account</p>
       </div>
 
       {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
-          <label htmlFor="username" className="block text-sm font-semibold text-gray-700 mb-2">
+          <label htmlFor="username" className="block text-sm font-semibold text-gray-700 mb-3">
             Username
           </label>
           <input
@@ -58,7 +58,7 @@ export default function LoginForm() {
         </div>
 
         <div>
-          <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
+          <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-3">
             Password
           </label>
           <input
