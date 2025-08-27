@@ -36,23 +36,39 @@ export default function LoginPage() {
   // If user is logged in, show dashboard
   if (currentUser) {
     return (
-      <div>
-        {/* Navigation Header */}
-        <nav className="bg-white shadow-sm border-b">
+      <div className="min-h-screen bg-gray-50">
+        {/* Professional Navigation Header */}
+        <nav className="hero-gradient shadow-floating border-b border-gray-800">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center h-16">
-              <div className="flex items-center">
-                <h1 className="text-xl font-semibold text-gray-900">Leave Tracker</h1>
-              </div>
+            <div className="flex justify-between items-center h-20">
               <div className="flex items-center space-x-4">
-                <span className="text-sm text-gray-600">
-                  Welcome, {currentUser.name} ({currentUser.role})
-                </span>
+                <div className="h-12 w-12 bg-white/10 rounded-xl flex items-center justify-center border border-white/20">
+                  <svg className="h-7 w-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold text-white">Leave Tracker</h1>
+                  <p className="text-white/80 text-sm">Professional Leave Management</p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-6">
+                <div className="text-right">
+                  <p className="text-white font-semibold text-lg">
+                    Welcome back, {currentUser.name}!
+                  </p>
+                  <p className="text-white/80 text-sm capitalize">
+                    {currentUser.role} • {currentUser.department}
+                  </p>
+                </div>
                 <button
                   onClick={handleLogout}
-                  className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
+                  className="bg-white/10 hover:bg-white/20 text-white border border-white/20 hover:border-white/30 font-semibold py-3 px-6 rounded-xl transition-all duration-200 flex items-center space-x-2"
                 >
-                  Logout
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  </svg>
+                  <span>Logout</span>
                 </button>
               </div>
             </div>
@@ -72,26 +88,28 @@ export default function LoginPage() {
 
   // Show login form
   return (
-    <div className="min-h-screen gradient-bg flex items-center justify-center px-4">
-      <div className="max-w-md w-full space-y-8">
+    <div className="min-h-screen gradient-bg flex items-center justify-center px-4 py-8">
+      <div className="max-w-lg w-full space-y-8 animate-fade-in-up">
+        {/* Header */}
         <div className="text-center">
-          <div className="mx-auto h-16 w-16 bg-white rounded-full flex items-center justify-center mb-4 shadow-lg">
-            <svg className="h-8 w-8 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="mx-auto h-20 w-20 bg-white rounded-2xl flex items-center justify-center mb-6 shadow-floating border border-gray-100">
+            <svg className="h-10 w-10 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
           </div>
-          <h1 className="text-4xl font-bold text-gradient mb-2">
+          <h1 className="text-5xl font-bold text-gradient mb-3">
             Welcome Back
           </h1>
-          <p className="text-gray-600 text-lg">
+          <p className="text-gray-600 text-lg font-medium">
             Sign in to your Leave Tracker account
           </p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-xl p-8">
+        {/* Login Form Card */}
+        <div className="card-professional shadow-floating">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="username" className="block text-sm font-semibold text-gray-700 mb-3">
                 Username
               </label>
               <input
@@ -100,13 +118,13 @@ export default function LoginPage() {
                 required
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+                className="input-professional focus-ring"
                 placeholder="Enter your username"
               />
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-3">
                 Password
               </label>
               <input
@@ -115,31 +133,32 @@ export default function LoginPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+                className="input-professional focus-ring"
                 placeholder="Enter your password"
               />
             </div>
 
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm font-medium">
                 {error}
               </div>
             )}
 
             <button
               type="submit"
-              className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold py-3 px-4 rounded-lg hover:from-orange-600 hover:to-orange-700 focus:ring-4 focus:ring-orange-200 transition-all duration-200"
+              className="btn-primary w-full text-lg py-4"
             >
               Sign In
             </button>
           </form>
 
-          <div className="mt-6 text-center">
+          {/* Switch to Signup */}
+          <div className="mt-8 text-center pt-6 border-t border-gray-200">
             <p className="text-sm text-gray-600">
               Don't have an account?{' '}
               <button
                 onClick={() => setShowSignup(true)}
-                className="text-orange-600 hover:text-orange-700 font-medium"
+                className="text-orange-600 hover:text-orange-700 font-semibold transition-colors duration-200"
               >
                 Create one here
               </button>
@@ -147,9 +166,10 @@ export default function LoginPage() {
           </div>
         </div>
 
+        {/* Footer */}
         <div className="text-center text-sm text-gray-500">
-          <p>🔐 Secure login to your Leave Tracker account</p>
-          <p>📱 Works on all devices • 🚀 Fast and reliable</p>
+          <p className="font-medium">🔐 Secure login to your Leave Tracker account</p>
+          <p className="mt-1">📱 Works on all devices • 🚀 Fast and reliable • 💼 Professional interface</p>
         </div>
       </div>
     </div>
