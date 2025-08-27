@@ -123,18 +123,22 @@ export default function LeaveBalanceDashboard({ employee }: LeaveBalanceDashboar
           </p>
         </div>
 
-        {/* Total Days Summary */}
-        <div className="mb-6">
-          <div className="card-professional shadow-elevated text-center p-6">
-            <div className="text-4xl font-bold text-orange-500 mb-2">
-              {leaveBalance.casual_leave + leaveBalance.sick_leave + leaveBalance.privilege_leave}
-            </div>
-            <div className="text-lg text-gray-600">Total Days Available</div>
-          </div>
-        </div>
-
         {/* Leave Balance Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          {/* Total Days */}
+          <div className="card-professional shadow-elevated border-l-4 border-orange-400 hover:border-orange-500 transition-all duration-300">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Total Days</h3>
+                <p className="text-sm text-gray-600">All leave types combined</p>
+              </div>
+              <div className="text-right">
+                <div className="text-3xl font-bold text-orange-400">{leaveBalance.casual_leave + leaveBalance.sick_leave + leaveBalance.privilege_leave}</div>
+                <div className="text-sm text-gray-500">days available</div>
+              </div>
+            </div>
+          </div>
+
           {/* Casual Leave */}
           <div className="card-professional shadow-elevated border-l-4 border-orange-500 hover:border-orange-600 transition-all duration-300">
             <div className="flex items-center justify-between">
@@ -212,7 +216,7 @@ export default function LeaveBalanceDashboard({ employee }: LeaveBalanceDashboar
         </div>
 
         {/* Action Buttons */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
           <button
             onClick={() => setShowLeaveRequestForm(true)}
             className="bg-orange-500 hover:bg-orange-600 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 shadow-elevated hover:shadow-floating transform hover:-translate-y-1"
@@ -222,18 +226,6 @@ export default function LeaveBalanceDashboard({ employee }: LeaveBalanceDashboar
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
               </svg>
               <span className="text-lg">Request Leave</span>
-            </div>
-          </button>
-
-          <button
-            onClick={() => setShowMyRequests(true)}
-            className="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 shadow-elevated hover:shadow-floating transform hover:-translate-y-1"
-          >
-            <div className="flex items-center justify-center space-x-3">
-              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              <span className="text-lg">View My Requests</span>
             </div>
           </button>
 

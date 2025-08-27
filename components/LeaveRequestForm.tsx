@@ -70,9 +70,10 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
 
   // Check if request is valid
   const isRequestValid = () => {
-    const startDateObj = new Date(startDate)
-    const endDateObj = new Date(endDate)
+    const startDateObj = new Date(startDate + 'T00:00:00') // Set to start of day
+    const endDateObj = new Date(endDate + 'T00:00:00') // Set to start of day
     const currentDate = new Date()
+    const currentDateStart = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate()) // Start of current day
     
     console.log('🔍 Detailed Validation Check:', {
       startDate,
@@ -84,8 +85,9 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
       startDateObj: startDateObj.toISOString(),
       endDateObj: endDateObj.toISOString(),
       currentDate: currentDate.toISOString(),
+      currentDateStart: currentDateStart.toISOString(),
       dateValid: startDateObj <= endDateObj,
-      futureDate: startDateObj >= currentDate,
+      futureDate: startDateObj >= currentDateStart,
       balanceValid: numberOfDays <= getAvailableBalance(),
       reasonValid: reason.trim().length > 0,
       isHalfDay,
@@ -108,7 +110,7 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
       return false
     }
     
-    if (startDateObj < currentDate) {
+    if (startDateObj < currentDateStart) {
       console.log('❌ Start date is in the past')
       return false
     }
@@ -335,21 +337,6 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
                 {success}
               </div>
             )}
-
-            {/* Debug Info */}
-            <div className="bg-gray-100 border border-gray-300 rounded-lg p-3 text-xs">
-              <div className="font-semibold text-gray-700 mb-2">Debug Info:</div>
-              <div className="grid grid-cols-2 gap-2 text-gray-600">
-                <div>Start Date: {startDate || 'Not set'}</div>
-                <div>End Date: {endDate || 'Not set'}</div>
-                <div>Reason: {reason.trim() || 'Not set'}</div>
-                <div>Days: {numberOfDays}</div>
-                <div>Available: {getAvailableBalance()}</div>
-                <div>Valid: {startDate && endDate && reason.trim() ? (isRequestValid() ? 'Yes' : 'No') : 'N/A'}</div>
-                <div>Start Date Obj: {startDate ? new Date(startDate).toISOString() : 'N/A'}</div>
-                <div>Current Date: {new Date().toISOString()}</div>
-              </div>
-            </div>
 
             {/* Submit Button */}
             <div className="flex space-x-3">
