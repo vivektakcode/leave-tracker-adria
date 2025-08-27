@@ -23,7 +23,7 @@ export default function Home() {
       
       {/* Main Content */}
       <div className="relative z-10 min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-        <div className="w-full max-w-7xl mx-auto">
+        <div className="w-full max-w-4xl mx-auto">
           {/* Header Section */}
           <div className="text-center mb-12 lg:mb-16">
             <div className="inline-flex items-center justify-center h-20 w-20 bg-gradient-to-br from-orange-500 to-orange-600 rounded-3xl mb-8 shadow-2xl">
@@ -40,143 +40,98 @@ export default function Home() {
           </div>
 
           {/* Main Content Area */}
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-start max-w-6xl mx-auto">
-            {/* Left Side - Welcome & Options */}
-            <div className="order-2 lg:order-1">
-              {!showSignup && !showLogin ? (
-                <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 lg:p-12 shadow-2xl border border-white/20">
-                  <div className="text-center lg:text-left">
-                    <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-6">
-                      Welcome to Your Leave Management
-                    </h2>
-                    <p className="text-lg text-gray-600 mb-8 leading-relaxed">
-                      Streamline your leave requests, approvals, and team management with our professional platform.
-                    </p>
-                    
-                    <div className="space-y-6">
-                      <button
-                        onClick={() => setShowLogin(true)}
-                        className="w-full lg:w-auto bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold py-4 px-8 rounded-2xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 text-lg"
-                      >
-                        Sign In to Your Account
-                      </button>
-                      
-                      <div className="relative">
-                        <div className="absolute inset-0 flex items-center">
-                          <div className="w-full border-t border-gray-300" />
-                        </div>
-                        <div className="relative flex justify-center text-sm">
-                          <span className="px-4 bg-white/80 text-gray-500 font-medium">or</span>
-                        </div>
-                      </div>
-                      
-                      <button
-                        onClick={() => setShowSignup(true)}
-                        className="w-full lg:w-auto bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white font-semibold py-4 px-8 rounded-2xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 text-lg"
-                      >
-                        Create New Account
-                      </button>
-                    </div>
-
-                    {/* Features */}
-                    <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 gap-6">
-                      <div className="text-center">
-                        <div className="h-12 w-12 bg-orange-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                          <svg className="h-6 w-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                        </div>
-                        <h3 className="font-semibold text-gray-900 mb-1">Easy Approval</h3>
-                        <p className="text-sm text-gray-600">Streamlined workflow for managers</p>
-                      </div>
-                      
-                      <div className="text-center">
-                        <div className="h-12 w-12 bg-orange-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                          <svg className="h-6 w-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                        </div>
-                        <h3 className="font-semibold text-gray-900 mb-1">Real-time Updates</h3>
-                        <p className="text-sm text-gray-600">Instant notifications and status</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 lg:p-12 shadow-2xl border border-white/20">
-                  <div className="text-center lg:text-left">
+          <div className="max-w-2xl mx-auto">
+            {!showSignup && !showLogin ? (
+              <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 lg:p-12 shadow-2xl border border-white/20">
+                <div className="text-center">
+                  <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-6">
+                    Welcome to Your Leave Management
+                  </h2>
+                  <p className="text-lg text-gray-600 mb-8 leading-relaxed">
+                    Streamline your leave requests, approvals, and team management with our professional platform.
+                  </p>
+                  
+                  <div className="space-y-6">
                     <button
-                      onClick={() => {
-                        setShowLogin(false)
-                        setShowSignup(false)
-                      }}
-                      className="text-orange-600 hover:text-orange-700 text-sm font-medium mb-6 inline-flex items-center group"
+                      onClick={() => setShowLogin(true)}
+                      className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold py-4 px-8 rounded-2xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 text-lg"
                     >
-                      <svg className="h-4 w-4 mr-2 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                      </svg>
-                      Back to options
+                      Sign In to Your Account
                     </button>
                     
-                    {showLogin ? (
-                      <>
-                        <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-3">Sign In</h2>
-                        <p className="text-lg text-gray-600 mb-8">Access your leave management account</p>
-                        <LoginForm />
-                      </>
-                    ) : (
-                      <>
-                        <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-3">Create Account</h2>
-                        <p className="text-lg text-gray-600 mb-8">Join the leave management system</p>
-                        <SignupForm />
-                      </>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Right Side - Visual Content */}
-            <div className="order-1 lg:order-2">
-              <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-3xl p-8 lg:p-12 shadow-2xl border border-orange-200/50 h-full flex items-center justify-center">
-                <div className="text-center">
-                  <div className="h-32 w-32 bg-gradient-to-br from-orange-400 to-orange-600 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-2xl">
-                    <svg className="h-16 w-16 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
-                  </div>
-                  
-                  <h3 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-4">
-                    {showSignup ? 'Join Our Team' : showLogin ? 'Welcome Back' : 'Professional Management'}
-                  </h3>
-                  
-                  <p className="text-lg text-gray-600 leading-relaxed max-w-md mx-auto">
-                    {showSignup 
-                      ? 'Create your professional account and start managing leave requests efficiently.'
-                      : showLogin 
-                      ? 'Access your dashboard and manage your team\'s leave requests.'
-                      : 'Streamline your organization\'s leave management with our professional platform.'
-                    }
-                  </p>
-
-                  {/* Stats */}
-                  <div className="mt-8 grid grid-cols-3 gap-4">
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-orange-600">100%</div>
-                      <div className="text-sm text-gray-600">Secure</div>
+                    <div className="relative">
+                      <div className="absolute inset-0 flex items-center">
+                        <div className="w-full border-t border-gray-300" />
+                      </div>
+                      <div className="relative flex justify-center text-sm">
+                        <span className="px-4 bg-white/80 text-gray-500 font-medium">or</span>
+                      </div>
                     </div>
+                    
+                    <button
+                      onClick={() => setShowSignup(true)}
+                      className="w-full bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white font-semibold py-4 px-8 rounded-2xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 text-lg"
+                    >
+                      Create New Account
+                    </button>
+                  </div>
+
+                  {/* Features */}
+                  <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div className="text-center">
-                      <div className="text-2xl font-bold text-orange-600">24/7</div>
-                      <div className="text-sm text-gray-600">Available</div>
+                      <div className="h-12 w-12 bg-orange-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                        <svg className="h-6 w-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </div>
+                      <h3 className="font-semibold text-gray-900 mb-1">Easy Approval</h3>
+                      <p className="text-sm text-gray-600">Streamlined workflow for managers</p>
                     </div>
+                    
                     <div className="text-center">
-                      <div className="text-2xl font-bold text-orange-600">Fast</div>
-                      <div className="text-sm text-gray-600">Approval</div>
+                      <div className="h-12 w-12 bg-orange-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                        <svg className="h-6 w-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </div>
+                      <h3 className="font-semibold text-gray-900 mb-1">Real-time Updates</h3>
+                      <p className="text-sm text-gray-600">Instant notifications and status</p>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 lg:p-12 shadow-2xl border border-white/20">
+                <div className="text-center">
+                  <button
+                    onClick={() => {
+                      setShowLogin(false)
+                      setShowSignup(false)
+                    }}
+                    className="text-orange-600 hover:text-orange-700 text-sm font-medium mb-6 inline-flex items-center group"
+                  >
+                    <svg className="h-4 w-4 mr-2 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                    Back to options
+                  </button>
+                  
+                  {showLogin ? (
+                    <>
+                      <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-3">Sign In</h2>
+                      <p className="text-lg text-gray-600 mb-8">Access your leave management account</p>
+                      <LoginForm />
+                    </>
+                  ) : (
+                    <>
+                      <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-3">Create Account</h2>
+                      <p className="text-lg text-gray-600 mb-8">Join the leave management system</p>
+                      <SignupForm />
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
