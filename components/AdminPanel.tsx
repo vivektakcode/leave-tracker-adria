@@ -29,10 +29,30 @@ export default function AdminPanel({ currentUser, onBack }: AdminPanelProps) {
     const fetchData = async () => {
       try {
         console.log('Fetching admin data...')
-        const [requestsData, usersData] = await Promise.all([
-          getAllLeaveRequestsWithUserDetails(),
-          getAllUsersWithLeaveBalances()
-        ])
+        
+        // Try the enhanced queries first
+        let requestsData, usersData
+        
+        try {
+          requestsData = await getAllLeaveRequestsWithUserDetails()
+          console.log('Enhanced requests fetched:', requestsData)
+        } catch (error) {
+          console.warn('Enhanced requests failed, falling back to simple:', error)
+          // Fallback to simple query
+          const { getAllLeaveRequests } = await import('../lib/supabaseService')
+          requestsData = await getAllLeaveRequests()
+        }
+        
+        try {
+          usersData = await getAllUsersWithLeaveBalances()
+          console.log('Enhanced users fetched:', usersData)
+        } catch (error) {
+          console.warn('Enhanced users failed, falling back to simple:', error)
+          // Fallback to simple query
+          const { getAllUsers } = await import('../lib/supabaseService')
+          usersData = await getAllUsers()
+        }
+        
         console.log('Admin data fetched:', { requests: requestsData, users: usersData })
         setRequests(requestsData)
         setUsers(usersData)
@@ -51,10 +71,25 @@ export default function AdminPanel({ currentUser, onBack }: AdminPanelProps) {
   const handleRefresh = async () => {
     setLoading(true)
     try {
-      const [requestsData, usersData] = await Promise.all([
-        getAllLeaveRequestsWithUserDetails(),
-        getAllUsersWithLeaveBalances()
-      ])
+      // Try the enhanced queries first
+      let requestsData, usersData
+      
+      try {
+        requestsData = await getAllLeaveRequestsWithUserDetails()
+      } catch (error) {
+        console.warn('Enhanced requests failed, falling back to simple:', error)
+        const { getAllLeaveRequests } = await import('../lib/supabaseService')
+        requestsData = await getAllLeaveRequests()
+      }
+      
+      try {
+        usersData = await getAllUsersWithLeaveBalances()
+      } catch (error) {
+        console.warn('Enhanced users failed, falling back to simple:', error)
+        const { getAllUsers } = await import('../lib/supabaseService')
+        usersData = await getAllUsers()
+      }
+      
       setRequests(requestsData)
       setUsers(usersData)
     } catch (error) {
@@ -185,8 +220,12 @@ export default function AdminPanel({ currentUser, onBack }: AdminPanelProps) {
                     <tr key={request.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>
-                          <h4 className="font-medium text-gray-900">{request.users?.name || 'Unknown User'}</h4>
-                          <p className="text-sm text-gray-500">{request.users?.department || 'N/A'}</p>
+                          <h4 className="font-medium text-gray-900">
+                            {request.users?.name || request.user_id || 'Unknown User'}
+                          </h4>
+                          <p className="text-sm text-gray-500">
+                            {request.users?.department || 'N/A'}
+                          </p>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -249,7 +288,7 @@ export default function AdminPanel({ currentUser, onBack }: AdminPanelProps) {
                         </div>
                       ) : (
                         <div>
-                          <div className="text-sm text-gray-400">N/A</div>
+                          <div className="text-sm text-gray-400">Loading...</div>
                           <div className="text-xs text-gray-400">Total Days</div>
                         </div>
                       )}
