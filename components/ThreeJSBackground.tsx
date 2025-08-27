@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
 
 interface ThreeJSBackgroundProps {
@@ -12,9 +12,16 @@ export default function ThreeJSBackground({ className = '' }: ThreeJSBackgroundP
   const sceneRef = useRef<THREE.Scene | null>(null)
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null)
   const animationIdRef = useRef<number | null>(null)
+  const [isClient, setIsClient] = useState(false)
+
+  // Ensure component only runs on client side
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
 
   useEffect(() => {
-    if (!mountRef.current) return
+    // Don't run Three.js on server side
+    if (!isClient || !mountRef.current || typeof window === 'undefined') return
 
     // Scene setup
     const scene = new THREE.Scene()
@@ -355,7 +362,19 @@ export default function ThreeJSBackground({ className = '' }: ThreeJSBackgroundP
         console.error('Three.js cleanup error:', error)
       }
     }
-  }, [])
+  }, [isClient]) // Add isClient as dependency
+
+  // Don't render anything until client-side
+  if (!isClient) {
+    return (
+      <div 
+        className={`fixed inset-0 pointer-events-none z-0 ${className}`}
+        style={{ 
+          background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)'
+        }}
+      />
+    )
+  }
 
   return (
     <div 
