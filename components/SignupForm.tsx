@@ -4,10 +4,10 @@ import { useState, useEffect } from 'react'
 import { createUser, getAllUsers } from '../lib/supabaseService'
 
 interface SignupFormProps {
-  // Removed onSwitchToLogin requirement
+  onSignupSuccess?: () => void
 }
 
-export default function SignupForm({}: SignupFormProps) {
+export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
   const [formData, setFormData] = useState({
     username: '',
     password: '',
@@ -95,7 +95,7 @@ export default function SignupForm({}: SignupFormProps) {
 
     try {
       const userId = await createUser(formData)
-      setSuccess('Account created successfully! You can now sign in.')
+      setSuccess('Account created successfully! Redirecting you to login...')
       
       // Reset form
       setFormData({
@@ -107,6 +107,11 @@ export default function SignupForm({}: SignupFormProps) {
         role: 'employee',
         manager_id: ''
       })
+      
+      // Redirect to login page after a short delay
+      setTimeout(() => {
+        onSignupSuccess?.()
+      }, 2000)
     } catch (error: any) {
       setError(error.message || 'Failed to create account. Please try again.')
     } finally {
