@@ -124,6 +124,25 @@ export default function MyRequestsList({ employeeId, compact = false }: MyReques
                 )}
               </div>
             )}
+
+            {/* Show manager information for pending requests */}
+            {request.status === 'pending' && (
+              <div className="pt-3 border-t border-gray-100">
+                <div className="flex items-center space-x-2 text-xs text-gray-600">
+                  <svg className="h-4 w-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                  </svg>
+                  <span>
+                    Pending with: <span className="font-medium text-blue-600">
+                      {request.manager_name || 'Manager'}
+                    </span>
+                    {request.manager_department && (
+                      <span className="text-gray-500"> ({request.manager_department})</span>
+                    )}
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
         ))}
       </div>

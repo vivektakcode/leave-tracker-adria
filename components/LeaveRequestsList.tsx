@@ -10,6 +10,9 @@ interface LeaveRequest {
   reason: string
   status: 'pending' | 'approved' | 'rejected'
   createdAt: string
+  // Manager information for pending requests
+  manager_name?: string
+  manager_department?: string
 }
 
 interface LeaveRequestsListProps {
@@ -73,6 +76,23 @@ export default function LeaveRequestsList({ requests, onApprove, onReject }: Lea
             </div>
             
             <p className="text-sm text-gray-700 mb-3">{request.reason}</p>
+            
+            {/* Show manager information for pending requests */}
+            {request.status === 'pending' && request.manager_name && (
+              <div className="mb-3 p-2 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex items-center space-x-2 text-xs text-blue-700">
+                  <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                  </svg>
+                  <span>
+                    Pending with: <span className="font-medium">{request.manager_name}</span>
+                    {request.manager_department && (
+                      <span> ({request.manager_department})</span>
+                    )}
+                  </span>
+                </div>
+              </div>
+            )}
             
             {request.status === 'pending' && (
               <div className="flex space-x-2">
