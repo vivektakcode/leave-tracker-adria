@@ -1,6 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
+import { useAuth } from '../contexts/JsonAuthContext'
 
 interface NavigationProps {
   userEmail: string
@@ -9,20 +10,18 @@ interface NavigationProps {
 
 export default function Navigation({ userEmail, role }: NavigationProps) {
   const router = useRouter()
+  const { logout } = useAuth()
 
   const handleLogout = () => {
-    // Clear any stored tokens
-    localStorage.removeItem('token')
-    localStorage.removeItem('userRole')
-    localStorage.removeItem('userEmail')
-    localStorage.removeItem('userName')
+    // Use the auth context logout function
+    logout()
     
-    // Redirect to login
+    // Redirect to home page
     router.push('/')
   }
 
   return (
-    <nav className="hero-gradient shadow-large border-b border-primary-700/20">
+    <nav className="bg-gradient-to-r from-gray-800 to-gray-900 shadow-lg border-b border-gray-700">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           <div className="flex items-center space-x-4">
@@ -35,7 +34,7 @@ export default function Navigation({ userEmail, role }: NavigationProps) {
               <h1 className="text-2xl font-bold text-white">
                 Leave Tracker
               </h1>
-              <p className="text-primary-100 text-sm">
+              <p className="text-gray-300 text-sm">
                 {role === 'manager' ? 'Manager Portal' : 'Employee Portal'}
               </p>
             </div>
@@ -46,7 +45,7 @@ export default function Navigation({ userEmail, role }: NavigationProps) {
               <p className="text-white font-semibold">
                 Welcome back!
               </p>
-              <p className="text-primary-200 text-sm">
+              <p className="text-gray-300 text-sm">
                 {userEmail}
               </p>
             </div>
