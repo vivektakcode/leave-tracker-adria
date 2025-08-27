@@ -63,6 +63,7 @@ export default function LeaveBalanceDashboard({ employee }: LeaveBalanceDashboar
   }, [employee.id])
 
   // Calculate total allocated days for each leave type - these are FIXED allocations
+  // Updated: Fixed allocation numbers for proper dashboard display
   const totalAllocated = {
     casual: 6,      // Fixed allocation for casual leave
     sick: 6,        // Fixed allocation for sick leave
