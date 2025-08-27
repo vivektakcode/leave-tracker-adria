@@ -31,8 +31,6 @@ export default function ThreeJSBackground({ className = '' }: ThreeJSBackgroundP
     let accentDots: THREE.Mesh[] = []
     let lines: THREE.Line[] = []
     let particles: THREE.Points[] = []
-    let pointLight: THREE.PointLight | null = null
-    let directionalLight: THREE.DirectionalLight | null = null
 
     try {
       // Scene setup
@@ -68,18 +66,15 @@ export default function ThreeJSBackground({ className = '' }: ThreeJSBackgroundP
       const dotCount = 120 // Significantly increased dot count
       const dotGeometry = new THREE.SphereGeometry(0.03, 16, 12) // Larger, more detailed dots
       
-      // Create glass-like material with shine
-      const glassMaterial = new THREE.MeshPhongMaterial({ 
+      // Create simple solid orange material (no glossy effects)
+      const solidOrangeMaterial = new THREE.MeshBasicMaterial({ 
         color: 0xf97316, // Orange color
-        transparent: true,
-        opacity: 0.9, // Very visible
-        shininess: 100, // High shine
-        specular: 0xffffff, // White specular highlight
-        emissive: 0x331100, // Subtle glow
+        transparent: false,
+        opacity: 1.0, // Fully opaque
       })
 
       for (let i = 0; i < dotCount; i++) {
-        const dot = new THREE.Mesh(dotGeometry, glassMaterial.clone())
+        const dot = new THREE.Mesh(dotGeometry, solidOrangeMaterial.clone())
         
         // Better distribution across the entire viewport
         dot.position.x = (Math.random() - 0.5) * 35
@@ -99,7 +94,6 @@ export default function ThreeJSBackground({ className = '' }: ThreeJSBackgroundP
           rotationSpeed: Math.random() * 0.04 + 0.03, // Faster rotation
           amplitude: Math.random() * 2.0 + 1.0, // Larger movement amplitude
           pulseSpeed: Math.random() * 2.5 + 1.5, // Individual pulse speed
-          shineSpeed: Math.random() * 3 + 2 // Individual shine speed
         }
         
         dots.push(dot)
@@ -110,18 +104,15 @@ export default function ThreeJSBackground({ className = '' }: ThreeJSBackgroundP
       const accentCount = 25 // More accent dots
       const accentGeometry = new THREE.SphereGeometry(0.06, 20, 16) // Much larger accent dots
       
-      // Create premium glass material for accent dots
-      const premiumGlassMaterial = new THREE.MeshPhongMaterial({ 
+      // Create simple solid darker orange material for accent dots
+      const solidDarkOrangeMaterial = new THREE.MeshBasicMaterial({ 
         color: 0xea580c, // Darker orange
-        transparent: true,
-        opacity: 0.95, // Very visible
-        shininess: 150, // Maximum shine
-        specular: 0xffffff, // Bright white specular
-        emissive: 0x442200, // Stronger glow
+        transparent: false,
+        opacity: 1.0, // Fully opaque
       })
 
       for (let i = 0; i < accentCount; i++) {
-        const dot = new THREE.Mesh(accentGeometry, premiumGlassMaterial.clone())
+        const dot = new THREE.Mesh(accentGeometry, solidDarkOrangeMaterial.clone())
         
         // Distribute accent dots across the entire viewport
         dot.position.x = (Math.random() - 0.5) * 30
@@ -139,7 +130,6 @@ export default function ThreeJSBackground({ className = '' }: ThreeJSBackgroundP
           rotationSpeed: Math.random() * 0.03 + 0.02, // Faster rotation
           amplitude: Math.random() * 1.8 + 1.2,
           pulseSpeed: Math.random() * 2.0 + 1.0,
-          shineSpeed: Math.random() * 2.5 + 1.5
         }
         
         accentDots.push(dot)
@@ -149,8 +139,8 @@ export default function ThreeJSBackground({ className = '' }: ThreeJSBackgroundP
       // Add some connecting lines between nearby dots for sophistication
       const lineMaterial = new THREE.LineBasicMaterial({ 
         color: 0xf97316, 
-        transparent: true, 
-        opacity: 0.5 // More visible lines
+        transparent: false, 
+        opacity: 1.0 // Fully opaque lines
       })
 
       // Create connections between some dots
@@ -182,8 +172,8 @@ export default function ThreeJSBackground({ className = '' }: ThreeJSBackgroundP
       const particleMaterial = new THREE.PointsMaterial({
         color: 0xfb923c, // Lighter orange
         size: 0.025, // Larger particles
-        transparent: true,
-        opacity: 0.8, // More visible
+        transparent: false,
+        opacity: 1.0, // Fully opaque
         sizeAttenuation: true
       })
       
@@ -191,17 +181,9 @@ export default function ThreeJSBackground({ className = '' }: ThreeJSBackgroundP
       particles.push(particleSystem)
       if (scene) scene.add(particleSystem)
 
-      // Add lighting for glass effects
-      const ambientLight = new THREE.AmbientLight(0xffffff, 0.4)
+      // Add simple lighting (minimal for basic materials)
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.6)
       if (scene) scene.add(ambientLight)
-
-      directionalLight = new THREE.DirectionalLight(0xffffff, 0.8)
-      directionalLight.position.set(10, 10, 5)
-      if (scene) scene.add(directionalLight)
-
-      pointLight = new THREE.PointLight(0xf97316, 1, 100)
-      pointLight.position.set(0, 0, 10)
-      if (scene) scene.add(pointLight)
 
       // Animation loop
       const animate = () => {
@@ -222,7 +204,6 @@ export default function ThreeJSBackground({ className = '' }: ThreeJSBackgroundP
             const rotationSpeed = data.rotationSpeed
             const amplitude = data.amplitude
             const pulseSpeed = data.pulseSpeed
-            const shineSpeed = data.shineSpeed
             
             // More dynamic floating motion
             dot.position.x = data.originalX + Math.sin(time * speed * 2.0 + index) * amplitude
@@ -236,18 +217,6 @@ export default function ThreeJSBackground({ className = '' }: ThreeJSBackgroundP
             // Dynamic pulsing effect for visibility
             const pulse = 1.0 + Math.sin(time * pulseSpeed + index) * 0.4
             dot.scale.setScalar(pulse)
-            
-            // Dynamic shine effect
-            const shine = 0.8 + Math.sin(time * shineSpeed + index) * 0.2
-            if (dot.material && 'shininess' in dot.material) {
-              (dot.material as THREE.MeshPhongMaterial).shininess = 80 + shine * 50
-            }
-            
-            // Dynamic opacity variation
-            const opacity = 0.7 + Math.sin(time * 4 + index) * 0.2
-            if (dot.material && 'opacity' in dot.material) {
-              (dot.material as THREE.MeshPhongMaterial).opacity = Math.max(0.5, opacity)
-            }
           })
 
           // Animate accent dots with faster movement and pulsing
@@ -259,7 +228,6 @@ export default function ThreeJSBackground({ className = '' }: ThreeJSBackgroundP
             const rotationSpeed = data.rotationSpeed
             const amplitude = data.amplitude
             const pulseSpeed = data.pulseSpeed
-            const shineSpeed = data.shineSpeed
             
             // Faster, more elegant motion
             dot.position.x = data.originalX + Math.sin(time * speed * 2.5 + index) * amplitude
@@ -273,18 +241,6 @@ export default function ThreeJSBackground({ className = '' }: ThreeJSBackgroundP
             // Dynamic pulsing effect
             const pulse = 1.2 + Math.sin(time * pulseSpeed + index) * 0.6
             dot.scale.setScalar(pulse)
-            
-            // Dynamic shine effect
-            const shine = 0.9 + Math.sin(time * shineSpeed + index) * 0.3
-            if (dot.material && 'shininess' in dot.material) {
-              (dot.material as THREE.MeshPhongMaterial).shininess = 100 + shine * 80
-            }
-            
-            // Dynamic opacity variation
-            const opacity = 0.6 + Math.sin(time * 3.5 + index) * 0.3
-            if (dot.material && 'opacity' in dot.material) {
-              (dot.material as THREE.MeshPhongMaterial).opacity = Math.max(0.4, opacity)
-            }
           })
 
           // Animate connecting lines
@@ -316,13 +272,7 @@ export default function ThreeJSBackground({ className = '' }: ThreeJSBackgroundP
             }
           })
 
-          // Animate lights for dynamic shine
-          if (pointLight && directionalLight) {
-            pointLight.position.x = Math.sin(time * 0.3) * 15
-            pointLight.position.y = Math.cos(time * 0.3) * 15
-            directionalLight.position.x = Math.sin(time * 0.2) * 20
-            directionalLight.position.y = Math.cos(time * 0.2) * 20
-          }
+
 
           // More dynamic camera movement for sophisticated feel
           if (camera) {
