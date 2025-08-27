@@ -249,8 +249,48 @@ export async function updateLeaveBalance(
 }
 
 // Leave request functions
+export async function checkDuplicateLeaveRequest(
+  userId: string, 
+  startDate: string, 
+  endDate: string
+): Promise<boolean> {
+  try {
+    // Check if there are any existing leave requests (pending or approved) 
+    // that overlap with the requested date range
+    const { data, error } = await supabase
+      .from('leave_requests')
+      .select('*')
+      .eq('user_id', userId)
+      .in('status', ['pending', 'approved'])
+      .or(`start_date.lte.${endDate},end_date.gte.${startDate}`)
+
+    if (error) {
+      console.error('Error checking duplicate leave request:', error)
+      return false
+    }
+
+    // If there are overlapping requests, it's a duplicate
+    if (data && data.length > 0) {
+      console.log(`🚫 Duplicate leave request detected for user ${userId} on dates ${startDate} to ${endDate}`)
+      console.log('Existing overlapping requests:', data)
+      return true
+    }
+
+    return false
+  } catch (error) {
+    console.error('Error checking duplicate leave request:', error)
+    return false
+  }
+}
+
 export async function createLeaveRequest(request: Omit<LeaveRequest, 'id' | 'status' | 'requested_at'>): Promise<string> {
   try {
+    // Check for duplicate leave requests first
+    const isDuplicate = await checkDuplicateLeaveRequest(request.user_id, request.start_date, request.end_date)
+    if (isDuplicate) {
+      throw new Error('You already have a leave request for these dates. Please check your existing requests.')
+    }
+
     // First, get the username for the user_id
     const { data: userData, error: userError } = await supabase
       .from('users')

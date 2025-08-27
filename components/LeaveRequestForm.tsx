@@ -70,8 +70,6 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
   const isRequestValid = () => {
     const startDateObj = new Date(startDate + 'T00:00:00') // Set to start of day
     const endDateObj = new Date(endDate + 'T00:00:00') // Set to start of day
-    const currentDate = new Date()
-    const currentDateStart = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate()) // Start of current day
     
     // Check each validation step individually
     if (!startDate || !endDate || !reason.trim()) {
@@ -86,11 +84,26 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
       return false
     }
     
-    if (startDateObj < currentDateStart) {
-      return false
-    }
+    // Allow previous dates - removed the date restriction
+    // if (startDateObj < currentDateStart) {
+    //   return false
+    // }
     
     return true
+  }
+
+  // Check for potential conflicts with existing leave requests
+  const checkForConflicts = async () => {
+    if (!startDate || !endDate) return null
+    
+    try {
+      // This would ideally call a backend endpoint to check for conflicts
+      // For now, we'll show a general warning about checking existing requests
+      return null
+    } catch (error) {
+      console.error('Error checking for conflicts:', error)
+      return null
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -101,6 +114,20 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
     if (!isRequestValid()) {
       setError('Please check your input. Make sure dates are valid and you have sufficient leave balance.')
       return
+    }
+
+    // Additional validation for past dates
+    const startDateObj = new Date(startDate + 'T00:00:00')
+    const currentDate = new Date()
+    const currentDateStart = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate())
+    
+    if (startDateObj < currentDateStart) {
+      const confirmPastDate = window.confirm(
+        'You are requesting leave for a past date. This is allowed, but please ensure this is correct. Do you want to continue?'
+      )
+      if (!confirmPastDate) {
+        return
+      }
     }
 
     setLoading(true)
@@ -223,7 +250,6 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
                   required
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
-                  min={new Date().toISOString().split('T')[0]}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
                 />
               </div>
@@ -238,7 +264,7 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
                   required
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
-                  min={startDate || new Date().toISOString().split('T')[0]}
+                  min={startDate}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
                 />
               </div>
@@ -256,6 +282,27 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
               <label htmlFor="isHalfDay" className="text-sm font-medium text-gray-700">
                 This is a half-day leave request
               </label>
+            </div>
+
+            {/* Information about duplicate prevention */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="flex items-start space-x-3">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="text-sm text-blue-700">
+                  <p className="font-medium">Leave Request Rules:</p>
+                  <ul className="mt-1 space-y-1 text-xs">
+                    <li>• You can apply for leave on any date (including past dates)</li>
+                    <li>• Duplicate leave requests for the same dates are not allowed</li>
+                    <li>• Half-day leaves count as 0.5 days</li>
+                    <li>• Make sure you have sufficient leave balance</li>
+                    <li>• Check your existing requests to avoid conflicts</li>
+                  </ul>
+                </div>
+              </div>
             </div>
 
             {/* Number of Days Display */}
