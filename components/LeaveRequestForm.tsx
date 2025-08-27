@@ -159,7 +159,11 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
       }, 2000)
 
     } catch (error: any) {
-      setError(`Failed to submit request: ${error.message}`)
+      if (error.message.includes('already have a leave request')) {
+        setError('Duplicate Request: You already have a leave request for these dates. Please check your existing requests or choose different dates.')
+      } else {
+        setError(`Failed to submit request: ${error.message}`)
+      }
     } finally {
       setLoading(false)
     }

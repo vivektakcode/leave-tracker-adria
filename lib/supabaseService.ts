@@ -252,7 +252,8 @@ export async function updateLeaveBalance(
 export async function checkDuplicateLeaveRequest(
   userId: string, 
   startDate: string, 
-  endDate: string
+  endDate: string,
+  leaveType?: string
 ): Promise<boolean> {
   try {
     // Check if there are any existing leave requests (pending or approved) 
@@ -262,18 +263,39 @@ export async function checkDuplicateLeaveRequest(
       .select('*')
       .eq('user_id', userId)
       .in('status', ['pending', 'approved'])
-      .or(`start_date.lte.${endDate},end_date.gte.${startDate}`)
 
     if (error) {
       console.error('Error checking duplicate leave request:', error)
       return false
     }
 
-    // If there are overlapping requests, it's a duplicate
+    // Check for overlapping dates manually since Supabase OR syntax can be tricky
     if (data && data.length > 0) {
-      console.log(`🚫 Duplicate leave request detected for user ${userId} on dates ${startDate} to ${endDate}`)
-      console.log('Existing overlapping requests:', data)
-      return true
+      const requestedStart = new Date(startDate)
+      const requestedEnd = new Date(endDate)
+      
+      for (const existingRequest of data) {
+        const existingStart = new Date(existingRequest.start_date)
+        const existingEnd = new Date(existingRequest.end_date)
+        
+        // Check if dates overlap: 
+        // (requestedStart <= existingEnd) AND (requestedEnd >= existingStart)
+        if (requestedStart <= existingEnd && requestedEnd >= existingStart) {
+          // If it's the same leave type on the same day, it's definitely a duplicate
+          if (leaveType && existingRequest.leave_type === leaveType && 
+              startDate === existingRequest.start_date && endDate === existingRequest.end_date) {
+            console.log(`🚫 Exact duplicate leave request detected for user ${userId} on dates ${startDate} to ${endDate}`)
+            console.log('Existing overlapping request:', existingRequest)
+            return true
+          }
+          
+          // For overlapping dates with different leave types, we'll allow it but log a warning
+          console.log(`⚠️ Overlapping dates detected for user ${userId} on dates ${startDate} to ${endDate}`)
+          console.log('Existing overlapping request:', existingRequest)
+          console.log('This might be intentional (e.g., different leave types on same day)')
+          // Don't block the request, just warn
+        }
+      }
     }
 
     return false
@@ -286,7 +308,7 @@ export async function checkDuplicateLeaveRequest(
 export async function createLeaveRequest(request: Omit<LeaveRequest, 'id' | 'status' | 'requested_at'>): Promise<string> {
   try {
     // Check for duplicate leave requests first
-    const isDuplicate = await checkDuplicateLeaveRequest(request.user_id, request.start_date, request.end_date)
+    const isDuplicate = await checkDuplicateLeaveRequest(request.user_id, request.start_date, request.end_date, request.leave_type)
     if (isDuplicate) {
       throw new Error('You already have a leave request for these dates. Please check your existing requests.')
     }
