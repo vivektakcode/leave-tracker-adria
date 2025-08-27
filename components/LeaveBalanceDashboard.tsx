@@ -138,6 +138,17 @@ export default function LeaveBalanceDashboard({ employee }: LeaveBalanceDashboar
                 <div className="text-sm text-gray-500">days allocated</div>
               </div>
             </div>
+            <div className="mt-4">
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div 
+                  className="bg-orange-400 h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${((6 - leaveBalance.casual_leave) + (6 - leaveBalance.sick_leave) + (18 - leaveBalance.privilege_leave)) / 30 * 100}%` }}
+                ></div>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                {(6 - leaveBalance.casual_leave) + (6 - leaveBalance.sick_leave) + (18 - leaveBalance.privilege_leave)} of 30 days used
+              </p>
+            </div>
           </div>
 
           {/* Casual Leave */}
