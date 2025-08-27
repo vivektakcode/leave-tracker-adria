@@ -116,7 +116,7 @@ export default function ThreeJSBackground({ className = '' }: ThreeJSBackgroundP
         originalX: dot.position.x,
         originalY: dot.position.y,
         originalZ: dot.position.z,
-        speed: Math.random() * 0.03 + 0.02, // Faster movement
+        speed: Math.random() * 0.025 + 0.015, // Faster movement
         rotationSpeed: Math.random() * 0.03 + 0.02, // Faster rotation
         amplitude: Math.random() * 1.8 + 1.2,
         pulseSpeed: Math.random() * 2.0 + 1.0,
@@ -188,106 +188,137 @@ export default function ThreeJSBackground({ className = '' }: ThreeJSBackgroundP
 
     // Animation loop
     const animate = () => {
-      const time = Date.now() * 0.001
+      try {
+        const time = Date.now() * 0.001
 
-      // Animate dots with faster, more dynamic movement and pulsing
-      dots.forEach((dot, index) => {
-        const data = dot.userData
-        const speed = data.speed
-        const rotationSpeed = data.rotationSpeed
-        const amplitude = data.amplitude
-        const pulseSpeed = data.pulseSpeed
-        const shineSpeed = data.shineSpeed
-        
-        // More dynamic floating motion
-        dot.position.x = data.originalX + Math.sin(time * speed * 2.0 + index) * amplitude
-        dot.position.y = data.originalY + Math.cos(time * speed * 1.8 + index * 0.8) * amplitude
-        dot.position.z = data.originalZ + Math.sin(time * speed * 1.0 + index * 0.4) * (amplitude * 0.7)
-        
-        // Faster rotation
-        dot.rotation.x += rotationSpeed * 2.0
-        dot.rotation.y += rotationSpeed * 1.5
-        
-        // Dynamic pulsing effect for visibility
-        const pulse = 1.0 + Math.sin(time * pulseSpeed + index) * 0.4
-        dot.scale.setScalar(pulse)
-        
-        // Dynamic shine effect
-        const shine = 0.8 + Math.sin(time * shineSpeed + index) * 0.2
-        ;(dot.material as THREE.MeshPhongMaterial).shininess = 80 + shine * 50
-        
-        // Dynamic opacity variation
-        const opacity = 0.7 + Math.sin(time * 4 + index) * 0.2
-        ;(dot.material as THREE.MeshPhongMaterial).opacity = Math.max(0.5, opacity)
-      })
-
-      // Animate accent dots with faster movement and pulsing
-      accentDots.forEach((dot, index) => {
-        const data = dot.userData
-        const speed = data.speed
-        const rotationSpeed = data.rotationSpeed
-        const amplitude = data.amplitude
-        const pulseSpeed = data.pulseSpeed
-        const shineSpeed = data.shineSpeed
-        
-        // Faster, more elegant motion
-        dot.position.x = data.originalX + Math.sin(time * speed * 2.5 + index) * amplitude
-        dot.position.y = data.originalY + Math.cos(time * speed * 2.2 + index * 1.0) * amplitude
-        dot.position.z = data.originalZ + Math.sin(time * speed * 1.5 + index * 0.7) * (amplitude * 0.8)
-        
-        // Faster rotation
-        dot.rotation.x += rotationSpeed * 1.8
-        dot.rotation.y += rotationSpeed * 1.2
-        
-        // Dynamic pulsing effect
-        const pulse = 1.2 + Math.sin(time * pulseSpeed + index) * 0.6
-        dot.scale.setScalar(pulse)
-        
-        // Dynamic shine effect
-        const shine = 0.9 + Math.sin(time * shineSpeed + index) * 0.3
-        ;(dot.material as THREE.MeshPhongMaterial).shininess = 100 + shine * 80
-        
-        // Dynamic opacity variation
-        const opacity = 0.6 + Math.sin(time * 3.5 + index) * 0.3
-        ;(dot.material as THREE.MeshPhongMaterial).opacity = Math.max(0.4, opacity)
-      })
-
-      // Animate connecting lines
-      lines.forEach((line, index) => {
-        if (index % 2 === 0) {
-          const positions = line.geometry.attributes.position.array as Float32Array
-          if (positions.length >= 6) {
-            // Subtle line animation
-            positions[0] += Math.sin(time * 0.8 + index) * 0.015
-            positions[1] += Math.cos(time * 0.8 + index) * 0.015
-            line.geometry.attributes.position.needsUpdate = true
+        // Animate dots with faster, more dynamic movement and pulsing
+        dots.forEach((dot, index) => {
+          if (!dot || !dot.userData || !dot.material) return
+          
+          const data = dot.userData
+          const speed = data.speed
+          const rotationSpeed = data.rotationSpeed
+          const amplitude = data.amplitude
+          const pulseSpeed = data.pulseSpeed
+          const shineSpeed = data.shineSpeed
+          
+          // More dynamic floating motion
+          dot.position.x = data.originalX + Math.sin(time * speed * 2.0 + index) * amplitude
+          dot.position.y = data.originalY + Math.cos(time * speed * 1.8 + index * 0.8) * amplitude
+          dot.position.z = data.originalZ + Math.sin(time * speed * 1.0 + index * 0.4) * (amplitude * 0.7)
+          
+          // Faster rotation
+          dot.rotation.x += rotationSpeed * 2.0
+          dot.rotation.y += rotationSpeed * 1.5
+          
+          // Dynamic pulsing effect for visibility
+          const pulse = 1.0 + Math.sin(time * pulseSpeed + index) * 0.4
+          dot.scale.setScalar(pulse)
+          
+          // Dynamic shine effect
+          const shine = 0.8 + Math.sin(time * shineSpeed + index) * 0.2
+          if (dot.material && 'shininess' in dot.material) {
+            (dot.material as THREE.MeshPhongMaterial).shininess = 80 + shine * 50
           }
+          
+          // Dynamic opacity variation
+          const opacity = 0.7 + Math.sin(time * 4 + index) * 0.2
+          if (dot.material && 'opacity' in dot.material) {
+            (dot.material as THREE.MeshPhongMaterial).opacity = Math.max(0.5, opacity)
+          }
+        })
+
+        // Animate accent dots with faster movement and pulsing
+        accentDots.forEach((dot, index) => {
+          if (!dot || !dot.userData || !dot.material) return
+          
+          const data = dot.userData
+          const speed = data.speed
+          const rotationSpeed = data.rotationSpeed
+          const amplitude = data.amplitude
+          const pulseSpeed = data.pulseSpeed
+          const shineSpeed = data.shineSpeed
+          
+          // Faster, more elegant motion
+          dot.position.x = data.originalX + Math.sin(time * speed * 2.5 + index) * amplitude
+          dot.position.y = data.originalY + Math.cos(time * speed * 2.2 + index * 1.0) * amplitude
+          dot.position.z = data.originalZ + Math.sin(time * speed * 1.5 + index * 0.7) * (amplitude * 0.8)
+          
+          // Faster rotation
+          dot.rotation.x += rotationSpeed * 1.8
+          dot.rotation.y += rotationSpeed * 1.2
+          
+          // Dynamic pulsing effect
+          const pulse = 1.2 + Math.sin(time * pulseSpeed + index) * 0.6
+          dot.scale.setScalar(pulse)
+          
+          // Dynamic shine effect
+          const shine = 0.9 + Math.sin(time * shineSpeed + index) * 0.3
+          if (dot.material && 'shininess' in dot.material) {
+            (dot.material as THREE.MeshPhongMaterial).shininess = 100 + shine * 80
+          }
+          
+          // Dynamic opacity variation
+          const opacity = 0.6 + Math.sin(time * 3.5 + index) * 0.3
+          if (dot.material && 'opacity' in dot.material) {
+            (dot.material as THREE.MeshPhongMaterial).opacity = Math.max(0.4, opacity)
+          }
+        })
+
+        // Animate connecting lines
+        lines.forEach((line, index) => {
+          if (!line || !line.geometry || !line.geometry.attributes.position) return
+          
+          if (index % 2 === 0) {
+            const positions = line.geometry.attributes.position.array as Float32Array
+            if (positions && positions.length >= 6) {
+              // Subtle line animation
+              positions[0] += Math.sin(time * 0.8 + index) * 0.015
+              positions[1] += Math.cos(time * 0.8 + index) * 0.015
+              line.geometry.attributes.position.needsUpdate = true
+            }
+          }
+        })
+
+        // Animate particle system
+        particles.forEach((particleSystem, index) => {
+          if (!particleSystem || !particleSystem.geometry || !particleSystem.geometry.attributes.position) return
+          
+          const positions = particleSystem.geometry.attributes.position.array as Float32Array
+          if (positions) {
+            for (let i = 0; i < positions.length; i += 3) {
+              positions[i] += Math.sin(time * 0.5 + i) * 0.003
+              positions[i + 1] += Math.cos(time * 0.5 + i) * 0.003
+            }
+            particleSystem.geometry.attributes.position.needsUpdate = true
+          }
+        })
+
+        // Animate lights for dynamic shine
+        if (pointLight && directionalLight) {
+          pointLight.position.x = Math.sin(time * 0.3) * 15
+          pointLight.position.y = Math.cos(time * 0.3) * 15
+          directionalLight.position.x = Math.sin(time * 0.2) * 20
+          directionalLight.position.y = Math.cos(time * 0.2) * 20
         }
-      })
 
-      // Animate particle system
-      particles.forEach((particleSystem, index) => {
-        const positions = particleSystem.geometry.attributes.position.array as Float32Array
-        for (let i = 0; i < positions.length; i += 3) {
-          positions[i] += Math.sin(time * 0.5 + i) * 0.003
-          positions[i + 1] += Math.cos(time * 0.5 + i) * 0.003
+        // More dynamic camera movement for sophisticated feel
+        camera.position.x = Math.sin(time * 0.2) * 1.5
+        camera.position.y = Math.cos(time * 0.15) * 1.2
+        camera.lookAt(0, 0, 0)
+
+        if (renderer && scene && camera) {
+          renderer.render(scene, camera)
         }
-        particleSystem.geometry.attributes.position.needsUpdate = true
-      })
-
-      // Animate lights for dynamic shine
-      pointLight.position.x = Math.sin(time * 0.3) * 15
-      pointLight.position.y = Math.cos(time * 0.3) * 15
-      directionalLight.position.x = Math.sin(time * 0.2) * 20
-      directionalLight.position.y = Math.cos(time * 0.2) * 20
-
-      // More dynamic camera movement for sophisticated feel
-      camera.position.x = Math.sin(time * 0.2) * 1.5
-      camera.position.y = Math.cos(time * 0.15) * 1.2
-      camera.lookAt(0, 0, 0)
-
-      renderer.render(scene, camera)
-      animationIdRef.current = requestAnimationFrame(animate)
+        
+        animationIdRef.current = requestAnimationFrame(animate)
+      } catch (error) {
+        console.error('Three.js animation error:', error)
+        // Stop animation on error
+        if (animationIdRef.current) {
+          cancelAnimationFrame(animationIdRef.current)
+        }
+      }
     }
 
     animate()
@@ -296,23 +327,33 @@ export default function ThreeJSBackground({ className = '' }: ThreeJSBackgroundP
     const handleResize = () => {
       if (!renderer || !camera) return
       
-      camera.aspect = window.innerWidth / window.innerHeight
-      camera.updateProjectionMatrix()
-      renderer.setSize(window.innerWidth, window.innerHeight)
+      try {
+        camera.aspect = window.innerWidth / window.innerHeight
+        camera.updateProjectionMatrix()
+        renderer.setSize(window.innerWidth, window.innerHeight)
+      } catch (error) {
+        console.error('Three.js resize error:', error)
+      }
     }
 
     window.addEventListener('resize', handleResize)
 
     // Cleanup
     return () => {
-      window.removeEventListener('resize', handleResize)
-      if (animationIdRef.current) {
-        cancelAnimationFrame(animationIdRef.current)
+      try {
+        window.removeEventListener('resize', handleResize)
+        if (animationIdRef.current) {
+          cancelAnimationFrame(animationIdRef.current)
+        }
+        if (mountRef.current && renderer.domElement) {
+          mountRef.current.removeChild(renderer.domElement)
+        }
+        if (renderer) {
+          renderer.dispose()
+        }
+      } catch (error) {
+        console.error('Three.js cleanup error:', error)
       }
-      if (mountRef.current && renderer.domElement) {
-        mountRef.current.removeChild(renderer.domElement)
-      }
-      renderer.dispose()
     }
   }, [])
 
