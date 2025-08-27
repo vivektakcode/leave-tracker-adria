@@ -60,21 +60,47 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
 
   // Check if request is valid
   const isRequestValid = () => {
+    const startDateObj = new Date(startDate)
+    const endDateObj = new Date(endDate)
+    const currentDate = new Date()
+    
     console.log('Validation check:', {
       startDate,
       endDate,
       reason: reason.trim(),
       numberOfDays,
       availableBalance: getAvailableBalance(),
-      dateValid: new Date(startDate) <= new Date(endDate),
-      futureDate: new Date(startDate) >= new Date(),
-      balanceValid: numberOfDays <= getAvailableBalance()
+      startDateObj: startDateObj.toISOString(),
+      endDateObj: endDateObj.toISOString(),
+      currentDate: currentDate.toISOString(),
+      dateValid: startDateObj <= endDateObj,
+      futureDate: startDateObj >= currentDate,
+      balanceValid: numberOfDays <= getAvailableBalance(),
+      reasonValid: reason.trim().length > 0
     })
     
-    if (!startDate || !endDate || !reason.trim()) return false
-    if (new Date(startDate) > new Date(endDate)) return false
-    if (numberOfDays > getAvailableBalance()) return false
-    if (new Date(startDate) < new Date()) return false
+    // Check each validation step individually
+    if (!startDate || !endDate || !reason.trim()) {
+      console.log('❌ Basic fields missing')
+      return false
+    }
+    
+    if (startDateObj > endDateObj) {
+      console.log('❌ Start date is after end date')
+      return false
+    }
+    
+    if (numberOfDays > getAvailableBalance()) {
+      console.log('❌ Insufficient leave balance')
+      return false
+    }
+    
+    if (startDateObj < currentDate) {
+      console.log('❌ Start date is in the past')
+      return false
+    }
+    
+    console.log('✅ All validations passed')
     return true
   }
 
@@ -300,6 +326,8 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
                 <div>Days: {numberOfDays}</div>
                 <div>Available: {getAvailableBalance()}</div>
                 <div>Valid: {isRequestValid() ? 'Yes' : 'No'}</div>
+                <div>Start Date Obj: {startDate ? new Date(startDate).toISOString() : 'N/A'}</div>
+                <div>Current Date: {new Date().toISOString()}</div>
               </div>
             </div>
 
