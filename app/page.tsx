@@ -17,14 +17,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen relative overflow-hidden">
-      {/* Simple Gradient Background - Three.js temporarily disabled */}
-      <div 
-        className="fixed inset-0 pointer-events-none z-0"
-        style={{ 
-          background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)'
-        }}
-      />
-      
       {/* Main Content */}
       <div className="relative z-10 min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
         <div className="w-full max-w-4xl mx-auto">
