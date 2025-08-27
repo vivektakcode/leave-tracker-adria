@@ -168,10 +168,10 @@ export default function AdminPanel({ currentUser, onBack }: AdminPanelProps) {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>
                           <h4 className="font-medium text-gray-900">
-                            {request.user_id}
+                            {request.username || request.user_id}
                           </h4>
                           <p className="text-sm text-gray-500">
-                            User ID
+                            {request.username ? 'Username' : 'User ID'}
                           </p>
                         </div>
                       </td>
@@ -219,7 +219,7 @@ export default function AdminPanel({ currentUser, onBack }: AdminPanelProps) {
               <div className="mt-3">
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Process Leave Request</h3>
                 <p className="text-sm text-gray-600 mb-4">
-                  <strong>User {selectedRequest.user_id}</strong> is requesting {selectedRequest.leave_type} leave
+                  <strong>{selectedRequest.username || `User ${selectedRequest.user_id}`}</strong> is requesting {selectedRequest.leave_type} leave
                 </p>
                 
                 <div className="mb-4">

@@ -30,6 +30,7 @@ export interface LeaveBalance {
 export interface LeaveRequest {
   id: string
   user_id: string
+  username?: string  // Added username field
   leave_type: 'casual' | 'sick' | 'privilege'
   start_date: string
   end_date: string
@@ -208,8 +209,21 @@ export async function updateLeaveBalance(
 // Leave request functions
 export async function createLeaveRequest(request: Omit<LeaveRequest, 'id' | 'status' | 'requested_at'>): Promise<string> {
   try {
+    // First, get the username for the user_id
+    const { data: userData, error: userError } = await supabase
+      .from('users')
+      .select('username')
+      .eq('id', request.user_id)
+      .single()
+
+    if (userError || !userData) {
+      console.error('Error fetching user data:', userError)
+      throw new Error('Failed to fetch user data')
+    }
+
     const newRequest: LeaveRequest = {
       ...request,
+      username: userData.username,  // Include the username
       id: crypto.randomUUID(),
       status: 'pending',
       requested_at: new Date().toISOString()
