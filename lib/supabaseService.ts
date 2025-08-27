@@ -42,6 +42,9 @@ export interface LeaveRequest {
   processed_at?: string
   processed_by?: string
   comments?: string
+  // Manager information
+  manager_name?: string
+  manager_department?: string
 }
 
 // User functions
@@ -61,6 +64,37 @@ export async function getUserByUsername(username: string): Promise<User | null> 
     return data as User
   } catch (error) {
     console.error('Error getting user by username:', error)
+    return null
+  }
+}
+
+export async function getUserManager(userId: string): Promise<User | null> {
+  try {
+    // First get the user to find their manager_id
+    const { data: userData, error: userError } = await supabase
+      .from('users')
+      .select('manager_id')
+      .eq('id', userId)
+      .single()
+
+    if (userError || !userData || !userData.manager_id) {
+      return null
+    }
+
+    // Then get the manager's details
+    const { data: managerData, error: managerError } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', userData.manager_id)
+      .single()
+
+    if (managerError || !managerData) {
+      return null
+    }
+
+    return managerData as User
+  } catch (error) {
+    console.error('Error getting user manager:', error)
     return null
   }
 }
@@ -313,24 +347,26 @@ export async function createLeaveRequest(request: Omit<LeaveRequest, 'id' | 'sta
       throw new Error('You already have a leave request for these dates. Please check your existing requests.')
     }
 
-    // First, get the username for the user_id
-    const { data: userData, error: userError } = await supabase
-      .from('users')
-      .select('username')
-      .eq('id', request.user_id)
-      .single()
+    // Get user and manager information
+    const [userData, managerData] = await Promise.all([
+      supabase.from('users').select('username').eq('id', request.user_id).single(),
+      getUserManager(request.user_id)
+    ])
 
-    if (userError || !userData) {
-      console.error('Error fetching user data:', userError)
+    if (userData.error || !userData.data) {
+      console.error('Error fetching user data:', userData.error)
       throw new Error('Failed to fetch user data')
     }
 
     const newRequest: LeaveRequest = {
       ...request,
-      username: userData.username,  // Include the username
+      username: userData.data.username,
       id: crypto.randomUUID(),
       status: 'pending',
-      requested_at: new Date().toISOString()
+      requested_at: new Date().toISOString(),
+      // Add manager information
+      manager_name: managerData?.name,
+      manager_department: managerData?.department
     }
     
     const { error } = await supabase

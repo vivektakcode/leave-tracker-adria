@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { User, createLeaveRequest, getLeaveBalance } from '../lib/supabaseService'
+import { User, createLeaveRequest, getLeaveBalance, getUserManager } from '../lib/supabaseService'
 
 interface LeaveRequestFormProps {
   employee: User
@@ -19,16 +19,26 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [leaveBalance, setLeaveBalance] = useState({ casual_leave: 0, sick_leave: 0, privilege_leave: 0 })
+  const [managerInfo, setManagerInfo] = useState<{ name: string; department: string } | null>(null)
 
   // Fetch leave balance when component mounts
   useEffect(() => {
-    const fetchLeaveBalance = async () => {
-      const balance = await getLeaveBalance(employee.id)
+    const fetchData = async () => {
+      const [balance, manager] = await Promise.all([
+        getLeaveBalance(employee.id),
+        getUserManager(employee.id)
+      ])
+      
       if (balance) {
         setLeaveBalance(balance)
       }
+      
+      if (manager) {
+        setManagerInfo({ name: manager.name, department: manager.department })
+      }
     }
-    fetchLeaveBalance()
+    
+    fetchData()
   }, [employee.id])
 
   // Calculate number of days when dates change
@@ -293,7 +303,7 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
               <div className="flex items-start space-x-3">
                 <div className="flex-shrink-0">
                   <svg className="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                    <path fillRule="evenodd" d="M18 10a8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a0 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                   </svg>
                 </div>
                 <div className="text-sm text-blue-700">
@@ -308,6 +318,24 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
                 </div>
               </div>
             </div>
+
+            {/* Manager Information */}
+            {managerInfo && (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <div className="flex items-start space-x-3">
+                  <div className="flex-shrink-0">
+                    <svg className="h-5 w-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div className="text-sm text-green-700">
+                    <p className="font-medium">Your Leave Request Will Be Sent To:</p>
+                    <p className="mt-1 font-semibold">{managerInfo.name}</p>
+                    <p className="text-xs text-green-600">{managerInfo.department}</p>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Number of Days Display */}
             {numberOfDays > 0 && (
