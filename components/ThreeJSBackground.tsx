@@ -43,14 +43,14 @@ export default function ThreeJSBackground({ className = '' }: ThreeJSBackgroundP
     // Add renderer to DOM
     mountRef.current.appendChild(renderer.domElement)
 
-    // Create floating dots with better distribution
+    // Create floating dots with better distribution and visibility
     const dots: THREE.Mesh[] = []
-    const dotCount = 80 // Increased dot count for better coverage
-    const dotGeometry = new THREE.SphereGeometry(0.015, 8, 6) // Smaller dots
+    const dotCount = 60 // Reduced for better performance with larger dots
+    const dotGeometry = new THREE.SphereGeometry(0.025, 12, 8) // Larger, more detailed dots
     const dotMaterial = new THREE.MeshBasicMaterial({ 
       color: 0xf97316, // Orange color
       transparent: true,
-      opacity: 0.5
+      opacity: 0.8 // Much more visible
     })
 
     for (let i = 0; i < dotCount; i++) {
@@ -61,8 +61,8 @@ export default function ThreeJSBackground({ className = '' }: ThreeJSBackgroundP
       dot.position.y = (Math.random() - 0.5) * 30
       dot.position.z = (Math.random() - 0.5) * 15
       
-      // Random scale
-      const scale = Math.random() * 0.8 + 0.3
+      // Random scale - make them more varied and visible
+      const scale = Math.random() * 1.2 + 0.8
       dot.scale.set(scale, scale, scale)
       
       // Store original position for animation
@@ -72,7 +72,8 @@ export default function ThreeJSBackground({ className = '' }: ThreeJSBackgroundP
         originalZ: dot.position.z,
         speed: Math.random() * 0.04 + 0.02, // Faster movement
         rotationSpeed: Math.random() * 0.03 + 0.02, // Faster rotation
-        amplitude: Math.random() * 1.5 + 0.5 // Random movement amplitude
+        amplitude: Math.random() * 1.5 + 0.5, // Random movement amplitude
+        pulseSpeed: Math.random() * 2 + 1 // Individual pulse speed
       }
       
       dots.push(dot)
@@ -81,12 +82,12 @@ export default function ThreeJSBackground({ className = '' }: ThreeJSBackgroundP
 
     // Add larger accent dots for visual interest
     const accentDots: THREE.Mesh[] = []
-    const accentCount = 12 // More accent dots
-    const accentGeometry = new THREE.SphereGeometry(0.03, 12, 8)
+    const accentCount = 15 // More accent dots
+    const accentGeometry = new THREE.SphereGeometry(0.045, 16, 10) // Much larger accent dots
     const accentMaterial = new THREE.MeshBasicMaterial({ 
       color: 0xea580c, // Darker orange
       transparent: true,
-      opacity: 0.4
+      opacity: 0.7 // More visible
     })
 
     for (let i = 0; i < accentCount; i++) {
@@ -97,7 +98,7 @@ export default function ThreeJSBackground({ className = '' }: ThreeJSBackgroundP
       dot.position.y = (Math.random() - 0.5) * 25
       dot.position.z = (Math.random() - 0.5) * 12
       
-      const scale = Math.random() * 1.0 + 0.5
+      const scale = Math.random() * 1.5 + 1.0 // Larger scale
       dot.scale.set(scale, scale, scale)
       
       dot.userData = {
@@ -106,7 +107,8 @@ export default function ThreeJSBackground({ className = '' }: ThreeJSBackgroundP
         originalZ: dot.position.z,
         speed: Math.random() * 0.025 + 0.015, // Faster movement
         rotationSpeed: Math.random() * 0.02 + 0.015, // Faster rotation
-        amplitude: Math.random() * 1.2 + 0.8
+        amplitude: Math.random() * 1.2 + 0.8,
+        pulseSpeed: Math.random() * 1.5 + 0.8
       }
       
       accentDots.push(dot)
@@ -118,11 +120,11 @@ export default function ThreeJSBackground({ className = '' }: ThreeJSBackgroundP
     const lineMaterial = new THREE.LineBasicMaterial({ 
       color: 0xf97316, 
       transparent: true, 
-      opacity: 0.1 
+      opacity: 0.3 // More visible lines
     })
 
     // Create connections between some dots
-    for (let i = 0; i < dots.length; i += 3) {
+    for (let i = 0; i < dots.length; i += 2) {
       if (i + 1 < dots.length) {
         const geometry = new THREE.BufferGeometry().setFromPoints([
           dots[i].position,
@@ -134,16 +136,43 @@ export default function ThreeJSBackground({ className = '' }: ThreeJSBackgroundP
       }
     }
 
+    // Add some floating particles for extra visual interest
+    const particles: THREE.Points[] = []
+    const particleCount = 100
+    const particleGeometry = new THREE.BufferGeometry()
+    const particlePositions = new Float32Array(particleCount * 3)
+    
+    for (let i = 0; i < particleCount * 3; i += 3) {
+      particlePositions[i] = (Math.random() - 0.5) * 40
+      particlePositions[i + 1] = (Math.random() - 0.5) * 40
+      particlePositions[i + 2] = (Math.random() - 0.5) * 20
+    }
+    
+    particleGeometry.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3))
+    
+    const particleMaterial = new THREE.PointsMaterial({
+      color: 0xfb923c, // Lighter orange
+      size: 0.02,
+      transparent: true,
+      opacity: 0.6,
+      sizeAttenuation: true
+    })
+    
+    const particleSystem = new THREE.Points(particleGeometry, particleMaterial)
+    particles.push(particleSystem)
+    scene.add(particleSystem)
+
     // Animation loop
     const animate = () => {
       const time = Date.now() * 0.001
 
-      // Animate dots with faster, more dynamic movement
+      // Animate dots with faster, more dynamic movement and pulsing
       dots.forEach((dot, index) => {
         const data = dot.userData
         const speed = data.speed
         const rotationSpeed = data.rotationSpeed
         const amplitude = data.amplitude
+        const pulseSpeed = data.pulseSpeed
         
         // More dynamic floating motion
         dot.position.x = data.originalX + Math.sin(time * speed * 1.5 + index) * amplitude
@@ -154,17 +183,22 @@ export default function ThreeJSBackground({ className = '' }: ThreeJSBackgroundP
         dot.rotation.x += rotationSpeed * 1.5
         dot.rotation.y += rotationSpeed * 1.0
         
+        // Dynamic pulsing effect for visibility
+        const pulse = 0.8 + Math.sin(time * pulseSpeed + index) * 0.3
+        dot.scale.setScalar(pulse)
+        
         // Dynamic opacity variation
-        const opacity = 0.3 + Math.sin(time * 3 + index) * 0.2
-        ;(dot.material as THREE.MeshBasicMaterial).opacity = Math.max(0.1, opacity)
+        const opacity = 0.6 + Math.sin(time * 3 + index) * 0.2
+        ;(dot.material as THREE.MeshBasicMaterial).opacity = Math.max(0.4, opacity)
       })
 
-      // Animate accent dots with faster movement
+      // Animate accent dots with faster movement and pulsing
       accentDots.forEach((dot, index) => {
         const data = dot.userData
         const speed = data.speed
         const rotationSpeed = data.rotationSpeed
         const amplitude = data.amplitude
+        const pulseSpeed = data.pulseSpeed
         
         // Faster, more elegant motion
         dot.position.x = data.originalX + Math.sin(time * speed * 2 + index) * amplitude
@@ -175,9 +209,13 @@ export default function ThreeJSBackground({ className = '' }: ThreeJSBackgroundP
         dot.rotation.x += rotationSpeed * 1.2
         dot.rotation.y += rotationSpeed * 0.8
         
+        // Dynamic pulsing effect
+        const pulse = 1.0 + Math.sin(time * pulseSpeed + index) * 0.4
+        dot.scale.setScalar(pulse)
+        
         // Dynamic opacity variation
-        const opacity = 0.25 + Math.sin(time * 2.5 + index) * 0.15
-        ;(dot.material as THREE.MeshBasicMaterial).opacity = Math.max(0.1, opacity)
+        const opacity = 0.5 + Math.sin(time * 2.5 + index) * 0.2
+        ;(dot.material as THREE.MeshBasicMaterial).opacity = Math.max(0.3, opacity)
       })
 
       // Animate connecting lines
@@ -191,6 +229,16 @@ export default function ThreeJSBackground({ className = '' }: ThreeJSBackgroundP
             line.geometry.attributes.position.needsUpdate = true
           }
         }
+      })
+
+      // Animate particle system
+      particles.forEach((particleSystem, index) => {
+        const positions = particleSystem.geometry.attributes.position.array as Float32Array
+        for (let i = 0; i < positions.length; i += 3) {
+          positions[i] += Math.sin(time * 0.3 + i) * 0.002
+          positions[i + 1] += Math.cos(time * 0.3 + i) * 0.002
+        }
+        particleSystem.geometry.attributes.position.needsUpdate = true
       })
 
       // More dynamic camera movement for sophisticated feel
