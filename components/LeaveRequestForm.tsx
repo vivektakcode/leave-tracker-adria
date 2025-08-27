@@ -9,8 +9,6 @@ interface LeaveRequestFormProps {
 }
 
 export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormProps) {
-  console.log('LeaveRequestForm rendering with employee:', employee)
-  
   const [leaveType, setLeaveType] = useState<'casual' | 'sick' | 'privilege'>('casual')
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
@@ -75,47 +73,23 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
     const currentDate = new Date()
     const currentDateStart = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate()) // Start of current day
     
-    console.log('🔍 Detailed Validation Check:', {
-      startDate,
-      endDate,
-      reason: reason.trim(),
-      reasonLength: reason.trim().length,
-      numberOfDays,
-      availableBalance: getAvailableBalance(),
-      startDateObj: startDateObj.toISOString(),
-      endDateObj: endDateObj.toISOString(),
-      currentDate: currentDate.toISOString(),
-      currentDateStart: currentDateStart.toISOString(),
-      dateValid: startDateObj <= endDateObj,
-      futureDate: startDateObj >= currentDateStart,
-      balanceValid: numberOfDays <= getAvailableBalance(),
-      reasonValid: reason.trim().length > 0,
-      isHalfDay,
-      sameDay: startDate === endDate
-    })
-    
     // Check each validation step individually
     if (!startDate || !endDate || !reason.trim()) {
-      console.log('❌ Basic fields missing:', { startDate: !!startDate, endDate: !!endDate, reason: !!reason.trim() })
       return false
     }
     
     if (startDateObj > endDateObj) {
-      console.log('❌ Start date is after end date')
       return false
     }
     
     if (numberOfDays > getAvailableBalance()) {
-      console.log('❌ Insufficient leave balance:', { requested: numberOfDays, available: getAvailableBalance() })
       return false
     }
     
     if (startDateObj < currentDateStart) {
-      console.log('❌ Start date is in the past')
       return false
     }
     
-    console.log('✅ All validations passed')
     return true
   }
 
