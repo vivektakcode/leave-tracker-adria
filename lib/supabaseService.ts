@@ -34,6 +34,7 @@ export interface LeaveRequest {
   start_date: string
   end_date: string
   reason: string
+  is_half_day?: boolean
   status: 'pending' | 'approved' | 'rejected'
   requested_at: string
   processed_at?: string

@@ -14,6 +14,7 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
   const [endDate, setEndDate] = useState('')
   const [reason, setReason] = useState('')
   const [numberOfDays, setNumberOfDays] = useState(0)
+  const [isHalfDay, setIsHalfDay] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
@@ -37,11 +38,15 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
       const end = new Date(endDate)
       const diffTime = Math.abs(end.getTime() - start.getTime())
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-      setNumberOfDays(diffDays + 1) // Include both start and end dates
+      const calculatedDays = diffDays + 1 // Include both start and end dates
+      
+      // If it's a half day, reduce by 0.5
+      const finalDays = isHalfDay ? Math.max(0.5, calculatedDays - 0.5) : calculatedDays
+      setNumberOfDays(finalDays)
     } else {
       setNumberOfDays(0)
     }
-  }, [startDate, endDate])
+  }, [startDate, endDate, isHalfDay])
 
   // Get available leave balance for selected type
   const getAvailableBalance = () => {
@@ -81,7 +86,8 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
         leave_type: leaveType,
         start_date: startDate,
         end_date: endDate,
-        reason: reason.trim()
+        reason: reason.trim(),
+        is_half_day: isHalfDay
       })
 
       setSuccess(`Leave request submitted successfully! Request ID: ${requestId}`)
@@ -92,6 +98,7 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
       setEndDate('')
       setReason('')
       setNumberOfDays(0)
+      setIsHalfDay(false)
 
       // Auto-redirect after 2 seconds
       setTimeout(() => {
@@ -116,9 +123,9 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
 
   const getLeaveTypeBg = (type: string) => {
     switch (type) {
-      case 'casual': return 'bg-blue-50'
-      case 'sick': return 'bg-red-50'
-      case 'privilege': return 'bg-green-50'
+      case 'casual': return 'bg-orange-50'
+      case 'sick': return 'bg-gray-50'
+      case 'privilege': return 'bg-orange-50'
       default: return 'bg-gray-50'
     }
   }
@@ -184,7 +191,7 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
                   min={new Date().toISOString().split('T')[0]}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
                 />
               </div>
 
@@ -199,19 +206,37 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
                   min={startDate || new Date().toISOString().split('T')[0]}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
                 />
               </div>
             </div>
 
+            {/* Half Day Option */}
+            <div className="flex items-center space-x-3">
+              <input
+                id="isHalfDay"
+                type="checkbox"
+                checked={isHalfDay}
+                onChange={(e) => setIsHalfDay(e.target.checked)}
+                className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded"
+              />
+              <label htmlFor="isHalfDay" className="text-sm font-medium text-gray-700">
+                This is a half-day leave request
+              </label>
+            </div>
+
             {/* Number of Days Display */}
             {numberOfDays > 0 && (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-blue-800">Number of Days:</span>
-                  <span className="text-lg font-bold text-blue-600">{numberOfDays} days</span>
+                  <span className="text-sm font-medium text-orange-800">
+                    {isHalfDay ? 'Leave Duration:' : 'Number of Days:'}
+                  </span>
+                  <span className="text-lg font-bold text-orange-600">
+                    {numberOfDays} {isHalfDay && numberOfDays === 0.5 ? 'half day' : numberOfDays === 1 ? 'day' : 'days'}
+                  </span>
                 </div>
-                <div className="mt-2 text-xs text-blue-600">
+                <div className="mt-2 text-xs text-orange-600">
                   {numberOfDays > getAvailableBalance() ? (
                     <span className="text-red-600">
                       ⚠️ Insufficient leave balance. You need {numberOfDays - getAvailableBalance()} more days.
@@ -236,7 +261,7 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
                 rows={4}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
                 placeholder="Please provide a detailed reason for your leave request..."
               />
             </div>
@@ -259,7 +284,7 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
               <button
                 type="submit"
                 disabled={loading || !isRequestValid()}
-                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (
                   <div className="flex items-center justify-center">
