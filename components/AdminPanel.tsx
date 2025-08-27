@@ -14,6 +14,8 @@ interface AdminPanelProps {
 }
 
 export default function AdminPanel({ currentUser, onBack }: AdminPanelProps) {
+  console.log('AdminPanel rendering with currentUser:', currentUser)
+  
   const [users, setUsers] = useState<User[]>([])
   const [requests, setRequests] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -21,18 +23,23 @@ export default function AdminPanel({ currentUser, onBack }: AdminPanelProps) {
   const [showApprovalModal, setShowApprovalModal] = useState(false)
   const [approvalStatus, setApprovalStatus] = useState<'approved' | 'rejected'>('approved')
   const [comments, setComments] = useState('')
+  const [error, setError] = useState('')
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        console.log('Fetching admin data...')
         const [requestsData, usersData] = await Promise.all([
           getAllLeaveRequests(),
           getAllUsers()
         ])
+        console.log('Admin data fetched:', { requests: requestsData, users: usersData })
         setRequests(requestsData)
         setUsers(usersData)
+        setError('')
       } catch (error) {
-        console.error('Error fetching data:', error)
+        console.error('Error fetching admin data:', error)
+        setError(`Failed to fetch data: ${error}`)
       } finally {
         setLoading(false)
       }
@@ -111,9 +118,10 @@ export default function AdminPanel({ currentUser, onBack }: AdminPanelProps) {
     )
   }
 
-  return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  try {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
@@ -139,6 +147,13 @@ export default function AdminPanel({ currentUser, onBack }: AdminPanelProps) {
             </div>
           </div>
         </div>
+
+        {/* Error Display */}
+        {error && (
+          <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+            <strong>Admin Panel Error:</strong> {error}
+          </div>
+        )}
 
         {/* Leave Requests */}
         <div className="mb-8">
@@ -186,15 +201,15 @@ export default function AdminPanel({ currentUser, onBack }: AdminPanelProps) {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         {request.status === 'pending' && (
-                                          <button
-                  onClick={() => {
-                    setSelectedRequest(request)
-                    setShowApprovalModal(true)
-                  }}
-                  className="text-orange-600 hover:text-orange-700"
-                >
-                  Process
-                </button>
+                          <button
+                            onClick={() => {
+                              setSelectedRequest(request)
+                              setShowApprovalModal(true)
+                            }}
+                            className="text-orange-600 hover:text-orange-700"
+                          >
+                            Process
+                          </button>
                         )}
                         {request.status !== 'pending' && (
                           <span className="text-gray-500">Processed</span>
@@ -294,4 +309,27 @@ export default function AdminPanel({ currentUser, onBack }: AdminPanelProps) {
       )}
     </div>
   )
+  } catch (error) {
+    console.error('Error rendering AdminPanel:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    return (
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center py-8">
+            <h1 className="text-3xl font-bold text-red-600">Error Loading Admin Panel</h1>
+            <p className="text-gray-600 mt-2">
+              Failed to load the admin panel data. Please try again later.
+            </p>
+            <p className="text-gray-500 mt-4">Error details: {errorMessage}</p>
+            <button
+              onClick={handleRefresh}
+              className="mt-6 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
+            >
+              🔄 Retry
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
 } 
