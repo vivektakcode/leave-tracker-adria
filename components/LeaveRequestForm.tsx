@@ -38,6 +38,14 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
     if (startDate && endDate) {
       const start = new Date(startDate)
       const end = new Date(endDate)
+      
+      // Handle same-day requests
+      if (startDate === endDate) {
+        const finalDays = isHalfDay ? 0.5 : 1
+        setNumberOfDays(finalDays)
+        return
+      }
+      
       const diffTime = Math.abs(end.getTime() - start.getTime())
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
       const calculatedDays = diffDays + 1 // Include both start and end dates
@@ -66,10 +74,11 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
     const endDateObj = new Date(endDate)
     const currentDate = new Date()
     
-    console.log('Validation check:', {
+    console.log('🔍 Detailed Validation Check:', {
       startDate,
       endDate,
       reason: reason.trim(),
+      reasonLength: reason.trim().length,
       numberOfDays,
       availableBalance: getAvailableBalance(),
       startDateObj: startDateObj.toISOString(),
@@ -78,12 +87,14 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
       dateValid: startDateObj <= endDateObj,
       futureDate: startDateObj >= currentDate,
       balanceValid: numberOfDays <= getAvailableBalance(),
-      reasonValid: reason.trim().length > 0
+      reasonValid: reason.trim().length > 0,
+      isHalfDay,
+      sameDay: startDate === endDate
     })
     
     // Check each validation step individually
     if (!startDate || !endDate || !reason.trim()) {
-      console.log('❌ Basic fields missing')
+      console.log('❌ Basic fields missing:', { startDate: !!startDate, endDate: !!endDate, reason: !!reason.trim() })
       return false
     }
     
@@ -93,7 +104,7 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
     }
     
     if (numberOfDays > getAvailableBalance()) {
-      console.log('❌ Insufficient leave balance')
+      console.log('❌ Insufficient leave balance:', { requested: numberOfDays, available: getAvailableBalance() })
       return false
     }
     

@@ -123,6 +123,16 @@ export default function LeaveBalanceDashboard({ employee }: LeaveBalanceDashboar
           </p>
         </div>
 
+        {/* Total Days Summary */}
+        <div className="mb-6">
+          <div className="card-professional shadow-elevated text-center p-6">
+            <div className="text-4xl font-bold text-orange-500 mb-2">
+              {leaveBalance.casual_leave + leaveBalance.sick_leave + leaveBalance.privilege_leave}
+            </div>
+            <div className="text-lg text-gray-600">Total Days Available</div>
+          </div>
+        </div>
+
         {/* Leave Balance Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           {/* Casual Leave */}
@@ -243,23 +253,11 @@ export default function LeaveBalanceDashboard({ employee }: LeaveBalanceDashboar
           )}
         </div>
 
-        {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div className="card-professional shadow-elevated text-center">
-            <div className="text-2xl font-bold text-orange-500">{leaveBalance.casual_leave + leaveBalance.sick_leave + leaveBalance.privilege_leave}</div>
-            <div className="text-sm text-gray-500">Total Days Available</div>
-          </div>
-          <div className="card-professional shadow-elevated text-center">
-            <div className="text-2xl font-bold text-orange-500">{leaveBalance.casual_leave}</div>
-            <div className="text-sm text-gray-500">Casual Leave (Used: {usedDays.casual})</div>
-          </div>
-          <div className="card-professional shadow-elevated text-center">
-            <div className="text-2xl font-bold text-gray-500">{leaveBalance.sick_leave}</div>
-            <div className="text-sm text-gray-500">Sick Leave (Used: {usedDays.sick})</div>
-          </div>
-          <div className="card-professional shadow-elevated text-center">
-            <div className="text-2xl font-bold text-orange-600">{leaveBalance.privilege_leave}</div>
-            <div className="text-sm text-gray-500">Privilege Leave (Used: {usedDays.privilege})</div>
+        {/* Recent Requests Preview */}
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Recent Leave Requests</h2>
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <MyRequestsList employeeId={employee.id} compact={true} />
           </div>
         </div>
       </div>
