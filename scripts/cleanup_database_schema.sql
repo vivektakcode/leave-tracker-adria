@@ -96,7 +96,57 @@ WHERE status = 'pending'
 -- 5. ADD CONSTRAINTS TO PREVENT DUPLICATES
 -- ===========================================
 
--- Create unique constraint to prevent duplicate leave requests for same user on same dates
+-- First, resolve any existing duplicates before creating the constraint
+-- This will keep the most recent request and reject others
+
+DO $$
+DECLARE
+  duplicate_record RECORD;
+  latest_id UUID;
+BEGIN
+  FOR duplicate_record IN 
+    SELECT 
+      user_id,
+      start_date,
+      end_date,
+      status
+    FROM leave_requests
+    WHERE status IN ('pending', 'approved')
+    GROUP BY user_id, start_date, end_date, status
+    HAVING COUNT(*) > 1
+  LOOP
+    -- Get the ID of the most recent request
+    SELECT id INTO latest_id
+    FROM leave_requests
+    WHERE user_id = duplicate_record.user_id
+      AND start_date = duplicate_record.start_date
+      AND end_date = duplicate_record.end_date
+      AND status = duplicate_record.status
+    ORDER BY requested_at DESC
+    LIMIT 1;
+    
+    -- Reject all other duplicate requests
+    UPDATE leave_requests
+    SET 
+      status = 'rejected',
+      processed_at = NOW(),
+      processed_by = user_id, -- Self-rejection
+      comments = 'Automatically rejected due to duplicate request - keeping most recent'
+    WHERE user_id = duplicate_record.user_id
+      AND start_date = duplicate_record.start_date
+      AND end_date = duplicate_record.end_date
+      AND status = duplicate_record.status
+      AND id != latest_id;
+      
+    RAISE NOTICE 'Resolved duplicates for user %, dates % to %, kept request %', 
+      duplicate_record.user_id, 
+      duplicate_record.start_date, 
+      duplicate_record.end_date, 
+      latest_id;
+  END LOOP;
+END $$;
+
+-- Now create unique constraint to prevent future duplicates
 CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_user_dates 
 ON leave_requests (user_id, start_date, end_date, status) 
 WHERE status IN ('pending', 'approved');
