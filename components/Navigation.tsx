@@ -42,22 +42,6 @@ export default function Navigation({ userEmail, role }: NavigationProps) {
           
           {/* Navigation Links */}
           <div className="flex items-center space-x-4">
-            {role === 'manager' && (
-              <>
-                <button
-                  onClick={() => router.push('/admin/dashboard')}
-                  className="text-white/80 hover:text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
-                >
-                  Dashboard
-                </button>
-                <button
-                  onClick={() => router.push('/admin/users')}
-                  className="text-white/80 hover:text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
-                >
-                  Manage Users
-                </button>
-              </>
-            )}
             {role === 'employee' && (
               <button
                 onClick={() => router.push('/user/dashboard')}
