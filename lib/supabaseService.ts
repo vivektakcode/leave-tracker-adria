@@ -88,7 +88,7 @@ export async function getAllUsers(): Promise<User[]> {
     const { data, error } = await supabase
       .from('users')
       .select('*')
-      .order('created_at', { ascending: false })
+      .order('name', { ascending: true })
 
     if (error) {
       console.error('Error getting all users:', error)
@@ -98,6 +98,32 @@ export async function getAllUsers(): Promise<User[]> {
     return data as User[] || []
   } catch (error) {
     console.error('Error getting all users:', error)
+    return []
+  }
+}
+
+export async function getAllUsersWithLeaveBalances(): Promise<any[]> {
+  try {
+    const { data, error } = await supabase
+      .from('users')
+      .select(`
+        *,
+        leave_balances:user_id (
+          casual_leave,
+          sick_leave,
+          privilege_leave
+        )
+      `)
+      .order('name', { ascending: true })
+
+    if (error) {
+      console.error('Error getting users with leave balances:', error)
+      return []
+    }
+
+    return data || []
+  } catch (error) {
+    console.error('Error getting users with leave balances:', error)
     return []
   }
 }
@@ -287,6 +313,34 @@ export async function getAllLeaveRequests(): Promise<LeaveRequest[]> {
     return data as LeaveRequest[] || []
   } catch (error) {
     console.error('Error getting all leave requests:', error)
+    return []
+  }
+}
+
+export async function getAllLeaveRequestsWithUserDetails(): Promise<any[]> {
+  try {
+    const { data, error } = await supabase
+      .from('leave_requests')
+      .select(`
+        *,
+        users:user_id (
+          id,
+          name,
+          email,
+          department,
+          role
+        )
+      `)
+      .order('requested_at', { ascending: false })
+
+    if (error) {
+      console.error('Error getting leave requests with user details:', error)
+      return []
+    }
+
+    return data || []
+  } catch (error) {
+    console.error('Error getting leave requests with user details:', error)
     return []
   }
 }

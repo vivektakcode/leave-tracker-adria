@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react'
 import {
   User,
-  getAllUsers,
-  getAllLeaveRequests,
+  getAllUsersWithLeaveBalances,
+  getAllLeaveRequestsWithUserDetails,
   processLeaveRequest
 } from '../lib/supabaseService'
 
@@ -16,7 +16,7 @@ interface AdminPanelProps {
 export default function AdminPanel({ currentUser, onBack }: AdminPanelProps) {
   console.log('AdminPanel rendering with currentUser:', currentUser)
   
-  const [users, setUsers] = useState<User[]>([])
+  const [users, setUsers] = useState<any[]>([])
   const [requests, setRequests] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedRequest, setSelectedRequest] = useState<any>(null)
@@ -30,8 +30,8 @@ export default function AdminPanel({ currentUser, onBack }: AdminPanelProps) {
       try {
         console.log('Fetching admin data...')
         const [requestsData, usersData] = await Promise.all([
-          getAllLeaveRequests(),
-          getAllUsers()
+          getAllLeaveRequestsWithUserDetails(),
+          getAllUsersWithLeaveBalances()
         ])
         console.log('Admin data fetched:', { requests: requestsData, users: usersData })
         setRequests(requestsData)
@@ -52,8 +52,8 @@ export default function AdminPanel({ currentUser, onBack }: AdminPanelProps) {
     setLoading(true)
     try {
       const [requestsData, usersData] = await Promise.all([
-        getAllLeaveRequests(),
-        getAllUsers()
+        getAllLeaveRequestsWithUserDetails(),
+        getAllUsersWithLeaveBalances()
       ])
       setRequests(requestsData)
       setUsers(usersData)
@@ -184,7 +184,10 @@ export default function AdminPanel({ currentUser, onBack }: AdminPanelProps) {
                   {requests.map((request) => (
                     <tr key={request.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <h4 className="font-medium text-gray-900">{request.user_id}</h4>
+                        <div>
+                          <h4 className="font-medium text-gray-900">{request.users?.name || 'Unknown User'}</h4>
+                          <p className="text-sm text-gray-500">{request.users?.department || 'N/A'}</p>
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getLeaveTypeColor(request.leave_type)}`}>
@@ -237,11 +240,40 @@ export default function AdminPanel({ currentUser, onBack }: AdminPanelProps) {
                   </div>
                   <div className="text-right">
                     <div className="text-sm text-gray-500">
-                      N/A
+                      {user.leave_balances ? (
+                        <div>
+                          <div className="font-semibold text-orange-500">
+                            {user.leave_balances.casual_leave + user.leave_balances.sick_leave + user.leave_balances.privilege_leave}
+                          </div>
+                          <div className="text-xs text-gray-400">Total Days</div>
+                        </div>
+                      ) : (
+                        <div>
+                          <div className="text-sm text-gray-400">N/A</div>
+                          <div className="text-xs text-gray-400">Total Days</div>
+                        </div>
+                      )}
                     </div>
-                    <div className="text-xs text-gray-400">Total Days</div>
                   </div>
                 </div>
+                {user.leave_balances && (
+                  <div className="mt-3 pt-3 border-t border-gray-200">
+                    <div className="grid grid-cols-3 gap-2 text-xs">
+                      <div className="text-center">
+                        <div className="font-medium text-orange-500">{user.leave_balances.casual_leave}</div>
+                        <div className="text-gray-500">Casual</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="font-medium text-gray-500">{user.leave_balances.sick_leave}</div>
+                        <div className="text-gray-500">Sick</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="font-medium text-orange-600">{user.leave_balances.privilege_leave}</div>
+                        <div className="text-gray-500">Privilege</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -255,7 +287,7 @@ export default function AdminPanel({ currentUser, onBack }: AdminPanelProps) {
             <div className="mt-3">
               <h3 className="text-lg font-medium text-gray-900 mb-4">Process Leave Request</h3>
               <p className="text-sm text-gray-600 mb-4">
-                <strong>User {selectedRequest.user_id}</strong> is requesting {selectedRequest.leave_type} leave
+                <strong>{selectedRequest.users?.name || 'Unknown User'}</strong> is requesting {selectedRequest.leave_type} leave
               </p>
               
               <div className="mb-4">
