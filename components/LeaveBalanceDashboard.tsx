@@ -40,7 +40,24 @@ export default function LeaveBalanceDashboard({ employee }: LeaveBalanceDashboar
         }
 
         approvedRequests.forEach(request => {
-          const days = request.is_half_day ? 0.5 : 1
+          // Calculate actual days for the request period
+          let days = 0
+          
+          if (request.is_half_day && request.start_date === request.end_date) {
+            // Single day half-day request
+            days = 0.5
+          } else {
+            // Multi-day or full-day request
+            const startDate = new Date(request.start_date)
+            const endDate = new Date(request.end_date)
+            const diffTime = Math.abs(endDate.getTime() - startDate.getTime())
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+            days = diffDays + 1 // Include both start and end dates
+          }
+          
+          // Debug logging
+          console.log(`📅 Leave Request: ${request.leave_type} from ${request.start_date} to ${request.end_date} = ${days} days`)
+          
           switch (request.leave_type) {
             case 'casual':
               calculatedUsedDays.casual += days
@@ -53,6 +70,8 @@ export default function LeaveBalanceDashboard({ employee }: LeaveBalanceDashboar
               break
           }
         })
+        
+        console.log('📊 Calculated Used Days:', calculatedUsedDays)
 
         setUsedDays(calculatedUsedDays)
       } catch (error) {
