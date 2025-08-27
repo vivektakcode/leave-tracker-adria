@@ -182,8 +182,8 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
   const getLeaveTypeColor = (type: string) => {
     switch (type) {
       case 'casual': return 'border-orange-500 text-orange-700'
-      case 'sick': return 'border-gray-500 text-gray-700'
-      case 'privilege': return 'border-orange-600 text-orange-700'
+      case 'sick': return 'border-orange-500 text-orange-700'
+      case 'privilege': return 'border-orange-500 text-orange-700'
       default: return 'border-gray-300 text-gray-700'
     }
   }
@@ -191,7 +191,7 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
   const getLeaveTypeBg = (type: string) => {
     switch (type) {
       case 'casual': return 'bg-orange-50'
-      case 'sick': return 'bg-gray-50'
+      case 'sick': return 'bg-orange-50'
       case 'privilege': return 'bg-orange-50'
       default: return 'bg-gray-50'
     }
@@ -299,14 +299,14 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
             </div>
 
             {/* Information about duplicate prevention */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
               <div className="flex items-start space-x-3">
                 <div className="flex-shrink-0">
-                  <svg className="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                  <svg className="h-5 w-5 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M18 10a8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a0 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                   </svg>
                 </div>
-                <div className="text-sm text-blue-700">
+                <div className="text-sm text-orange-700">
                   <p className="font-medium">Leave Request Rules:</p>
                   <ul className="mt-1 space-y-1 text-xs">
                     <li>• You can apply for leave on any date (including past dates)</li>
@@ -321,17 +321,20 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
 
             {/* Manager Information */}
             {managerInfo && (
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
                 <div className="flex items-start space-x-3">
                   <div className="flex-shrink-0">
-                    <svg className="h-5 w-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" clipRule="evenodd" />
+                    <svg className="h-5 w-5 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
                     </svg>
                   </div>
-                  <div className="text-sm text-green-700">
-                    <p className="font-medium">Your Leave Request Will Be Sent To:</p>
-                    <p className="mt-1 font-semibold">{managerInfo.name}</p>
-                    <p className="text-xs text-green-600">{managerInfo.department}</p>
+                  <div className="text-sm text-gray-700">
+                    <p className="font-medium text-gray-900">Leave Request Recipient:</p>
+                    <div className="mt-2 p-3 bg-white border border-gray-100 rounded-md">
+                      <p className="font-semibold text-gray-900">{managerInfo.name}</p>
+                      <p className="text-xs text-gray-600 font-medium">{managerInfo.department}</p>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-2">Your request will be reviewed by this manager</p>
                   </div>
                 </div>
               </div>
@@ -428,11 +431,11 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
               <div className="text-sm text-gray-500">Casual Leave</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-gray-500">{leaveBalance.sick_leave}</div>
+              <div className="text-2xl font-bold text-orange-500">{leaveBalance.sick_leave}</div>
               <div className="text-sm text-gray-500">Sick Leave</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-orange-600">{leaveBalance.privilege_leave}</div>
+              <div className="text-2xl font-bold text-orange-500">{leaveBalance.privilege_leave}</div>
               <div className="text-sm text-gray-500">Privilege Leave</div>
             </div>
           </div>
