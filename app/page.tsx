@@ -3,8 +3,10 @@
 import { useState } from 'react'
 import { useAuth } from '../contexts/JsonAuthContext'
 import LeaveBalanceDashboard from '../components/LeaveBalanceDashboard'
+import SignupForm from '../components/SignupForm'
 
 export default function LoginPage() {
+  const [showSignup, setShowSignup] = useState(true)
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -63,6 +65,11 @@ export default function LoginPage() {
     )
   }
 
+  // Show signup form first
+  if (showSignup) {
+    return <SignupForm onSwitchToLogin={() => setShowSignup(false)} />
+  }
+
   // Show login form
   return (
     <div className="min-h-screen gradient-bg flex items-center justify-center px-4">
@@ -74,10 +81,10 @@ export default function LoginPage() {
             </svg>
           </div>
           <h1 className="text-4xl font-bold text-gradient mb-2">
-            Leave Tracker
+            Welcome Back
           </h1>
           <p className="text-gray-600 text-lg">
-            Welcome back! Please sign in to continue.
+            Sign in to your Leave Tracker account
           </p>
         </div>
 
@@ -129,18 +136,20 @@ export default function LoginPage() {
 
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
-              Demo Credentials:
+              Don't have an account?{' '}
+              <button
+                onClick={() => setShowSignup(true)}
+                className="text-orange-600 hover:text-orange-700 font-medium"
+              >
+                Create one here
+              </button>
             </p>
-            <div className="mt-2 space-y-1 text-xs text-gray-500">
-              <p><strong>Manager:</strong> manager1 / manager123</p>
-              <p><strong>Employee:</strong> employee1 / emp123</p>
-            </div>
           </div>
         </div>
 
         <div className="text-center text-sm text-gray-500">
-          <p>🚀 Simple JSON-based authentication for v1</p>
-          <p>📱 Works on all devices • 🔒 Secure login</p>
+          <p>🔐 Secure login to your Leave Tracker account</p>
+          <p>📱 Works on all devices • 🚀 Fast and reliable</p>
         </div>
       </div>
     </div>

@@ -103,6 +103,27 @@ export async function getAllUsers(): Promise<User[]> {
 
 export async function createUser(userData: Omit<User, 'id' | 'created_at'>): Promise<string> {
   try {
+    // Check if username or email already exists
+    const { data: existingUser, error: checkError } = await supabase
+      .from('users')
+      .select('username, email')
+      .or(`username.eq.${userData.username},email.eq.${userData.email}`)
+      .limit(1)
+
+    if (checkError) {
+      console.error('Error checking existing user:', checkError)
+      throw new Error('Failed to check existing user')
+    }
+
+    if (existingUser && existingUser.length > 0) {
+      if (existingUser[0].username === userData.username) {
+        throw new Error('Username already exists')
+      }
+      if (existingUser[0].email === userData.email) {
+        throw new Error('Email already exists')
+      }
+    }
+
     const { data, error } = await supabase
       .from('users')
       .insert([userData])
@@ -118,7 +139,7 @@ export async function createUser(userData: Omit<User, 'id' | 'created_at'>): Pro
     return data.id
   } catch (error) {
     console.error('Error creating user:', error)
-    throw new Error('Failed to create user')
+    throw error
   }
 }
 
