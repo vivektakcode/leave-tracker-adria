@@ -1,25 +1,40 @@
 'use client'
 
-import { useState } from 'react'
-import { createUser } from '../lib/supabaseService'
+import { useState, useEffect } from 'react'
+import { createUser, getAllUsers } from '../lib/supabaseService'
 
 interface SignupFormProps {
-  onSwitchToLogin: () => void
+  // Removed onSwitchToLogin requirement
 }
 
-export default function SignupForm({ onSwitchToLogin }: SignupFormProps) {
+export default function SignupForm({}: SignupFormProps) {
   const [formData, setFormData] = useState({
     username: '',
     password: '',
-    confirmPassword: '',
     name: '',
     email: '',
     department: '',
-    role: 'employee' as 'manager' | 'employee'
+    role: 'employee' as 'manager' | 'employee',
+    manager_id: ''
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [managers, setManagers] = useState<any[]>([])
+
+  // Fetch managers when component mounts
+  useEffect(() => {
+    const fetchManagers = async () => {
+      try {
+        const allUsers = await getAllUsers()
+        const managerUsers = allUsers.filter(user => user.role === 'manager')
+        setManagers(managerUsers)
+      } catch (error) {
+        console.error('Error fetching managers:', error)
+      }
+    }
+    fetchManagers()
+  }, [])
 
   const departments = [
     'Engineering',
@@ -41,8 +56,13 @@ export default function SignupForm({ onSwitchToLogin }: SignupFormProps) {
   }
 
   const validateForm = () => {
-    if (!formData.username.trim() || !formData.password || !formData.name.trim() || !formData.email.trim() || !formData.department) {
+    if (!formData.username || !formData.password || !formData.name || !formData.email || !formData.department) {
       setError('Please fill in all required fields')
+      return false
+    }
+
+    if (formData.username.length < 3) {
+      setError('Username must be at least 3 characters long')
       return false
     }
 
@@ -51,13 +71,14 @@ export default function SignupForm({ onSwitchToLogin }: SignupFormProps) {
       return false
     }
 
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match')
+    if (!formData.email.includes('@')) {
+      setError('Please enter a valid email address')
       return false
     }
 
-    if (!formData.email.includes('@')) {
-      setError('Please enter a valid email address')
+    // Require manager_id for employees
+    if (formData.role === 'employee' && !formData.manager_id) {
+      setError('Please select a manager')
       return false
     }
 
@@ -90,16 +111,16 @@ export default function SignupForm({ onSwitchToLogin }: SignupFormProps) {
       setFormData({
         username: '',
         password: '',
-        confirmPassword: '',
         name: '',
         email: '',
         department: '',
-        role: 'employee'
+        role: 'employee',
+        manager_id: ''
       })
 
       // Auto-switch to login after 2 seconds
       setTimeout(() => {
-        onSwitchToLogin()
+        // onSwitchToLogin() // This line is removed as per the edit hint
       }, 2000)
 
     } catch (error: any) {
@@ -207,23 +228,52 @@ export default function SignupForm({ onSwitchToLogin }: SignupFormProps) {
                 </select>
               </div>
 
-              {/* Role */}
+              {/* Role Selection */}
               <div>
-                <label htmlFor="role" className="block text-sm font-semibold text-gray-700 mb-3">
+                <label className="block text-sm font-semibold text-gray-700 mb-3">
                   Role *
                 </label>
-                <select
-                  id="role"
-                  name="role"
-                  required
-                  value={formData.role}
-                  onChange={handleInputChange}
-                  className="input-professional focus-ring"
-                >
-                  <option value="employee">Employee</option>
-                  <option value="manager">Manager</option>
-                </select>
+                <div className="grid grid-cols-2 gap-3">
+                  {(['employee', 'manager'] as const).map((role) => (
+                    <button
+                      key={role}
+                      type="button"
+                      onClick={() => setFormData({ ...formData, role })}
+                      className={`p-3 border-2 rounded-lg text-center transition-all duration-200 ${
+                        formData.role === role 
+                          ? 'border-orange-500 bg-orange-50 text-orange-700' 
+                          : 'border-gray-300 text-gray-700 hover:border-gray-400'
+                      }`}
+                    >
+                      <div className="text-sm font-semibold capitalize">{role}</div>
+                    </button>
+                  ))}
+                </div>
               </div>
+
+              {/* Manager Selection (only for employees) */}
+              {formData.role === 'employee' && managers.length > 0 && (
+                <div>
+                  <label htmlFor="manager_id" className="block text-sm font-semibold text-gray-700 mb-3">
+                    Manager *
+                  </label>
+                  <select
+                    id="manager_id"
+                    name="manager_id"
+                    required
+                    value={formData.manager_id}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+                  >
+                    <option value="">Select your manager</option>
+                    {managers.map((manager) => (
+                      <option key={manager.id} value={manager.id}>
+                        {manager.name} ({manager.department})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
 
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -246,23 +296,6 @@ export default function SignupForm({ onSwitchToLogin }: SignupFormProps) {
                 onChange={handleInputChange}
                 className="input-professional focus-ring"
                 placeholder="Create a password (min 6 characters)"
-              />
-            </div>
-
-            {/* Confirm Password */}
-            <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-semibold text-gray-700 mb-3">
-                Confirm Password *
-              </label>
-              <input
-                id="confirmPassword"
-                name="confirmPassword"
-                type="password"
-                required
-                value={formData.confirmPassword}
-                onChange={handleInputChange}
-                className="input-professional focus-ring"
-                placeholder="Confirm your password"
               />
             </div>
 
@@ -301,7 +334,7 @@ export default function SignupForm({ onSwitchToLogin }: SignupFormProps) {
             <p className="text-sm text-gray-600">
               Already have an account?{' '}
               <button
-                onClick={onSwitchToLogin}
+                // onClick={onSwitchToLogin} // This line is removed as per the edit hint
                 className="text-orange-600 hover:text-orange-700 font-semibold transition-colors duration-200"
               >
                 Sign in here

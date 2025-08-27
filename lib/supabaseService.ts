@@ -14,6 +14,7 @@ export interface User {
   email: string
   role: 'manager' | 'employee'
   department: string
+  manager_id?: string  // Added manager relationship
   created_at: string
 }
 
@@ -99,6 +100,26 @@ export async function getAllUsers(): Promise<User[]> {
     return data as User[] || []
   } catch (error) {
     console.error('Error getting all users:', error)
+    throw new Error('Failed to get users')
+  }
+}
+
+export async function getUsersByManager(managerId: string): Promise<User[]> {
+  try {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('manager_id', managerId)
+      .order('name', { ascending: true })
+
+    if (error) {
+      console.error('Error getting users by manager:', error)
+      return []
+    }
+
+    return data as User[] || []
+  } catch (error) {
+    console.error('Error getting users by manager:', error)
     return []
   }
 }
@@ -126,9 +147,30 @@ export async function createUser(userData: Omit<User, 'id' | 'created_at'>): Pro
       }
     }
 
+    // Validate manager_id if provided
+    if (userData.manager_id) {
+      const { data: managerData, error: managerError } = await supabase
+        .from('users')
+        .select('id, role')
+        .eq('id', userData.manager_id)
+        .single()
+
+      if (managerError || !managerData) {
+        throw new Error('Invalid manager ID')
+      }
+
+      if (managerData.role !== 'manager') {
+        throw new Error('Manager ID must reference a user with manager role')
+      }
+    }
+
     const { data, error } = await supabase
       .from('users')
-      .insert([userData])
+      .insert([{
+        ...userData,
+        id: crypto.randomUUID(),
+        created_at: new Date().toISOString()
+      }])
       .select('id')
       .single()
 
@@ -141,7 +183,7 @@ export async function createUser(userData: Omit<User, 'id' | 'created_at'>): Pro
     return data.id
   } catch (error) {
     console.error('Error creating user:', error)
-    throw error
+    throw new Error(error instanceof Error ? error.message : 'Failed to create user')
   }
 }
 
@@ -301,6 +343,35 @@ export async function getAllLeaveRequests(): Promise<LeaveRequest[]> {
     return data as LeaveRequest[] || []
   } catch (error) {
     console.error('Error getting all leave requests:', error)
+    return []
+  }
+}
+
+export async function getLeaveRequestsByManager(managerId: string): Promise<LeaveRequest[]> {
+  try {
+    // First get all users managed by this manager
+    const managedUsers = await getUsersByManager(managerId)
+    const managedUserIds = managedUsers.map(user => user.id)
+
+    if (managedUserIds.length === 0) {
+      return []
+    }
+
+    // Then get leave requests for those users
+    const { data, error } = await supabase
+      .from('leave_requests')
+      .select('*')
+      .in('user_id', managedUserIds)
+      .order('requested_at', { ascending: false })
+
+    if (error) {
+      console.error('Error getting leave requests by manager:', error)
+      return []
+    }
+
+    return data as LeaveRequest[] || []
+  } catch (error) {
+    console.error('Error getting leave requests by manager:', error)
     return []
   }
 }

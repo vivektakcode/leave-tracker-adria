@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { User, getAllLeaveRequests, processLeaveRequest } from '../lib/supabaseService'
+import { User, getLeaveRequestsByManager, processLeaveRequest } from '../lib/supabaseService'
 
 interface AdminPanelProps {
   currentUser: User
@@ -21,7 +21,7 @@ export default function AdminPanel({ currentUser, onBack }: AdminPanelProps) {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const requestsData = await getAllLeaveRequests()
+        const requestsData = await getLeaveRequestsByManager(currentUser.id)
         setRequests(requestsData)
         setError('')
       } catch (error) {
@@ -38,7 +38,7 @@ export default function AdminPanel({ currentUser, onBack }: AdminPanelProps) {
   const handleRefresh = async () => {
     setLoading(true)
     try {
-      const requestsData = await getAllLeaveRequests()
+      const requestsData = await getLeaveRequestsByManager(currentUser.id)
       setRequests(requestsData)
     } catch (error) {
       console.error('Error refreshing data:', error)
