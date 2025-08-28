@@ -1,7 +1,6 @@
 import './globals.css'
 import { Inter } from 'next/font/google'
 import { AuthProvider } from '../contexts/JsonAuthContext'
-import ThreeJSBackground from '../components/ThreeJSBackground'
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -23,7 +22,6 @@ export default function RootLayout({
     <html lang="en" className={inter.variable}>
       <body className={`${inter.className} gradient-bg`}>
         <AuthProvider>
-          <ThreeJSBackground />
           <div className="min-h-screen relative z-10">
             {children}
           </div>
