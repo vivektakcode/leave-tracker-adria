@@ -27,7 +27,7 @@ export default function Navigation({ userEmail, role }: NavigationProps) {
           <div className="flex items-center space-x-4">
             <div className="h-12 w-12 flex items-center justify-center">
               <img 
-                src="/assets/Adria_logo.png" 
+                src="/Adria_logo.png" 
                 alt="Adria Logo" 
                 className="h-full w-full object-contain"
               />
