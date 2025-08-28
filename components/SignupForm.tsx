@@ -122,22 +122,22 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
   return (
     <div className="max-w-4xl mx-auto">
       {/* Header */}
-      <div className="text-center mb-8 lg:mb-12">
-        <div className="mx-auto h-16 w-16 bg-gradient-to-br from-orange-400 to-orange-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
-          <svg className="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className="text-center mb-6">
+        <div className="mx-auto h-12 w-12 bg-gradient-to-br from-orange-400 to-orange-600 rounded-xl flex items-center justify-center mb-4 shadow-lg">
+          <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
           </svg>
         </div>
-        <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-3">Join Leave Tracker</h1>
-        <p className="text-lg text-gray-600">Create your professional account</p>
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">Join Leave Tracker</h1>
+        <p className="text-sm text-gray-600">Create your professional account</p>
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="space-y-8">
+      <form onSubmit={handleSubmit} className="space-y-4">
         {/* Name and Username Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="name" className="block text-sm font-semibold text-gray-700 mb-3">
+            <label htmlFor="name" className="block text-sm font-semibold text-gray-700 mb-2">
               Full Name *
             </label>
             <input
@@ -147,13 +147,13 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
               required
               value={formData.name}
               onChange={handleInputChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 text-gray-900 placeholder-gray-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 text-gray-900 placeholder-gray-500"
               placeholder="Enter your full name"
             />
           </div>
 
           <div>
-            <label htmlFor="username" className="block text-sm font-semibold text-gray-700 mb-3">
+            <label htmlFor="username" className="block text-sm font-semibold text-gray-700 mb-2">
               Username *
             </label>
             <input
@@ -163,16 +163,16 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
               required
               value={formData.username}
               onChange={handleInputChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 text-gray-900 placeholder-gray-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 text-gray-900 placeholder-gray-500"
               placeholder="Choose a username"
             />
           </div>
         </div>
 
         {/* Email and Department Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-3">
+            <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
               Email *
             </label>
             <input
@@ -182,13 +182,13 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
               required
               value={formData.email}
               onChange={handleInputChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 text-gray-900 placeholder-gray-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 text-gray-900 placeholder-gray-500"
               placeholder="Enter your email"
             />
           </div>
 
           <div>
-            <label htmlFor="department" className="block text-sm font-semibold text-gray-700 mb-3">
+            <label htmlFor="department" className="block text-sm font-semibold text-gray-700 mb-2">
               Department *
             </label>
             <select
@@ -197,7 +197,7 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
               required
               value={formData.department}
               onChange={handleInputChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 text-gray-900 bg-white"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 text-gray-900 bg-white"
             >
               <option value="">Select department</option>
               {departments.map((dept) => (
@@ -209,23 +209,23 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
 
         {/* Role Selection */}
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-4">
+          <label className="block text-sm font-semibold text-gray-700 mb-3">
             Role *
           </label>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {(['employee', 'manager'] as const).map((role) => (
               <button
                 key={role}
                 type="button"
                 onClick={() => setFormData({ ...formData, role, manager_id: role === 'manager' ? '' : formData.manager_id })}
-                className={`p-6 border-2 rounded-xl text-center transition-all duration-200 ${
+                className={`p-4 border-2 rounded-lg text-center transition-all duration-200 ${
                   formData.role === role 
                     ? 'border-orange-500 bg-orange-50 text-orange-700 shadow-md' 
                     : 'border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-50'
                 }`}
               >
-                <div className="text-lg font-semibold capitalize mb-2">{role}</div>
-                <div className="text-sm text-gray-600">
+                <div className="text-base font-semibold capitalize mb-1">{role}</div>
+                <div className="text-xs text-gray-600">
                   {role === 'manager' ? 'Can approve requests' : 'Can submit requests'}
                 </div>
               </button>
@@ -236,7 +236,7 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
         {/* Manager Selection (only for employees) */}
         {formData.role === 'employee' && managers.length > 0 && (
           <div>
-            <label htmlFor="manager_id" className="block text-sm font-semibold text-gray-700 mb-3">
+            <label htmlFor="manager_id" className="block text-sm font-semibold text-gray-700 mb-2">
               Manager *
             </label>
             <select
@@ -245,7 +245,7 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
               required
               value={formData.manager_id}
               onChange={handleInputChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 text-gray-900 bg-white"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 text-gray-900 bg-white"
             >
               <option value="">Select your manager</option>
               {managers.map((manager) => (
@@ -254,7 +254,7 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
                 </option>
               ))}
             </select>
-            <p className="text-sm text-gray-500 mt-2">
+            <p className="text-xs text-gray-500 mt-1">
               Your manager will review and approve your leave requests
             </p>
           </div>
@@ -262,7 +262,7 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
 
         {/* Password */}
         <div>
-          <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-3">
+          <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
             Password *
           </label>
           <input
@@ -272,23 +272,23 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
             required
             value={formData.password}
             onChange={handleInputChange}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 text-gray-900 placeholder-gray-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 text-gray-900 placeholder-gray-500"
             placeholder="Create a password (min 6 characters)"
           />
-          <p className="text-sm text-gray-500 mt-2">
+          <p className="text-xs text-gray-500 mt-1">
             Password must be at least 6 characters long
           </p>
         </div>
 
         {/* Error/Success Messages */}
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm font-medium">
+          <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-lg text-sm font-medium">
             {error}
           </div>
         )}
 
         {success && (
-          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm font-medium">
+          <div className="bg-green-50 border border-green-200 text-green-700 px-3 py-2 rounded-lg text-sm font-medium">
             {success}
           </div>
         )}
@@ -297,11 +297,11 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+          className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
         >
           {loading ? (
             <div className="flex items-center justify-center space-x-2">
-              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
               <span>Creating Account...</span>
             </div>
           ) : (
