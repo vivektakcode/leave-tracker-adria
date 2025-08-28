@@ -1,32 +1,25 @@
 import { Resend } from 'resend';
-import nodemailer from 'nodemailer';
 
 // Initialize Resend client lazily to avoid build-time errors
 let resend: Resend | null = null;
-let gmailTransporter: nodemailer.Transporter | null = null;
 
 function getResendClient(): Resend | null {
   const apiKey = process.env.RESEND_API_KEY;
   
+  console.log('🔍 getResendClient called');
+  console.log('🔍 RESEND_API_KEY exists:', !!apiKey);
+  console.log('🔍 RESEND_API_KEY value:', apiKey ? `${apiKey.substring(0, 10)}...` : 'NOT SET');
+  
   if (!resend && apiKey) {
+    console.log('✅ Creating new Resend client');
     resend = new Resend(apiKey);
+  } else if (!apiKey) {
+    console.log('❌ No API key found');
+  } else {
+    console.log('✅ Using existing Resend client');
   }
   
   return resend;
-}
-
-function getGmailTransporter(): nodemailer.Transporter | null {
-  if (!gmailTransporter && process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD) {
-    gmailTransporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.GMAIL_USER,
-        pass: process.env.GMAIL_APP_PASSWORD
-      }
-    });
-  }
-  
-  return gmailTransporter;
 }
 
 export interface EmailNotificationData {
@@ -43,46 +36,28 @@ export interface EmailNotificationData {
 
 export async function sendLeaveRequestNotification(data: EmailNotificationData): Promise<boolean> {
   try {
-    // Try Resend first
     const resendClient = getResendClient();
-    if (resendClient) {
-      try {
-        const { data: emailResult, error } = await resendClient.emails.send({
-          from: 'Leave Tracker <onboarding@resend.dev>',
-          to: [data.managerEmail],
-          subject: `Leave Request from ${data.employeeName} - Action Required`,
-          html: generateLeaveRequestEmailHTML(data),
-        });
-
-        if (!error) {
-          console.log('✅ Email sent successfully via Resend');
-          return true;
-        }
-        console.log('⚠️ Resend failed, trying Gmail fallback...');
-      } catch (resendError) {
-        console.log('⚠️ Resend error, trying Gmail fallback...');
-      }
+    if (!resendClient) {
+      console.error('❌ Resend client not initialized - API key missing');
+      return false;
     }
 
-    // Try Gmail as fallback
-    const gmailTransporter = getGmailTransporter();
-    if (gmailTransporter) {
-      try {
-        await gmailTransporter.sendMail({
-          from: process.env.GMAIL_USER,
-          to: data.managerEmail,
-          subject: `Leave Request from ${data.employeeName} - Action Required`,
-          html: generateLeaveRequestEmailHTML(data),
-        });
-        console.log('✅ Email sent successfully via Gmail');
-        return true;
-      } catch (gmailError) {
-        console.error('❌ Gmail also failed:', gmailError);
-      }
+    console.log('📧 Sending email via Resend to:', data.managerEmail);
+    
+    const { data: emailResult, error } = await resendClient.emails.send({
+      from: 'Leave Tracker <onboarding@resend.dev>',
+      to: [data.managerEmail],
+      subject: `Leave Request from ${data.employeeName} - Action Required`,
+      html: generateLeaveRequestEmailHTML(data),
+    });
+
+    if (error) {
+      console.error('❌ Resend API error:', error);
+      return false;
     }
 
-    console.error('❌ Both Resend and Gmail failed');
-    return false;
+    console.log('✅ Email sent successfully via Resend:', emailResult?.id);
+    return true;
   } catch (error) {
     console.error('❌ Unexpected error sending email:', error);
     return false;
