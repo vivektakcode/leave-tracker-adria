@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { User, createLeaveRequest, getLeaveBalance, getUserManager } from '../lib/supabaseService'
 import { isDateDisabled, getMinEndDate, getNextBusinessDay } from '../utils/dateUtils'
+import BusinessDatePicker from './BusinessDatePicker'
 
 interface LeaveRequestFormProps {
   employee: User
@@ -289,38 +290,26 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
               </div>
             </div>
 
-            {/* Date Selection */}
+                        {/* Date Selection */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 mb-2">
-                  Start Date * (Business Days Only)
-                </label>
-                <input
-                  id="startDate"
-                  type="date"
-                  required
+                <BusinessDatePicker
                   value={startDate}
-                  onChange={(e) => handleStartDateChange(e.target.value)}
-                  min={new Date().toISOString().split('T')[0]}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+                  onChange={handleStartDateChange}
+                  label="Start Date * (Business Days Only)"
+                  placeholder="Select start date"
                 />
-                <p className="text-xs text-gray-500 mt-1">Only Monday-Friday allowed</p>
+                <p className="text-xs text-gray-500 mt-1">Only Monday-Friday allowed (previous dates are allowed)</p>
               </div>
 
               <div>
-                <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 mb-2">
-                  End Date * (Business Days Only)
-                </label>
-                <input
-                  id="endDate"
-                  type="date"
-                  required
+                <BusinessDatePicker
                   value={endDate}
-                  onChange={(e) => handleEndDateChange(e.target.value)}
-                  min={getMinEndDate(startDate)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+                  onChange={handleEndDateChange}
+                  label="End Date * (Business Days Only)"
+                  placeholder="Select end date"
                 />
-                <p className="text-xs text-gray-500 mt-1">Only Monday-Friday allowed</p>
+                <p className="text-xs text-gray-500 mt-1">Only Monday-Friday allowed (must be after start date)</p>
               </div>
             </div>
 
