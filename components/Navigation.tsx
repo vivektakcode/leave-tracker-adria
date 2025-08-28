@@ -25,8 +25,12 @@ export default function Navigation({ userEmail, role }: NavigationProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           <div className="flex items-center space-x-4">
-            <div className="h-12 w-12 bg-gradient-to-br from-orange-400 to-orange-600 rounded-xl flex items-center justify-center shadow-lg">
-              <span className="text-white font-bold text-xl">A</span>
+            <div className="h-12 w-12 flex items-center justify-center">
+              <img 
+                src="/assets/Adria_logo.png" 
+                alt="Adria Logo" 
+                className="h-full w-full object-contain"
+              />
             </div>
             <div>
               <h1 className="text-2xl font-bold text-white">
