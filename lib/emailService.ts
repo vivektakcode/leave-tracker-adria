@@ -4,9 +4,27 @@ import { Resend } from 'resend';
 let resend: Resend | null = null;
 
 function getResendClient(): Resend | null {
-  if (!resend && process.env.RESEND_API_KEY) {
-    resend = new Resend(process.env.RESEND_API_KEY);
+  // Try multiple ways to get the API key
+  const apiKey = process.env.RESEND_API_KEY || 
+                 process.env.NEXT_PUBLIC_RESEND_API_KEY || 
+                 process.env.VERCEL_RESEND_API_KEY;
+  
+  // Debug: Log all available environment variables
+  console.log('🔍 Environment variables check:');
+  console.log('🔍 RESEND_API_KEY exists:', !!process.env.RESEND_API_KEY);
+  console.log('🔍 RESEND_API_KEY value:', process.env.RESEND_API_KEY ? 'SET' : 'NOT SET');
+  console.log('🔍 NEXT_PUBLIC_RESEND_API_KEY exists:', !!process.env.NEXT_PUBLIC_RESEND_API_KEY);
+  console.log('🔍 VERCEL_RESEND_API_KEY exists:', !!process.env.VERCEL_RESEND_API_KEY);
+  console.log('🔍 Final API key to use:', apiKey ? 'FOUND' : 'NOT FOUND');
+  console.log('🔍 All env vars:', Object.keys(process.env).filter(key => key.includes('RESEND') || key.includes('EMAIL')));
+  
+  if (!resend && apiKey) {
+    console.log('✅ Creating Resend client with API key');
+    resend = new Resend(apiKey);
+  } else if (!apiKey) {
+    console.log('❌ No Resend API key found in any environment variable');
   }
+  
   return resend;
 }
 
