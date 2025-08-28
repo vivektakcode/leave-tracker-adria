@@ -68,12 +68,18 @@ export default function BusinessDatePicker({
   }
 
   const handleDateSelect = (date: Date) => {
-    if (isDateDisabled(date.toISOString().split('T')[0])) {
+    // Use local date string to avoid timezone issues
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    const dateString = `${year}-${month}-${day}`
+    
+    if (isDateDisabled(dateString)) {
       return // Don't allow selection of disabled dates
     }
 
     setSelectedDate(date)
-    onChange(date.toISOString().split('T')[0])
+    onChange(dateString)
     setIsOpen(false)
   }
 
@@ -88,9 +94,16 @@ export default function BusinessDatePicker({
   const goToToday = () => {
     const today = new Date()
     setCurrentMonth(today)
-    if (!isDateDisabled(today.toISOString().split('T')[0])) {
+    
+    // Use local date string to avoid timezone issues
+    const year = today.getFullYear()
+    const month = String(today.getMonth() + 1).padStart(2, '0')
+    const day = String(today.getDate()).padStart(2, '0')
+    const todayString = `${year}-${month}-${day}`
+    
+    if (!isDateDisabled(todayString)) {
       setSelectedDate(today)
-      onChange(today.toISOString().split('T')[0])
+      onChange(todayString)
     }
     setIsOpen(false)
   }
