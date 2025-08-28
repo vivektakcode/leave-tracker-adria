@@ -33,10 +33,10 @@ export default function Navigation({ userEmail, role }: NavigationProps) {
               />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-100">
+              <h1 className="text-2xl font-bold text-white">
                 Adria
               </h1>
-              <p className="text-gray-200 text-sm">
+              <p className="text-gray-300 text-sm">
                 Leave Management System
               </p>
             </div>
