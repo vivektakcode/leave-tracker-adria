@@ -25,32 +25,20 @@ export default function Navigation({ userEmail, role }: NavigationProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           <div className="flex items-center space-x-4">
-            <div className="h-10 w-10 bg-white/20 rounded-xl flex items-center justify-center">
-              <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
+            <div className="h-12 w-12 bg-gradient-to-br from-orange-400 to-orange-600 rounded-xl flex items-center justify-center shadow-lg">
+              <span className="text-white font-bold text-xl">A</span>
             </div>
             <div>
               <h1 className="text-2xl font-bold text-white">
-                Leave Tracker
+                Adria
               </h1>
               <p className="text-gray-300 text-sm">
-                {role === 'manager' ? 'Manager Portal' : 'Employee Portal'}
+                Leave Management System
               </p>
             </div>
           </div>
           
-          {/* Navigation Links */}
-          <div className="flex items-center space-x-4">
-            {role === 'employee' && (
-              <button
-                onClick={() => router.push('/user/dashboard')}
-                className="text-white/80 hover:text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
-              >
-                Dashboard
-              </button>
-            )}
-          </div>
+
           
           <div className="flex items-center space-x-6">
             <div className="text-right">
