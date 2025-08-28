@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { User, createLeaveRequest, getLeaveBalance, getUserManager } from '../lib/supabaseService'
+import { isDateDisabled, getMinEndDate, getNextBusinessDay } from '../utils/dateUtils'
 
 interface LeaveRequestFormProps {
   employee: User
@@ -20,6 +21,37 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
   const [success, setSuccess] = useState('')
   const [leaveBalance, setLeaveBalance] = useState({ casual_leave: 0, sick_leave: 0, privilege_leave: 0 })
   const [managerInfo, setManagerInfo] = useState<{ name: string; department: string } | null>(null)
+
+
+
+  // Function to handle start date change and validate
+  const handleStartDateChange = (dateString: string) => {
+    if (isDateDisabled(dateString)) {
+      // Find the next business day
+      const nextBusinessDay = getNextBusinessDay(new Date(dateString))
+      const nextBusinessDayString = nextBusinessDay.toISOString().split('T')[0]
+      setStartDate(nextBusinessDayString)
+    } else {
+      setStartDate(dateString)
+    }
+    
+    // Reset end date if it's now before start date
+    if (endDate && endDate < dateString) {
+      setEndDate('')
+    }
+  }
+
+  // Function to handle end date change and validate
+  const handleEndDateChange = (dateString: string) => {
+    if (isDateDisabled(dateString)) {
+      // Find the next business day
+      const nextBusinessDay = getNextBusinessDay(new Date(dateString))
+      const nextBusinessDayString = nextBusinessDay.toISOString().split('T')[0]
+      setEndDate(nextBusinessDayString)
+    } else {
+      setEndDate(dateString)
+    }
+  }
 
   // Fetch leave balance when component mounts
   useEffect(() => {
@@ -91,6 +123,11 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
     }
     
     if (numberOfDays > getAvailableBalance()) {
+      return false
+    }
+    
+    // Check if any dates are weekends or holidays
+    if (isDateDisabled(startDate) || isDateDisabled(endDate)) {
       return false
     }
     
@@ -256,45 +293,34 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 mb-2">
-                  Start Date *
+                  Start Date * (Business Days Only)
                 </label>
                 <input
                   id="startDate"
                   type="date"
                   required
                   value={startDate}
-                  onChange={(e) => {
-                    const date = new Date(e.target.value);
-                    if (date.getDay() === 0 || date.getDay() === 6) {
-                      alert('Weekend dates are not allowed for leave requests. Please select a business day.');
-                      return;
-                    }
-                    setStartDate(e.target.value);
-                  }}
+                  onChange={(e) => handleStartDateChange(e.target.value)}
+                  min={new Date().toISOString().split('T')[0]}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
                 />
+                <p className="text-xs text-gray-500 mt-1">Only Monday-Friday allowed</p>
               </div>
 
               <div>
                 <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 mb-2">
-                  End Date *
+                  End Date * (Business Days Only)
                 </label>
                 <input
                   id="endDate"
                   type="date"
                   required
                   value={endDate}
-                  onChange={(e) => {
-                    const date = new Date(e.target.value);
-                    if (date.getDay() === 0 || date.getDay() === 6) {
-                      alert('Weekend dates are not allowed for leave requests. Please select a business day.');
-                      return;
-                    }
-                    setEndDate(e.target.value);
-                  }}
-                  min={startDate}
+                  onChange={(e) => handleEndDateChange(e.target.value)}
+                  min={getMinEndDate(startDate)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
                 />
+                <p className="text-xs text-gray-500 mt-1">Only Monday-Friday allowed</p>
               </div>
             </div>
 
