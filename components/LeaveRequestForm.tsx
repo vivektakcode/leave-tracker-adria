@@ -40,6 +40,11 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
     if (endDate && endDate < dateString) {
       setEndDate('')
     }
+    
+    // If start and end dates are the same, ensure end date is also updated
+    if (endDate === dateString) {
+      setEndDate(dateString)
+    }
   }
 
   // Function to handle end date change and validate
@@ -77,22 +82,32 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
   // Calculate number of days when dates change
   useEffect(() => {
     if (startDate && endDate) {
-      const start = new Date(startDate)
-      const end = new Date(endDate)
+      const start = new Date(startDate + 'T00:00:00')
+      const end = new Date(endDate + 'T00:00:00')
       
-      // Handle same-day requests
-      if (startDate === endDate) {
+      // Debug logging
+      console.log('Date calculation debug:')
+      console.log('startDate:', startDate, 'endDate:', endDate)
+      console.log('start.toDateString():', start.toDateString())
+      console.log('end.toDateString():', end.toDateString())
+      console.log('start.toDateString() === end.toDateString():', start.toDateString() === end.toDateString())
+      
+      // Handle same-day requests using toDateString() for more reliable comparison
+      if (start.toDateString() === end.toDateString()) {
         const finalDays = isHalfDay ? 0.5 : 1
+        console.log('Same day detected, setting days to:', finalDays)
         setNumberOfDays(finalDays)
         return
       }
       
+      // For different dates, calculate the difference
       const diffTime = Math.abs(end.getTime() - start.getTime())
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
       const calculatedDays = diffDays + 1 // Include both start and end dates
       
       // If it's a half day, reduce by 0.5
       const finalDays = isHalfDay ? Math.max(0.5, calculatedDays - 0.5) : calculatedDays
+      console.log('Different days detected, calculated days:', finalDays)
       setNumberOfDays(finalDays)
     } else {
       setNumberOfDays(0)
