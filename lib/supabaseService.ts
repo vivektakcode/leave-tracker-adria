@@ -549,6 +549,45 @@ export async function processLeaveRequest(
   }
 }
 
+export async function cancelLeaveRequest(requestId: string): Promise<boolean> {
+  try {
+    // Get the current request to check if it's pending
+    const { data: request, error: fetchError } = await supabase
+      .from('leave_requests')
+      .select('*')
+      .eq('id', requestId)
+      .single()
+
+    if (fetchError || !request) {
+      console.error('Error fetching leave request:', fetchError)
+      return false
+    }
+
+    // Only allow cancellation of pending requests
+    if (request.status !== 'pending') {
+      console.error('Cannot cancel non-pending request')
+      return false
+    }
+
+    // Delete the request
+    const { error: deleteError } = await supabase
+      .from('leave_requests')
+      .delete()
+      .eq('id', requestId)
+
+    if (deleteError) {
+      console.error('Error cancelling leave request:', deleteError)
+      return false
+    }
+
+    console.log(`✅ Leave request cancelled: ${requestId}`)
+    return true
+  } catch (error) {
+    console.error('Error cancelling leave request:', error)
+    return false
+  }
+}
+
 // Helper functions
 export function calculateDays(startDate: string, endDate: string, isHalfDay: boolean = false): number {
   const start = new Date(startDate)

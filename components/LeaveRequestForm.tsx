@@ -439,11 +439,11 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
             )}
 
             {/* Submit Button */}
-            <div className="flex space-x-3">
+            <div className="flex justify-center">
               <button
                 type="submit"
                 disabled={loading || !(startDate && endDate && reason.trim() && isRequestValid())}
-                className="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-8 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (
                   <div className="flex items-center justify-center">
@@ -454,36 +454,11 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
                   'Submit Leave Request'
                 )}
               </button>
-              
-              <button
-                type="button"
-                onClick={onBack}
-                className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200"
-              >
-                Cancel
-              </button>
             </div>
           </form>
         </div>
 
-        {/* Leave Balance Summary */}
-        <div className="mt-6 bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Current Leave Balance</h3>
-          <div className="grid grid-cols-3 gap-4">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-orange-500">{leaveBalance.casual_leave}</div>
-              <div className="text-sm text-gray-500">Casual Leave</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-orange-500">{leaveBalance.sick_leave}</div>
-              <div className="text-sm text-gray-500">Sick Leave</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-orange-500">{leaveBalance.privilege_leave}</div>
-              <div className="text-sm text-gray-500">Privilege Leave</div>
-            </div>
-          </div>
-        </div>
+
       </div>
     </div>
   )
