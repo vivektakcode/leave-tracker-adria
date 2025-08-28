@@ -120,7 +120,7 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-2xl mx-auto">
       {/* Header */}
       <div className="text-center mb-6">
         <div className="mx-auto h-12 w-12 bg-gradient-to-br from-orange-400 to-orange-600 rounded-xl flex items-center justify-center mb-4 shadow-lg">
@@ -133,7 +133,7 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-3">
         {/* Name and Username Row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <div>
@@ -209,7 +209,7 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
 
         {/* Role Selection */}
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-3">
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
             Role *
           </label>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -218,7 +218,7 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
                 key={role}
                 type="button"
                 onClick={() => setFormData({ ...formData, role, manager_id: role === 'manager' ? '' : formData.manager_id })}
-                className={`p-4 border-2 rounded-lg text-center transition-all duration-200 ${
+                className={`p-3 border-2 rounded-lg text-center transition-all duration-200 ${
                   formData.role === role 
                     ? 'border-orange-500 bg-orange-50 text-orange-700 shadow-md' 
                     : 'border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-50'
