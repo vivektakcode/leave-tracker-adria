@@ -1,31 +1,32 @@
 import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 
 // Initialize Resend client lazily to avoid build-time errors
 let resend: Resend | null = null;
+let gmailTransporter: nodemailer.Transporter | null = null;
 
 function getResendClient(): Resend | null {
-  // Try multiple ways to get the API key
-  const apiKey = process.env.RESEND_API_KEY || 
-                 process.env.NEXT_PUBLIC_RESEND_API_KEY || 
-                 process.env.VERCEL_RESEND_API_KEY;
-  
-  // Debug: Log all available environment variables
-  console.log('🔍 Environment variables check:');
-  console.log('🔍 RESEND_API_KEY exists:', !!process.env.RESEND_API_KEY);
-  console.log('🔍 RESEND_API_KEY value:', process.env.RESEND_API_KEY ? 'SET' : 'NOT SET');
-  console.log('🔍 NEXT_PUBLIC_RESEND_API_KEY exists:', !!process.env.NEXT_PUBLIC_RESEND_API_KEY);
-  console.log('🔍 VERCEL_RESEND_API_KEY exists:', !!process.env.VERCEL_RESEND_API_KEY);
-  console.log('🔍 Final API key to use:', apiKey ? 'FOUND' : 'NOT FOUND');
-  console.log('🔍 All env vars:', Object.keys(process.env).filter(key => key.includes('RESEND') || key.includes('EMAIL')));
+  const apiKey = process.env.RESEND_API_KEY;
   
   if (!resend && apiKey) {
-    console.log('✅ Creating Resend client with API key');
     resend = new Resend(apiKey);
-  } else if (!apiKey) {
-    console.log('❌ No Resend API key found in any environment variable');
   }
   
   return resend;
+}
+
+function getGmailTransporter(): nodemailer.Transporter | null {
+  if (!gmailTransporter && process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD) {
+    gmailTransporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.GMAIL_USER,
+        pass: process.env.GMAIL_APP_PASSWORD
+      }
+    });
+  }
+  
+  return gmailTransporter;
 }
 
 export interface EmailNotificationData {
@@ -42,33 +43,46 @@ export interface EmailNotificationData {
 
 export async function sendLeaveRequestNotification(data: EmailNotificationData): Promise<boolean> {
   try {
-    console.log('📧 Attempting to send email notification...');
-    console.log('📧 Environment check - RESEND_API_KEY exists:', !!process.env.RESEND_API_KEY);
-    
+    // Try Resend first
     const resendClient = getResendClient();
-    if (!resendClient) {
-      console.error('❌ Failed to initialize Resend client');
-      console.error('❌ RESEND_API_KEY:', process.env.RESEND_API_KEY ? 'EXISTS' : 'MISSING');
-      return false;
+    if (resendClient) {
+      try {
+        const { data: emailResult, error } = await resendClient.emails.send({
+          from: 'Leave Tracker <onboarding@resend.dev>',
+          to: [data.managerEmail],
+          subject: `Leave Request from ${data.employeeName} - Action Required`,
+          html: generateLeaveRequestEmailHTML(data),
+        });
+
+        if (!error) {
+          console.log('✅ Email sent successfully via Resend');
+          return true;
+        }
+        console.log('⚠️ Resend failed, trying Gmail fallback...');
+      } catch (resendError) {
+        console.log('⚠️ Resend error, trying Gmail fallback...');
+      }
     }
 
-    console.log('📧 Resend client initialized successfully');
-    console.log('📧 Sending email to:', data.managerEmail);
-
-    const { data: emailResult, error } = await resendClient.emails.send({
-      from: 'Leave Tracker <noreply@leave-tracker-adria.vercel.app>',
-      to: [data.managerEmail],
-      subject: `Leave Request from ${data.employeeName} - Action Required`,
-      html: generateLeaveRequestEmailHTML(data),
-    });
-
-    if (error) {
-      console.error('❌ Resend API error:', error);
-      return false;
+    // Try Gmail as fallback
+    const gmailTransporter = getGmailTransporter();
+    if (gmailTransporter) {
+      try {
+        await gmailTransporter.sendMail({
+          from: process.env.GMAIL_USER,
+          to: data.managerEmail,
+          subject: `Leave Request from ${data.employeeName} - Action Required`,
+          html: generateLeaveRequestEmailHTML(data),
+        });
+        console.log('✅ Email sent successfully via Gmail');
+        return true;
+      } catch (gmailError) {
+        console.error('❌ Gmail also failed:', gmailError);
+      }
     }
 
-    console.log('✅ Email sent successfully via Resend:', emailResult?.id);
-    return true;
+    console.error('❌ Both Resend and Gmail failed');
+    return false;
   } catch (error) {
     console.error('❌ Unexpected error sending email:', error);
     return false;

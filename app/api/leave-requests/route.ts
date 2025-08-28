@@ -43,16 +43,10 @@ export async function POST(request: NextRequest) {
     console.log('✅ Leave request created via Supabase:', requestId)
 
     // Send email notification to manager
-    console.log('🚨🚨🚨 ABOUT TO SEND EMAIL NOTIFICATION 🚨🚨🚨');
-    console.log('🚨🚨🚨 LEAVE REQUEST CREATED SUCCESSFULLY 🚨🚨🚨');
-    console.log('🚨🚨🚨 CALLING sendManagerNotification NOW 🚨🚨🚨');
-    
     try {
       await sendManagerNotification(requestId, user_id, leave_type, start_date, end_date, reason)
-      console.log('🚨🚨🚨 sendManagerNotification COMPLETED 🚨🚨🚨');
     } catch (error) {
       console.warn('Failed to send manager notification:', error)
-      console.log('🚨🚨🚨 EMAIL NOTIFICATION FAILED 🚨🚨🚨');
       // Don't fail the request creation if email fails
     }
 
@@ -111,57 +105,44 @@ async function sendManagerNotification(
   endDate: string,
   reason: string
 ) {
-  try {
-    console.log('🔔 Starting manager notification process...');
-    console.log('🔔 Request ID:', requestId);
-    console.log('🔔 User ID:', userId);
-    
-    // Get user details
-    const user = await getUserById(userId)
-    if (!user) {
-      console.warn('❌ User not found for notification:', userId)
-      return
+      try {
+      // Get user details
+      const user = await getUserById(userId)
+      if (!user) {
+        console.warn('User not found for notification:', userId)
+        return
+      }
+
+      // Get manager details
+      const manager = await getUserManager(userId)
+      if (!manager) {
+        console.warn('Manager not found for user:', userId)
+        return
+      }
+
+      // Get website URL from environment or use default
+      const websiteUrl = process.env.NEXT_PUBLIC_WEBSITE_URL || 'http://localhost:4444'
+      
+      // Send email notification
+      const emailSent = await sendLeaveRequestNotification({
+        managerName: manager.name,
+        managerEmail: manager.email,
+        employeeName: user.name,
+        leaveType,
+        startDate,
+        endDate,
+        reason,
+        requestId,
+        websiteUrl
+      })
+
+      if (emailSent) {
+        console.log('Manager notification sent successfully to:', manager.email)
+      } else {
+        console.warn('Failed to send manager notification to:', manager.email)
+      }
+    } catch (error) {
+      console.error('Error in sendManagerNotification:', error)
+      throw error
     }
-    console.log('✅ User found:', user.name, user.email);
-    console.log('🚨🚨🚨 USER DATA:', JSON.stringify(user, null, 2));
-
-    // Get manager details
-    const manager = await getUserManager(userId)
-    if (!manager) {
-      console.warn('❌ Manager not found for user:', userId)
-      console.log('🚨🚨🚨 NO MANAGER FOUND - CHECKING WHY 🚨🚨🚨');
-      console.log('🚨🚨🚨 USER MANAGER_ID:', user.manager_id);
-      return
-    }
-    console.log('✅ Manager found:', manager.name, manager.email);
-    console.log('🚨🚨🚨 MANAGER DATA:', JSON.stringify(manager, null, 2));
-
-    // Get website URL from environment or use default
-    const websiteUrl = process.env.NEXT_PUBLIC_WEBSITE_URL || 'http://localhost:4444'
-    console.log('🌐 Website URL:', websiteUrl);
-
-    console.log('📧 Calling sendLeaveRequestNotification...');
-    
-    // Send email notification
-    const emailSent = await sendLeaveRequestNotification({
-      managerName: manager.name,
-      managerEmail: manager.email,
-      employeeName: user.name,
-      leaveType,
-      startDate,
-      endDate,
-      reason,
-      requestId,
-      websiteUrl
-    })
-
-    if (emailSent) {
-      console.log('✅ Manager notification sent successfully to:', manager.email)
-    } else {
-      console.warn('❌ Failed to send manager notification to:', manager.email)
-    }
-  } catch (error) {
-    console.error('❌ Error in sendManagerNotification:', error)
-    throw error
-  }
 }
