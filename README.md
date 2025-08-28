@@ -23,6 +23,7 @@ A modern, scalable leave management system built with Next.js and Vercel KV (Red
 - Add comments to decisions
 - View employee information and leave balances
 - Automatic leave balance updates on approval
+- **Email notifications** when new requests are submitted
 
 ### ✅ **User Dashboard**
 - Beautiful leave balance display
@@ -86,6 +87,7 @@ Leave Tracker/
 - Node.js 18+ (recommended: v22.17.1)
 - npm or yarn
 - Vercel account (free)
+- **Email service account** (Resend recommended - 10,000 emails/month free)
 
 ### **Local Development**
 
@@ -124,7 +126,9 @@ Leave Tracker/
    # This will create sample employees and leave requests
    ```
 
-6. **Open your browser**
+
+
+7. **Open your browser**
    - Navigate to: `http://localhost:4444`
    - Use any of the demo credentials above
 
@@ -155,10 +159,27 @@ KV_REST_API_TOKEN=your-token
 KV_REST_API_READ_ONLY_TOKEN=your-readonly-token
 ```
 
-### **Step 4: Initialize Production Database**
+### **Step 4: Configure Email Notifications**
+1. **Add environment variables in Vercel:**
+   ```env
+   RESEND_API_KEY=your_resend_api_key
+   NEXT_PUBLIC_WEBSITE_URL=https://your-app.vercel.app
+   ```
+
+2. **Optional: Verify your domain in Resend for better deliverability**
+
+### **Step 5: Initialize Production Database**
 Visit: `https://your-app.vercel.app/api/init-db`
 
 ## 🔧 **Configuration**
+
+### **Email Configuration**
+The system automatically sends email notifications to managers when leave requests are submitted. See `EMAIL_NOTIFICATION_SETUP.md` for detailed setup instructions.
+
+**Production Setup:**
+1. Add `RESEND_API_KEY` to your Vercel environment variables
+2. Set `NEXT_PUBLIC_WEBSITE_URL` to your production domain
+3. The system will automatically send notifications on every leave request
 
 ### **Port Configuration**
 The application runs on port 4444 by default. To change this:

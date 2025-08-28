@@ -2,8 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { 
   createLeaveRequest, 
   getAllLeaveRequests, 
-  processLeaveRequest 
+  processLeaveRequest,
+  getUserById,
+  getUserManager
 } from '../../../lib/supabaseService'
+import { sendLeaveRequestNotification } from '../../../lib/emailService'
 
 export async function GET() {
   try {
@@ -38,6 +41,15 @@ export async function POST(request: NextRequest) {
     })
 
     console.log('✅ Leave request created via Supabase:', requestId)
+
+    // Send email notification to manager
+    try {
+      await sendManagerNotification(requestId, user_id, leave_type, start_date, end_date, reason)
+    } catch (error) {
+      console.warn('Failed to send manager notification:', error)
+      // Don't fail the request creation if email fails
+    }
+
     return NextResponse.json({ id: requestId }, { status: 201 })
 
   } catch (error) {
@@ -82,4 +94,55 @@ export async function PUT(request: NextRequest) {
       { status: 500 }
     )
   }
-} 
+}
+
+// Helper function to send manager notification
+async function sendManagerNotification(
+  requestId: string,
+  userId: string,
+  leaveType: string,
+  startDate: string,
+  endDate: string,
+  reason: string
+) {
+  try {
+    // Get user details
+    const user = await getUserById(userId)
+    if (!user) {
+      console.warn('User not found for notification:', userId)
+      return
+    }
+
+    // Get manager details
+    const manager = await getUserManager(userId)
+    if (!manager) {
+      console.warn('Manager not found for user:', userId)
+      return
+    }
+
+    // Get website URL from environment or use default
+    const websiteUrl = process.env.NEXT_PUBLIC_WEBSITE_URL || 'http://localhost:4444'
+
+    // Send email notification
+    const emailSent = await sendLeaveRequestNotification({
+      managerName: manager.name,
+      managerEmail: manager.email,
+      employeeName: user.name,
+      leaveType,
+      startDate,
+      endDate,
+      reason,
+      requestId,
+      websiteUrl
+    })
+
+    if (emailSent) {
+      console.log('Manager notification sent successfully to:', manager.email)
+    } else {
+      console.warn('Failed to send manager notification to:', manager.email)
+    }
+  } catch (error) {
+    console.error('❌ Error in sendManagerNotification:', error)
+    throw error
+  }
+}
