@@ -9,9 +9,6 @@ interface ThreeJSBackgroundProps {
 
 export default function ThreeJSBackground({ className = '' }: ThreeJSBackgroundProps) {
   const mountRef = useRef<HTMLDivElement>(null)
-  const sceneRef = useRef<THREE.Scene | null>(null)
-  const cameraRef = useRef<THREE.PerspectiveCamera | null>(null)
-  const rendererRef = useRef<THREE.WebGLRenderer | null>(null)
   const animationIdRef = useRef<number | null>(null)
   const [isClient, setIsClient] = useState(false)
   const [hasError, setHasError] = useState(false)
@@ -29,24 +26,20 @@ export default function ThreeJSBackground({ className = '' }: ThreeJSBackgroundP
     let symbols: THREE.Sprite[] = []
 
     try {
-      // Scene + Camera
+      // Simple scene setup
       scene = new THREE.Scene()
-      sceneRef.current = scene
-      
-      camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 1000)
-      camera.position.z = 20
-      cameraRef.current = camera
+      camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000)
+      camera.position.z = 15
 
-      // Renderer (high-performance)
-      renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: 'high-performance' })
+      // Simple renderer
+      renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true })
       renderer.setSize(window.innerWidth, window.innerHeight)
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
-      rendererRef.current = renderer
+      renderer.setClearColor(0xffffff, 0) // White background, transparent
 
       // Append canvas
       if (mountRef.current) mountRef.current.appendChild(renderer.domElement)
 
-      // Loader - load currency PNGs from public folder
+      // Load currency symbols
       const loader = new THREE.TextureLoader()
       const currencyFiles = [
         'dollar.png',
@@ -58,89 +51,71 @@ export default function ThreeJSBackground({ className = '' }: ThreeJSBackgroundP
         'moroccan-dirham.png'
       ]
 
-      // Colors / tints to give variety to the symbols
-      const tints = [
-        0x00f5ff, // cyan
-        0xff7bd2, // pink
-        0x9bff7b, // mint green
-        0xffd66b, // gold
-        0xaab6ff, // soft blue
-        0xff8a5b, // orange-pink
-        0xc77bff  // purple
+      // Simple, subtle colors
+      const colors = [
+        0x4a90e2, // soft blue
+        0x7ed321, // soft green
+        0xf5a623, // soft orange
+        0xbd10e0, // soft purple
+        0xe74c3c, // soft red
+        0x1abc9c, // soft teal
+        0x9b59b6  // soft violet
       ]
 
+      // Create small, simple currency symbols
       currencyFiles.forEach((file, i) => {
-        const tex = loader.load(`/${file}`) // Load directly from public folder
-        const color = new THREE.Color(tints[i % tints.length])
-
-        const mat = new THREE.SpriteMaterial({
-          map: tex,
+        const texture = loader.load(`/${file}`)
+        const material = new THREE.SpriteMaterial({
+          map: texture,
           transparent: true,
-          color: color,
-          opacity: 0.9
+          opacity: 0.6, // Subtle opacity
+          color: new THREE.Color(colors[i % colors.length])
         })
 
-        const sprite = new THREE.Sprite(mat)
-
-        // Spread across a wide 3D volume
+        const sprite = new THREE.Sprite(material)
+        
+        // Small size
+        sprite.scale.set(1.5, 1.5, 1)
+        
+        // Spread across screen
         sprite.position.set(
-          (Math.random() - 0.5) * 50,
-          (Math.random() - 0.5) * 35,
-          (Math.random() - 0.5) * 35
+          (Math.random() - 0.5) * 40,
+          (Math.random() - 0.5) * 30,
+          (Math.random() - 0.5) * 20
         )
 
-        // Scale variance
-        const scale = Math.random() * 5 + 3
-        sprite.scale.set(scale, scale, 1)
-
-        // Animation metadata
+        // Simple animation data
         sprite.userData = {
           originalX: sprite.position.x,
           originalY: sprite.position.y,
           originalZ: sprite.position.z,
-          speed: Math.random() * 0.6 + 0.15,
-          amplitude: Math.random() * 2.5 + 0.8,
-          rotationSpeed: Math.random() * 0.02 + 0.002,
-          floatOffset: Math.random() * 1000
-        }
-
-        // Make certain symbols slightly brighter
-        if (i % 3 === 0) {
-          (mat as THREE.SpriteMaterial).color = color.multiplyScalar(1.4)
+          speed: Math.random() * 0.3 + 0.1, // Very slow
+          amplitude: Math.random() * 1.0 + 0.5 // Small movement
         }
 
         if (scene) scene.add(sprite)
         symbols.push(sprite)
       })
 
-      // Add ambient light for better visibility
-      if (scene) scene.add(new THREE.AmbientLight(0xffffff, 0.8))
-
-      // Set background color
-      renderer.setClearColor(0x071226, 0)
-
-      // Animation
+      // Simple animation
       const animate = () => {
         try {
           if (!scene || !camera || !renderer) return
-          const time = Date.now() * 0.001
+          
+          const time = Date.now() * 0.0003 // Very slow
 
-          symbols.forEach((s, idx) => {
-            const d = s.userData
-            // float motion
-            s.position.y = d.originalY + Math.sin(time * d.speed + d.floatOffset) * d.amplitude
-            s.position.x = d.originalX + Math.cos(time * d.speed * 0.6 + idx) * (d.amplitude * 0.6)
-            s.position.z = d.originalZ + Math.cos(time * d.speed * 0.4 + idx * 0.7) * (d.amplitude * 0.8)
-            // rotate slowly for parallax effect
-            s.material.rotation += d.rotationSpeed
-            // gentle pulsing via scale
-            const pulse = 1.0 + Math.sin(time * (d.speed * 0.8) + idx) * 0.08
-            s.scale.setScalar((s.scale.x || 1) * pulse)
+          symbols.forEach((symbol, index) => {
+            const data = symbol.userData
+            
+            // Very gentle floating
+            symbol.position.x = data.originalX + Math.sin(time * data.speed + index) * data.amplitude
+            symbol.position.y = data.originalY + Math.cos(time * data.speed + index * 0.5) * data.amplitude
+            symbol.position.z = data.originalZ + Math.sin(time * data.speed * 0.3 + index * 0.3) * (data.amplitude * 0.5)
           })
 
-          // Slow camera drift
-          camera.position.x = Math.sin(time * 0.08) * 2.5
-          camera.position.y = Math.cos(time * 0.06) * 1.6
+          // Minimal camera movement
+          camera.position.x = Math.sin(time * 0.05) * 0.5
+          camera.position.y = Math.cos(time * 0.04) * 0.3
           camera.lookAt(0, 0, 0)
 
           renderer.render(scene, camera)
@@ -154,15 +129,7 @@ export default function ThreeJSBackground({ className = '' }: ThreeJSBackgroundP
 
       animate()
 
-      // Mouse parallax (optional subtle interaction)
-      let mouseX = 0, mouseY = 0
-      const onMove = (e: MouseEvent) => {
-        mouseX = (e.clientX / window.innerWidth) * 2 - 1
-        mouseY = -(e.clientY / window.innerHeight) * 2 + 1
-      }
-      window.addEventListener('mousemove', onMove)
-
-      // Resize handler
+      // Simple resize handler
       const onResize = () => {
         if (!renderer || !camera) return
         camera.aspect = window.innerWidth / window.innerHeight
@@ -173,17 +140,12 @@ export default function ThreeJSBackground({ className = '' }: ThreeJSBackgroundP
 
       // Cleanup
       return () => {
-        window.removeEventListener('mousemove', onMove)
         window.removeEventListener('resize', onResize)
         if (animationIdRef.current) cancelAnimationFrame(animationIdRef.current)
         if (mountRef.current && renderer?.domElement) {
           try { mountRef.current.removeChild(renderer.domElement) } catch {}
         }
         renderer?.dispose()
-        // Clear refs
-        sceneRef.current = null
-        cameraRef.current = null
-        rendererRef.current = null
         symbols = []
       }
     } catch (err) {
@@ -197,7 +159,7 @@ export default function ThreeJSBackground({ className = '' }: ThreeJSBackgroundP
       <div
         className={`fixed inset-0 pointer-events-none z-0 ${className}`}
         style={{
-          background: 'linear-gradient(135deg, #071226 0%, #0b2440 100%)'
+          background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)'
         }}
       />
     )
@@ -207,7 +169,7 @@ export default function ThreeJSBackground({ className = '' }: ThreeJSBackgroundP
     <div
       ref={mountRef}
       className={`fixed inset-0 pointer-events-none z-0 ${className}`}
-      style={{ background: 'linear-gradient(135deg, #071226 0%, #0b2440 100%)' }}
+      style={{ background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)' }}
     />
   )
 }
