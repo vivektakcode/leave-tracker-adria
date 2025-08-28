@@ -119,7 +119,19 @@ export default function BusinessDatePicker({
   }
 
   const isDisabled = (date: Date) => {
-    return isDateDisabled(date.toISOString().split('T')[0])
+    // Use local date string to avoid timezone issues
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    const dateString = `${year}-${month}-${day}`
+    
+    const dayOfWeek = date.getDay()
+    const isWeekendDate = dayOfWeek === 0 || dayOfWeek === 6
+    
+    // Debug logging
+    console.log(`Date: ${dateString}, Day: ${dayOfWeek} (${dayOfWeek === 0 ? 'Sunday' : dayOfWeek === 6 ? 'Saturday' : 'Weekday'}), isWeekend: ${isWeekendDate}`)
+    
+    return isWeekendDate
   }
 
   const days = getDaysInMonth(currentMonth)

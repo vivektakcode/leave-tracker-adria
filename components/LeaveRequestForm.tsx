@@ -296,20 +296,20 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
                 <BusinessDatePicker
                   value={startDate}
                   onChange={handleStartDateChange}
-                  label="Start Date * (Business Days Only)"
+                  label="Start Date *"
                   placeholder="Select start date"
                 />
-                <p className="text-xs text-gray-500 mt-1">Only Monday-Friday allowed (previous dates are allowed)</p>
+
               </div>
 
               <div>
                 <BusinessDatePicker
                   value={endDate}
                   onChange={handleEndDateChange}
-                  label="End Date * (Business Days Only)"
+                  label="End Date *"
                   placeholder="Select end date"
                 />
-                <p className="text-xs text-gray-500 mt-1">Only Monday-Friday allowed (must be after start date)</p>
+
               </div>
             </div>
 
