@@ -25,7 +25,7 @@ export default function Navigation({ userEmail, role }: NavigationProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           <div className="flex items-center space-x-4">
-            <div className="h-12 w-12 flex items-center justify-center">
+            <div className="h-16 w-16 flex items-center justify-center">
               <img 
                 src="/Adria_logo.png" 
                 alt="Adria Logo" 
@@ -33,10 +33,10 @@ export default function Navigation({ userEmail, role }: NavigationProps) {
               />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-white">
+              <h1 className="text-2xl font-bold text-gray-100">
                 Adria
               </h1>
-              <p className="text-gray-300 text-sm">
+              <p className="text-gray-200 text-sm">
                 Leave Management System
               </p>
             </div>
