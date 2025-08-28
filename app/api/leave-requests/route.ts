@@ -43,10 +43,16 @@ export async function POST(request: NextRequest) {
     console.log('✅ Leave request created via Supabase:', requestId)
 
     // Send email notification to manager
+    console.log('🚨🚨🚨 ABOUT TO SEND EMAIL NOTIFICATION 🚨🚨🚨');
+    console.log('🚨🚨🚨 LEAVE REQUEST CREATED SUCCESSFULLY 🚨🚨🚨');
+    console.log('🚨🚨🚨 CALLING sendManagerNotification NOW 🚨🚨🚨');
+    
     try {
       await sendManagerNotification(requestId, user_id, leave_type, start_date, end_date, reason)
+      console.log('🚨🚨🚨 sendManagerNotification COMPLETED 🚨🚨🚨');
     } catch (error) {
       console.warn('Failed to send manager notification:', error)
+      console.log('🚨🚨🚨 EMAIL NOTIFICATION FAILED 🚨🚨🚨');
       // Don't fail the request creation if email fails
     }
 
@@ -117,14 +123,18 @@ async function sendManagerNotification(
       return
     }
     console.log('✅ User found:', user.name, user.email);
+    console.log('🚨🚨🚨 USER DATA:', JSON.stringify(user, null, 2));
 
     // Get manager details
     const manager = await getUserManager(userId)
     if (!manager) {
       console.warn('❌ Manager not found for user:', userId)
+      console.log('🚨🚨🚨 NO MANAGER FOUND - CHECKING WHY 🚨🚨🚨');
+      console.log('🚨🚨🚨 USER MANAGER_ID:', user.manager_id);
       return
     }
     console.log('✅ Manager found:', manager.name, manager.email);
+    console.log('🚨🚨🚨 MANAGER DATA:', JSON.stringify(manager, null, 2));
 
     // Get website URL from environment or use default
     const websiteUrl = process.env.NEXT_PUBLIC_WEBSITE_URL || 'http://localhost:4444'
