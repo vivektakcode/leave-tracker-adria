@@ -1,7 +1,14 @@
 import { Resend } from 'resend';
 
-// Initialize Resend client
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Initialize Resend client lazily to avoid build-time errors
+let resend: Resend | null = null;
+
+function getResendClient(): Resend | null {
+  if (!resend && process.env.RESEND_API_KEY) {
+    resend = new Resend(process.env.RESEND_API_KEY);
+  }
+  return resend;
+}
 
 export interface EmailNotificationData {
   managerName: string;
@@ -17,11 +24,12 @@ export interface EmailNotificationData {
 
 export async function sendLeaveRequestNotification(data: EmailNotificationData): Promise<boolean> {
   try {
-    if (!process.env.RESEND_API_KEY) {
+    const resendClient = getResendClient();
+    if (!resendClient) {
       return false;
     }
 
-    const { data: emailResult, error } = await resend.emails.send({
+    const { data: emailResult, error } = await resendClient.emails.send({
       from: 'Leave Tracker <noreply@leave-tracker-adria.vercel.app>',
       to: [data.managerEmail],
       subject: `Leave Request from ${data.employeeName} - Action Required`,
