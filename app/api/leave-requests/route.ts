@@ -106,23 +106,32 @@ async function sendManagerNotification(
   reason: string
 ) {
   try {
+    console.log('🔔 Starting manager notification process...');
+    console.log('🔔 Request ID:', requestId);
+    console.log('🔔 User ID:', userId);
+    
     // Get user details
     const user = await getUserById(userId)
     if (!user) {
-      console.warn('User not found for notification:', userId)
+      console.warn('❌ User not found for notification:', userId)
       return
     }
+    console.log('✅ User found:', user.name, user.email);
 
     // Get manager details
     const manager = await getUserManager(userId)
     if (!manager) {
-      console.warn('Manager not found for user:', userId)
+      console.warn('❌ Manager not found for user:', userId)
       return
     }
+    console.log('✅ Manager found:', manager.name, manager.email);
 
     // Get website URL from environment or use default
     const websiteUrl = process.env.NEXT_PUBLIC_WEBSITE_URL || 'http://localhost:4444'
+    console.log('🌐 Website URL:', websiteUrl);
 
+    console.log('📧 Calling sendLeaveRequestNotification...');
+    
     // Send email notification
     const emailSent = await sendLeaveRequestNotification({
       managerName: manager.name,
@@ -137,9 +146,9 @@ async function sendManagerNotification(
     })
 
     if (emailSent) {
-      console.log('Manager notification sent successfully to:', manager.email)
+      console.log('✅ Manager notification sent successfully to:', manager.email)
     } else {
-      console.warn('Failed to send manager notification to:', manager.email)
+      console.warn('❌ Failed to send manager notification to:', manager.email)
     }
   } catch (error) {
     console.error('❌ Error in sendManagerNotification:', error)

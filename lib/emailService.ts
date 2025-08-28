@@ -24,10 +24,18 @@ export interface EmailNotificationData {
 
 export async function sendLeaveRequestNotification(data: EmailNotificationData): Promise<boolean> {
   try {
+    console.log('📧 Attempting to send email notification...');
+    console.log('📧 Environment check - RESEND_API_KEY exists:', !!process.env.RESEND_API_KEY);
+    
     const resendClient = getResendClient();
     if (!resendClient) {
+      console.error('❌ Failed to initialize Resend client');
+      console.error('❌ RESEND_API_KEY:', process.env.RESEND_API_KEY ? 'EXISTS' : 'MISSING');
       return false;
     }
+
+    console.log('📧 Resend client initialized successfully');
+    console.log('📧 Sending email to:', data.managerEmail);
 
     const { data: emailResult, error } = await resendClient.emails.send({
       from: 'Leave Tracker <noreply@leave-tracker-adria.vercel.app>',
@@ -37,13 +45,14 @@ export async function sendLeaveRequestNotification(data: EmailNotificationData):
     });
 
     if (error) {
-      console.error('Error sending email notification:', error);
+      console.error('❌ Resend API error:', error);
       return false;
     }
 
+    console.log('✅ Email sent successfully via Resend:', emailResult?.id);
     return true;
   } catch (error) {
-    console.error('Error sending email notification:', error);
+    console.error('❌ Unexpected error sending email:', error);
     return false;
   }
 }
