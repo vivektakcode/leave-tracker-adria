@@ -523,7 +523,7 @@ export async function processLeaveRequest(
 
     // Update user leave balance if approved
     if (status === 'approved') {
-      const days = calculateDays(request.start_date, request.end_date)
+      const days = calculateDays(request.start_date, request.end_date, request.is_half_day)
       const leaveBalance = await getLeaveBalance(request.user_id)
       
       if (leaveBalance) {
@@ -550,11 +550,24 @@ export async function processLeaveRequest(
 }
 
 // Helper functions
-export function calculateDays(startDate: string, endDate: string): number {
+export function calculateDays(startDate: string, endDate: string, isHalfDay: boolean = false): number {
   const start = new Date(startDate)
   const end = new Date(endDate)
+  
+  // If same day, it's 1 day (or 0.5 if half day)
+  if (start.toDateString() === end.toDateString()) {
+    return isHalfDay ? 0.5 : 1
+  }
+  
+  // For different dates, calculate the difference
   const diffTime = Math.abs(end.getTime() - start.getTime())
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+  
+  // If half day, reduce by 0.5
+  if (isHalfDay) {
+    return Math.max(0.5, diffDays - 0.5)
+  }
+  
   return diffDays + 1 // Include both start and end dates
 }
 

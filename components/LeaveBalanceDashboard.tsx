@@ -224,6 +224,25 @@ export default function LeaveBalanceDashboard({ employee }: LeaveBalanceDashboar
             </div>
           </div>
 
+          {/* Debug Section - Remove this in production */}
+          {process.env.NODE_ENV === 'development' && (
+            <div className="mb-8 p-4 bg-gray-100 rounded-lg">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">🔍 Debug Info</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p><strong>User ID:</strong> {employee.id}</p>
+                  <p><strong>Email:</strong> {employee.email}</p>
+                  <p><strong>Current Balance:</strong> Casual: {leaveBalance.casual_leave}, Sick: {leaveBalance.sick_leave}, Privilege: {leaveBalance.privilege_leave}</p>
+                </div>
+                <div>
+                  <p><strong>Used Days:</strong> Casual: {usedDays.casual}, Sick: {usedDays.sick}, Privilege: {usedDays.privilege}</p>
+                  <p><strong>Total Used:</strong> {usedDays.casual + usedDays.sick + usedDays.privilege} of 30</p>
+                  <p><strong>Expected Balance:</strong> Casual: {6 - usedDays.casual}, Sick: {6 - usedDays.sick}, Privilege: {18 - usedDays.privilege}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Action Buttons */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
             <button

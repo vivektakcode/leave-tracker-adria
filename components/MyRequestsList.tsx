@@ -12,6 +12,30 @@ export default function MyRequestsList({ employeeId, compact = false }: MyReques
   const [userRequests, setUserRequests] = useState<LeaveRequest[]>([])
   const [loading, setLoading] = useState(true)
 
+  // Function to calculate days requested
+  const calculateDaysRequested = (request: LeaveRequest): string => {
+    const start = new Date(request.start_date)
+    const end = new Date(request.end_date)
+    
+    // If same day, it's 1 day (or 0.5 if half day)
+    if (start.toDateString() === end.toDateString()) {
+      return request.is_half_day ? '0.5 day' : '1 day'
+    }
+    
+    // For different dates, calculate the difference
+    const diffTime = Math.abs(end.getTime() - start.getTime())
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+    const totalDays = diffDays + 1 // Include both start and end dates
+    
+    // If half day, reduce by 0.5
+    if (request.is_half_day) {
+      const finalDays = Math.max(0.5, totalDays - 0.5)
+      return `${finalDays} day${finalDays === 1 ? '' : 's'}`
+    }
+    
+    return `${totalDays} day${totalDays === 1 ? '' : 's'}`
+  }
+
   useEffect(() => {
     const fetchRequests = async () => {
       try {
@@ -80,6 +104,10 @@ export default function MyRequestsList({ employeeId, compact = false }: MyReques
                   'bg-purple-100 text-purple-800 border border-purple-200'
                 }`}>
                   {request.leave_type}
+                </span>
+                {/* Days Requested Badge */}
+                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-800 border border-gray-200">
+                  {calculateDaysRequested(request)}
                 </span>
               </div>
               <span className="text-sm text-gray-500 font-medium">

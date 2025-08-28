@@ -66,6 +66,70 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
     }
   }, [startDate, endDate, isHalfDay])
 
+  // Function to check if a date is a weekend
+  const isWeekend = (dateString: string): boolean => {
+    const date = new Date(dateString)
+    const day = date.getDay()
+    return day === 0 || day === 6 // 0 = Sunday, 6 = Saturday
+  }
+
+  // Function to get next business day
+  const getNextBusinessDay = (dateString: string): string => {
+    const date = new Date(dateString)
+    let nextDay = new Date(date)
+    
+    do {
+      nextDay.setDate(nextDay.getDate() + 1)
+    } while (nextDay.getDay() === 0 || nextDay.getDay() === 6)
+    
+    return nextDay.toISOString().split('T')[0]
+  }
+
+  // Function to get previous business day
+  const getPreviousBusinessDay = (dateString: string): string => {
+    const date = new Date(dateString)
+    let prevDay = new Date(date)
+    
+    do {
+      prevDay.setDate(prevDay.getDate() - 1)
+    } while (prevDay.getDay() === 0 || prevDay.getDay() === 6)
+    
+    return prevDay.toISOString().split('T')[0]
+  }
+
+  // Handle weekend date selection
+  const handleDateChange = (dateType: 'start' | 'end', value: string) => {
+    if (isWeekend(value)) {
+      // Suggest next business day for start date, previous for end date
+      const suggestedDate = dateType === 'start' ? getNextBusinessDay(value) : getPreviousBusinessDay(value)
+      
+      const confirmChange = window.confirm(
+        `${value} is a weekend (${new Date(value).toLocaleDateString('en-US', { weekday: 'long' })}). ` +
+        `Would you like to change it to the next business day (${suggestedDate})?`
+      )
+      
+      if (confirmChange) {
+        if (dateType === 'start') {
+          setStartDate(suggestedDate)
+        } else {
+          setEndDate(suggestedDate)
+        }
+        return
+      } else {
+        // User doesn't want to change, but we still need to prevent weekend selection
+        alert('Weekend dates are not allowed for leave requests. Please select a business day.')
+        return
+      }
+    }
+    
+    // If not weekend, proceed normally
+    if (dateType === 'start') {
+      setStartDate(value)
+    } else {
+      setEndDate(value)
+    }
+  }
+
   // Get available leave balance for selected type
   const getAvailableBalance = () => {
     switch (leaveType) {
@@ -263,7 +327,7 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
                   type="date"
                   required
                   value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
+                  onChange={(e) => handleDateChange('start', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
                 />
               </div>
@@ -277,7 +341,7 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
                   type="date"
                   required
                   value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
+                  onChange={(e) => handleDateChange('end', e.target.value)}
                   min={startDate}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
                 />
