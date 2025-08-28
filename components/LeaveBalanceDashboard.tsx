@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { User, getLeaveBalance, getUserLeaveRequests } from '../lib/supabaseService'
+import { User, getLeaveBalance, getUserLeaveRequests, ensureLeaveBalanceExists, getTotalAllocatedLeave } from '../lib/supabaseService'
 import AdminPanel from './AdminPanel'
 import LeaveRequestForm from './LeaveRequestForm'
 import MyRequestsList from './MyRequestsList'
@@ -23,57 +23,30 @@ export default function LeaveBalanceDashboard({ employee }: LeaveBalanceDashboar
   useEffect(() => {
     const fetchData = async () => {
       try {
+        // Ensure leave balance exists for this user
+        await ensureLeaveBalanceExists(employee.id)
+        
         // Fetch leave balance
         const balance = await getLeaveBalance(employee.id)
         if (balance) {
           setLeaveBalance(balance)
-        }
-
-        // Fetch leave requests to calculate used days
-        const requests = await getUserLeaveRequests(employee.id)
-        const approvedRequests = requests.filter(req => req.status === 'approved')
-        
-        const calculatedUsedDays = {
-          casual: 0,
-          sick: 0,
-          privilege: 0
-        }
-
-        approvedRequests.forEach(request => {
-          // Calculate actual days for the request period
-          let days = 0
           
-          if (request.is_half_day && request.start_date === request.end_date) {
-            // Single day half-day request
-            days = 0.5
-          } else {
-            // Multi-day or full-day request
-            const startDate = new Date(request.start_date)
-            const endDate = new Date(request.end_date)
-            const diffTime = Math.abs(endDate.getTime() - startDate.getTime())
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-            days = diffDays + 1 // Include both start and end dates
+          // Get total allocated leave
+          const totalAllocated = getTotalAllocatedLeave()
+          
+          // Calculate used days based on remaining balance
+          const calculatedUsedDays = {
+            casual: totalAllocated.casual - balance.casual_leave,
+            sick: totalAllocated.sick - balance.sick_leave,
+            privilege: totalAllocated.privilege - balance.privilege_leave
           }
           
-          // Debug logging
-          console.log(`📅 Leave Request: ${request.leave_type} from ${request.start_date} to ${request.end_date} = ${days} days`)
-          
-          switch (request.leave_type) {
-            case 'casual':
-              calculatedUsedDays.casual += days
-              break
-            case 'sick':
-              calculatedUsedDays.sick += days
-              break
-            case 'privilege':
-              calculatedUsedDays.privilege += days
-              break
-          }
-        })
-        
-        console.log('📊 Calculated Used Days:', calculatedUsedDays)
+          console.log('📊 Current Leave Balance:', balance)
+          console.log('📊 Total Allocated:', totalAllocated)
+          console.log('📊 Calculated Used Days:', calculatedUsedDays)
 
-        setUsedDays(calculatedUsedDays)
+          setUsedDays(calculatedUsedDays)
+        }
       } catch (error) {
         console.error('Error fetching data:', error)
       }
@@ -82,13 +55,7 @@ export default function LeaveBalanceDashboard({ employee }: LeaveBalanceDashboar
     fetchData()
   }, [employee.id])
 
-  // Calculate total allocated days for each leave type - these are FIXED allocations
-  // Updated: Fixed allocation numbers for proper dashboard display
-  const totalAllocated = {
-    casual: 6,      // Fixed allocation for casual leave
-    sick: 6,        // Fixed allocation for sick leave
-    privilege: 18   // Fixed allocation for privilege leave
-  }
+
 
   if (showAdminPanel) {
     return (
@@ -197,11 +164,11 @@ export default function LeaveBalanceDashboard({ employee }: LeaveBalanceDashboar
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div 
                     className="bg-orange-500 h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${totalAllocated.casual > 0 ? (usedDays.casual / totalAllocated.casual) * 100 : 0}%` }}
+                    style={{ width: `${getTotalAllocatedLeave().casual > 0 ? (usedDays.casual / getTotalAllocatedLeave().casual) * 100 : 0}%` }}
                   ></div>
                 </div>
                 <p className="text-xs text-gray-500 mt-1">
-                  {usedDays.casual} of {totalAllocated.casual} days used
+                  {usedDays.casual} of {getTotalAllocatedLeave().casual} days used
                 </p>
               </div>
             </div>
@@ -222,11 +189,11 @@ export default function LeaveBalanceDashboard({ employee }: LeaveBalanceDashboar
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div 
                     className="bg-gray-500 h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${totalAllocated.sick > 0 ? (usedDays.sick / totalAllocated.sick) * 100 : 0}%` }}
+                    style={{ width: `${getTotalAllocatedLeave().sick > 0 ? (usedDays.sick / getTotalAllocatedLeave().sick) * 100 : 0}%` }}
                   ></div>
                 </div>
                 <p className="text-xs text-gray-500 mt-1">
-                  {usedDays.sick} of {totalAllocated.sick} days used
+                  {usedDays.sick} of {getTotalAllocatedLeave().sick} days used
                 </p>
               </div>
             </div>
@@ -247,11 +214,11 @@ export default function LeaveBalanceDashboard({ employee }: LeaveBalanceDashboar
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div 
                     className="bg-orange-600 h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${totalAllocated.privilege > 0 ? (usedDays.privilege / totalAllocated.privilege) * 100 : 0}%` }}
+                    style={{ width: `${getTotalAllocatedLeave().privilege > 0 ? (usedDays.privilege / getTotalAllocatedLeave().privilege) * 100 : 0}%` }}
                   ></div>
                 </div>
                 <p className="text-xs text-gray-500 mt-1">
-                  {usedDays.privilege} of {totalAllocated.privilege} days used
+                  {usedDays.privilege} of {getTotalAllocatedLeave().privilege} days used
                 </p>
               </div>
             </div>

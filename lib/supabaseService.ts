@@ -213,6 +213,13 @@ export async function createUser(userData: Omit<User, 'id' | 'created_at'>): Pro
       throw new Error('Failed to create user')
     }
 
+    // Initialize leave balance for the new user
+    const balanceInitSuccess = await initializeLeaveBalance(data.id)
+    if (!balanceInitSuccess) {
+      console.warn('⚠️ Failed to initialize leave balance for user:', data.id)
+      // Don't fail the user creation, just log a warning
+    }
+
     console.log('✅ User created:', data.id)
     return data.id
   } catch (error) {
@@ -596,5 +603,63 @@ export async function initializeDatabase(): Promise<void> {
   } catch (error) {
     console.error('❌ Error initializing database:', error)
     throw error
+  }
+} 
+
+export async function initializeLeaveBalance(userId: string): Promise<boolean> {
+  try {
+    // Check if leave balance already exists
+    const existingBalance = await getLeaveBalance(userId)
+    if (existingBalance) {
+      console.log('✅ Leave balance already exists for user:', userId)
+      return true
+    }
+
+    // Create new leave balance with default values
+    const { error } = await supabase
+      .from('leave_balances')
+      .insert([{
+        id: crypto.randomUUID(),
+        user_id: userId,
+        casual_leave: 6,      // Default 6 days
+        sick_leave: 6,        // Default 6 days
+        privilege_leave: 18,  // Default 18 days
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }])
+
+    if (error) {
+      console.error('Error initializing leave balance:', error)
+      return false
+    }
+
+    console.log('✅ Leave balance initialized for user:', userId)
+    return true
+  } catch (error) {
+    console.error('Error initializing leave balance:', error)
+    return false
+  }
+}
+
+export async function ensureLeaveBalanceExists(userId: string): Promise<boolean> {
+  try {
+    const balance = await getLeaveBalance(userId)
+    if (balance) {
+      return true
+    }
+    
+    // If no balance exists, create one with default values
+    return await initializeLeaveBalance(userId)
+  } catch (error) {
+    console.error('Error ensuring leave balance exists:', error)
+    return false
+  }
+}
+
+export function getTotalAllocatedLeave(): { casual: number; sick: number; privilege: number } {
+  return {
+    casual: 6,      // Default 6 days
+    sick: 6,        // Default 6 days
+    privilege: 18   // Default 18 days
   }
 } 
