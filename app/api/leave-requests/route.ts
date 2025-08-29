@@ -19,17 +19,26 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  const timestamp = new Date().toISOString()
+  
   try {
+    console.log(`[${timestamp}] POST /api/leave-requests - Starting request processing`)
+    
     const body = await request.json()
     const { user_id, leave_type, start_date, end_date, reason } = body
+    
+    console.log(`[${timestamp}] Request data:`, { user_id, leave_type, start_date, end_date, reason: reason ? 'PROVIDED' : 'MISSING' })
 
     // Validate required fields
     if (!user_id || !leave_type || !start_date || !end_date || !reason) {
+      console.log(`[${timestamp}] Validation failed - missing fields`)
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
       )
     }
+
+    console.log(`[${timestamp}] Validation passed - creating leave request`)
 
     // Create leave request via Supabase service
     const requestId = await createLeaveRequest({
@@ -40,25 +49,27 @@ export async function POST(request: NextRequest) {
       reason
     })
 
-    console.log('Leave request created via Supabase:', requestId)
+    console.log(`[${timestamp}] Leave request created via Supabase:`, requestId)
 
     // Send email notification to manager
+    console.log(`[${timestamp}] Starting email notification process`)
     try {
       const emailResult = await sendManagerNotification(requestId, user_id, leave_type, start_date, end_date, reason)
       if (emailResult) {
-        console.log('Manager notification sent successfully');
+        console.log(`[${timestamp}] ✅ Manager notification sent successfully`);
       } else {
-        console.log('Manager notification failed to send');
+        console.log(`[${timestamp}] ❌ Manager notification failed to send`);
       }
     } catch (error) {
-      console.error('Error sending manager notification:', error)
+      console.error(`[${timestamp}] ❌ Error sending manager notification:`, error)
       // Don't fail the request creation if email fails
     }
 
+    console.log(`[${timestamp}] Request processing completed successfully`)
     return NextResponse.json({ id: requestId }, { status: 201 })
 
   } catch (error) {
-    console.error('Error creating leave request:', error)
+    console.error(`[${timestamp}] ❌ Error creating leave request:`, error)
     return NextResponse.json(
       { error: 'Failed to create leave request' },
       { status: 500 }

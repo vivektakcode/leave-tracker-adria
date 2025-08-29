@@ -26,17 +26,23 @@ export interface EmailNotificationData {
 }
 
 export async function sendLeaveRequestNotification(data: EmailNotificationData): Promise<boolean> {
+  const timestamp = new Date().toISOString()
+  
   try {
+    console.log(`[${timestamp}] 📧 Starting email notification to:`, data.managerEmail)
+    
     if (!process.env.RESEND_API_KEY) {
-      console.error('RESEND_API_KEY environment variable is not set');
+      console.error(`[${timestamp}] ❌ RESEND_API_KEY environment variable is not set`);
       return false;
     }
 
     const resendClient = getResendClient();
     if (!resendClient) {
-      console.error('Failed to initialize Resend client');
+      console.error(`[${timestamp}] ❌ Failed to initialize Resend client`);
       return false;
     }
+    
+    console.log(`[${timestamp}] 📧 Sending email via Resend...`)
     
     const { data: emailResult, error } = await resendClient.emails.send({
       from: 'Leave Tracker <onboarding@resend.dev>',
@@ -46,14 +52,14 @@ export async function sendLeaveRequestNotification(data: EmailNotificationData):
     });
 
     if (error) {
-      console.error('Resend API error:', error);
+      console.error(`[${timestamp}] ❌ Resend API error:`, error);
       return false;
     }
 
-    console.log('Email sent successfully via Resend:', emailResult?.id);
+    console.log(`[${timestamp}] ✅ Email sent successfully via Resend. ID:`, emailResult?.id);
     return true;
   } catch (error) {
-    console.error('Unexpected error sending email:', error);
+    console.error(`[${timestamp}] ❌ Unexpected error sending email:`, error);
     return false;
   }
 }
