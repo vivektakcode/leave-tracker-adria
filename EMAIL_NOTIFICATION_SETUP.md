@@ -37,24 +37,7 @@ This document explains how to set up the email notification system for the Leave
    - Add your domain in Resend dashboard
    - Update the `from` field in `lib/emailService.ts`
 
-### Option 2: Nodemailer (Development/Testing)
 
-For local development or testing, you can use Nodemailer with Gmail or other SMTP providers.
-
-#### Gmail Setup:
-
-1. **Enable 2-Factor Authentication** on your Gmail account
-2. **Generate App Password**:
-   - Go to Google Account settings
-   - Security → 2-Step Verification → App passwords
-   - Generate password for "Mail"
-3. **Configure Environment**:
-   ```bash
-   SMTP_HOST=smtp.gmail.com
-   SMTP_PORT=587
-   SMTP_USER=your_email@gmail.com
-   SMTP_PASS=your_app_password
-   ```
 
 ## 🔧 Configuration
 
@@ -75,7 +58,7 @@ RESEND_FROM_EMAIL=noreply@yourdomain.com
 
 The `NEXT_PUBLIC_WEBSITE_URL` should point to your deployed application:
 
-- **Local Development**: `http://localhost:4444`
+- **Local Development**: `https://your-domain.vercel.app`
 - **Vercel**: `https://your-app.vercel.app`
 - **Custom Domain**: `https://yourdomain.com`
 

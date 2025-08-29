@@ -22,7 +22,7 @@ cat .env.local
 # Start development server
 ./start-dev.sh
 
-# Visit: http://localhost:4444/api/init-db
+# Visit: https://your-domain.vercel.app/api/init-db
 # This should initialize the database with sample data
 
 # Test login with demo users

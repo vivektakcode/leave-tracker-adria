@@ -40,19 +40,18 @@ export async function POST(request: NextRequest) {
       reason
     })
 
-    console.log('✅ Leave request created via Supabase:', requestId)
+    console.log('Leave request created via Supabase:', requestId)
 
     // Send email notification to manager
-    console.log('🔔 About to send manager notification for request:', requestId);
     try {
       const emailResult = await sendManagerNotification(requestId, user_id, leave_type, start_date, end_date, reason)
       if (emailResult) {
-        console.log('✅ Manager notification sent successfully');
+        console.log('Manager notification sent successfully');
       } else {
-        console.log('❌ Manager notification failed to send');
+        console.log('Manager notification failed to send');
       }
     } catch (error) {
-      console.error('❌ Error sending manager notification:', error)
+      console.error('Error sending manager notification:', error)
       // Don't fail the request creation if email fails
     }
 
@@ -112,27 +111,26 @@ async function sendManagerNotification(
   reason: string
 ): Promise<boolean> {
   try {
-    console.log('🔍 Starting manager notification process...');
-    
     // Get user details
     const user = await getUserById(userId)
     if (!user) {
-      console.warn('❌ User not found for notification:', userId)
+      console.warn('User not found for notification:', userId)
       return false
     }
-    console.log('✅ User found:', user.name);
 
     // Get manager details
     const manager = await getUserManager(userId)
     if (!manager) {
-      console.warn('❌ Manager not found for user:', userId)
+      console.warn('Manager not found for user:', userId)
       return false
     }
-    console.log('✅ Manager found:', manager.name, 'Email:', manager.email);
 
-    // Get website URL from environment or use default
-    const websiteUrl = process.env.NEXT_PUBLIC_WEBSITE_URL || 'http://localhost:4444'
-    console.log('🌐 Website URL:', websiteUrl);
+    // Get website URL from environment
+    const websiteUrl = process.env.NEXT_PUBLIC_WEBSITE_URL
+    if (!websiteUrl) {
+      console.error('NEXT_PUBLIC_WEBSITE_URL environment variable is not set')
+      return false
+    }
     
     // Send email notification
     const emailSent = await sendLeaveRequestNotification({
@@ -148,14 +146,14 @@ async function sendManagerNotification(
     })
 
     if (emailSent) {
-      console.log('✅ Manager notification sent successfully to:', manager.email)
+      console.log('Manager notification sent successfully to:', manager.email)
       return true
     } else {
-      console.warn('❌ Failed to send manager notification to:', manager.email)
+      console.warn('Failed to send manager notification to:', manager.email)
       return false
     }
   } catch (error) {
-    console.error('❌ Error in sendManagerNotification:', error)
+    console.error('Error in sendManagerNotification:', error)
     return false
   }
 }

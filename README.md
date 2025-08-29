@@ -122,14 +122,14 @@ Leave Tracker/
 
 5. **Initialize the database**
    ```bash
-   # Visit: http://localhost:4444/api/init-db
+   # Visit: https://your-domain.vercel.app/api/init-db
    # This will create sample employees and leave requests
    ```
 
 
 
 7. **Open your browser**
-   - Navigate to: `http://localhost:4444`
+   - Navigate to: `https://your-domain.vercel.app`
    - Use any of the demo credentials above
 
 ## 🌐 **Vercel Deployment**

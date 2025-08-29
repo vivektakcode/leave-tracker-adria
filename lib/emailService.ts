@@ -6,17 +6,8 @@ let resend: Resend | null = null;
 function getResendClient(): Resend | null {
   const apiKey = process.env.RESEND_API_KEY;
   
-  console.log('🔍 getResendClient called');
-  console.log('🔍 RESEND_API_KEY exists:', !!apiKey);
-  console.log('🔍 RESEND_API_KEY value:', apiKey ? `${apiKey.substring(0, 10)}...` : 'NOT SET');
-  
   if (!resend && apiKey) {
-    console.log('✅ Creating new Resend client');
     resend = new Resend(apiKey);
-  } else if (!apiKey) {
-    console.log('❌ No API key found');
-  } else {
-    console.log('✅ Using existing Resend client');
   }
   
   return resend;
@@ -36,19 +27,16 @@ export interface EmailNotificationData {
 
 export async function sendLeaveRequestNotification(data: EmailNotificationData): Promise<boolean> {
   try {
-    // Check if API key exists
     if (!process.env.RESEND_API_KEY) {
-      console.error('❌ RESEND_API_KEY environment variable is not set');
+      console.error('RESEND_API_KEY environment variable is not set');
       return false;
     }
 
     const resendClient = getResendClient();
     if (!resendClient) {
-      console.error('❌ Failed to initialize Resend client');
+      console.error('Failed to initialize Resend client');
       return false;
     }
-
-    console.log('📧 Attempting to send email to:', data.managerEmail);
     
     const { data: emailResult, error } = await resendClient.emails.send({
       from: 'Leave Tracker <onboarding@resend.dev>',
@@ -58,14 +46,14 @@ export async function sendLeaveRequestNotification(data: EmailNotificationData):
     });
 
     if (error) {
-      console.error('❌ Resend API error:', error);
+      console.error('Resend API error:', error);
       return false;
     }
 
-    console.log('✅ Email sent successfully via Resend. Email ID:', emailResult?.id);
+    console.log('Email sent successfully via Resend:', emailResult?.id);
     return true;
   } catch (error) {
-    console.error('❌ Unexpected error sending email:', error);
+    console.error('Unexpected error sending email:', error);
     return false;
   }
 }
