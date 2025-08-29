@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
-import { getLeaveBalance } from '../../../lib/supabaseService'
-import { withManagerOrSelf, AuthenticatedRequest } from '../../../lib/authMiddleware'
+import { getLeaveBalance } from '../../lib/supabaseService'
+import { withManagerOrSelf, AuthenticatedRequest } from '../../lib/authMiddleware'
 
 export const GET = withManagerOrSelf()(async (req: AuthenticatedRequest) => {
   try {

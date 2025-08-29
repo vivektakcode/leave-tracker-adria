@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
-import { getUserLeaveRequests } from '../../../lib/supabaseService'
-import { withManagerOrSelf, AuthenticatedRequest } from '../../../lib/authMiddleware'
+import { getUserLeaveRequests } from '../../lib/supabaseService'
+import { withManagerOrSelf, AuthenticatedRequest } from '../../lib/authMiddleware'
 
 export const GET = withManagerOrSelf()(async (req: AuthenticatedRequest) => {
   try {
