@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { processLeaveRequest, getUsersByManager, supabase } from '../../../lib/supabaseService'
-import { withRole, AuthenticatedRequest } from '../../../lib/authMiddleware'
+import { processLeaveRequest, getUsersByManager, supabase } from '@/lib/supabaseService'
+import { withRole, AuthenticatedRequest } from '@/lib/authMiddleware'
 
 export const POST = withRole('manager')(async (req: AuthenticatedRequest) => {
   try {
