@@ -4,7 +4,7 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
-const supabase = createClient(supabaseUrl, supabaseKey)
+export const supabase = createClient(supabaseUrl, supabaseKey)
 
 export interface User {
   id: string
@@ -228,8 +228,9 @@ export async function createUser(userData: Omit<User, 'id' | 'created_at'>): Pro
   }
 }
 
-// Authentication function
+// Authentication function - DEPRECATED: Use API route instead
 export async function authenticateUser(username: string, password: string): Promise<User | null> {
+  console.warn('⚠️ authenticateUser is deprecated. Use the secure API route instead.')
   try {
     const user = await getUserByUsername(username)
     if (user && user.password === password) {
@@ -626,11 +627,12 @@ export async function initializeDatabase(): Promise<void> {
       return
     }
 
-    // Sample users
+    // Sample users - Note: These are for development only
+    // In production, use the signup API route which properly hashes passwords
     const users = [
       {
         username: 'manager1',
-        password: 'manager123',
+        password: 'Manager123!', // Strong password for demo
         name: 'John Manager',
         email: 'manager@company.com',
         role: 'manager' as const,
@@ -638,7 +640,7 @@ export async function initializeDatabase(): Promise<void> {
       },
       {
         username: 'employee1',
-        password: 'emp123',
+        password: 'Employee123!', // Strong password for demo
         name: 'Jane Employee',
         email: 'employee@company.com',
         role: 'employee' as const,
