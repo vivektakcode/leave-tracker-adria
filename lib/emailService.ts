@@ -36,13 +36,19 @@ export interface EmailNotificationData {
 
 export async function sendLeaveRequestNotification(data: EmailNotificationData): Promise<boolean> {
   try {
-    const resendClient = getResendClient();
-    if (!resendClient) {
-      console.error('❌ Resend client not initialized - API key missing');
+    // Check if API key exists
+    if (!process.env.RESEND_API_KEY) {
+      console.error('❌ RESEND_API_KEY environment variable is not set');
       return false;
     }
 
-    console.log('📧 Sending email via Resend to:', data.managerEmail);
+    const resendClient = getResendClient();
+    if (!resendClient) {
+      console.error('❌ Failed to initialize Resend client');
+      return false;
+    }
+
+    console.log('📧 Attempting to send email to:', data.managerEmail);
     
     const { data: emailResult, error } = await resendClient.emails.send({
       from: 'Leave Tracker <onboarding@resend.dev>',
@@ -56,7 +62,7 @@ export async function sendLeaveRequestNotification(data: EmailNotificationData):
       return false;
     }
 
-    console.log('✅ Email sent successfully via Resend:', emailResult?.id);
+    console.log('✅ Email sent successfully via Resend. Email ID:', emailResult?.id);
     return true;
   } catch (error) {
     console.error('❌ Unexpected error sending email:', error);
