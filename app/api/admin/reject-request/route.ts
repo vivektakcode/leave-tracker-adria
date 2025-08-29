@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { processLeaveRequest, getUsersByManager, supabase } from '../../../../../lib/supabaseService'
-import { withRole, AuthenticatedRequest } from '../../../../../lib/authMiddleware'
+import { processLeaveRequest, getUsersByManager, supabase } from '../../../lib/supabaseService'
+import { withRole, AuthenticatedRequest } from '../../../lib/authMiddleware'
 
 export const POST = withRole('manager')(async (req: AuthenticatedRequest) => {
   try {
-    const requestId = req.nextUrl?.pathname.split('/')[4] // Extract ID from path
+    const body = await req.json()
+    const { requestId, comments } = body
     
     if (!requestId) {
       return NextResponse.json(
@@ -14,8 +15,6 @@ export const POST = withRole('manager')(async (req: AuthenticatedRequest) => {
     }
     
     const managerId = req.user!.userId
-    const body = await req.json()
-    const { comments } = body
     
     // Check if the manager can process this request
     const { data: request } = await supabase

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useAuth } from '../contexts/JsonAuthContext'
+import { useAuth } from '../contexts/SecureAuthContext'
 import SignupForm from '../components/SignupForm'
 import LoginForm from '../components/LoginForm'
 import LeaveBalanceDashboard from '../components/LeaveBalanceDashboard'

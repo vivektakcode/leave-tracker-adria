@@ -1,6 +1,6 @@
 import './globals.css'
 import { Inter } from 'next/font/google'
-import { AuthProvider } from '../contexts/JsonAuthContext'
+import { SecureAuthProvider } from '../contexts/SecureAuthContext'
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -21,11 +21,11 @@ export default function RootLayout({
   return (
     <html lang="en" className={inter.variable}>
       <body className={`${inter.className} gradient-bg`}>
-        <AuthProvider>
+        <SecureAuthProvider>
           <div className="min-h-screen relative z-10">
             {children}
           </div>
-        </AuthProvider>
+        </SecureAuthProvider>
       </body>
     </html>
   )

@@ -20,9 +20,9 @@ class ApiClient {
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`
     
-    const headers: HeadersInit = {
+    const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      ...options.headers
+      ...(options.headers as Record<string, string>)
     }
 
     if (this.token) {
@@ -64,12 +64,17 @@ class ApiClient {
   // User methods
   async getUserBalance(userId?: string) {
     const params = userId ? `?userId=${userId}` : ''
-    return this.request<{ balance: any }>(`/api/user/balance${params}`)
+    return this.request<{ balance: any }>(`/api/user/leave-balance${params}`)
   }
 
   async getUserRequests(userId?: string) {
     const params = userId ? `?userId=${userId}` : ''
-    return this.request<{ requests: any[] }>(`/api/user/requests${params}`)
+    return this.request<{ requests: any[] }>(`/api/user/my-requests${params}`)
+  }
+
+  async getUserManager(userId?: string) {
+    const params = userId ? `?userId=${userId}` : ''
+    return this.request<{ manager: any }>(`/api/user/manager${params}`)
   }
 
   // Leave request methods
@@ -105,15 +110,16 @@ class ApiClient {
   }
 
   async approveLeaveRequest(requestId: string) {
-    return this.request<{ success: boolean; message: string }>(`/api/admin/requests/${requestId}/approve`, {
-      method: 'POST'
+    return this.request<{ success: boolean; message: string }>('/api/admin/approve-request', {
+      method: 'POST',
+      body: JSON.stringify({ requestId })
     })
   }
 
   async rejectLeaveRequest(requestId: string, comments?: string) {
-    return this.request<{ success: boolean; message: string }>(`/api/admin/requests/${requestId}/reject`, {
+    return this.request<{ success: boolean; message: string }>('/api/admin/reject-request', {
       method: 'POST',
-      body: JSON.stringify({ comments })
+      body: JSON.stringify({ requestId, comments })
     })
   }
 }

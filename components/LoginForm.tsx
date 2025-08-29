@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useAuth } from '../contexts/JsonAuthContext'
+import { useAuth } from '../contexts/SecureAuthContext'
 
 export default function LoginForm() {
   const [username, setUsername] = useState('')

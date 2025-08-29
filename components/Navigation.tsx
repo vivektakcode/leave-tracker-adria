@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useAuth } from '../contexts/JsonAuthContext'
+import { useAuth } from '../contexts/SecureAuthContext'
 
 interface NavigationProps {
   userEmail: string

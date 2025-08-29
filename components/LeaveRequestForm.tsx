@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { User, createLeaveRequest, getLeaveBalance, getUserManager } from '../lib/supabaseService'
+import { User } from '../lib/supabaseService'
+import { apiClient } from '../lib/apiClient'
 import { isDateDisabled, getMinEndDate, getNextBusinessDay } from '../utils/dateUtils'
 import BusinessDatePicker from './BusinessDatePicker'
 
@@ -62,17 +63,24 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
   // Fetch leave balance when component mounts
   useEffect(() => {
     const fetchData = async () => {
-      const [balance, manager] = await Promise.all([
-        getLeaveBalance(employee.id),
-        getUserManager(employee.id)
-      ])
-      
-      if (balance) {
-        setLeaveBalance(balance)
-      }
-      
-      if (manager) {
-        setManagerInfo({ name: manager.name, department: manager.department })
+      try {
+        const [balanceResponse, managerResponse] = await Promise.all([
+          apiClient.getUserBalance(employee.id),
+          apiClient.getUserManager(employee.id)
+        ])
+        
+        if (balanceResponse?.balance) {
+          setLeaveBalance(balanceResponse.balance)
+        }
+        
+        if (managerResponse?.manager) {
+          setManagerInfo({ 
+            name: managerResponse.manager.name, 
+            department: managerResponse.manager.department 
+          })
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error)
       }
     }
     
@@ -197,7 +205,7 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
 
     try {
       // Create leave request
-      const requestId = await createLeaveRequest({
+      const response = await apiClient.createLeaveRequest({
         user_id: employee.id,
         leave_type: leaveType,
         start_date: startDate,
@@ -205,6 +213,8 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
         reason: reason.trim(),
         is_half_day: isHalfDay
       })
+      
+      const requestId = response.id
 
       setSuccess(`Leave request submitted successfully! Request ID: ${requestId}`)
       

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { verifyToken, extractTokenFromHeader } from '../../../lib/jwtUtils'
-import { getUserById } from '../../../lib/supabaseService'
+import { verifyToken, extractTokenFromHeader } from '../../../../lib/jwtUtils'
+import { getUserById } from '../../../../lib/supabaseService'
 
 export async function GET(request: NextRequest) {
   try {
