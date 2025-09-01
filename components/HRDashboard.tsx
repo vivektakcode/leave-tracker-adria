@@ -7,6 +7,7 @@ import {
   getHolidayCalendar, 
   createHolidayCalendar,
   updateHolidayCalendar,
+  deleteHolidayCalendar,
   User,
   HolidayCalendar,
   Holiday
@@ -39,6 +40,8 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
 
   // Holiday management state
   const [showCreateHoliday, setShowCreateHoliday] = useState(false)
+  const [showEditHoliday, setShowEditHoliday] = useState(false)
+  const [editingCalendar, setEditingCalendar] = useState<HolidayCalendar | null>(null)
   const [newHoliday, setNewHoliday] = useState({
     country: '',
     year: new Date().getFullYear(),
@@ -117,6 +120,87 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
       loadData()
     } catch (error: any) {
       setError(error.message || 'Failed to create holiday calendar')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleEditHoliday = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editingCalendar) return
+    
+    setLoading(true)
+    setError('')
+    setSuccess('')
+
+    try {
+      await updateHolidayCalendar(editingCalendar.id, {
+        holidays: editingCalendar.holidays
+      })
+      setSuccess('Holiday calendar updated successfully!')
+      setShowEditHoliday(false)
+      setEditingCalendar(null)
+      loadData()
+    } catch (error: any) {
+      setError(error.message || 'Failed to update holiday calendar')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const startEditHoliday = (calendar: HolidayCalendar) => {
+    setEditingCalendar({ ...calendar })
+    setShowEditHoliday(true)
+  }
+
+  const updateEditingHoliday = (index: number, field: keyof Holiday, value: string) => {
+    if (!editingCalendar) return
+    
+    setEditingCalendar(prev => ({
+      ...prev!,
+      holidays: prev!.holidays.map((holiday, i) => 
+        i === index ? { ...holiday, [field]: value } : holiday
+      )
+    }))
+  }
+
+  const addHolidayToEditing = () => {
+    if (!editingCalendar) return
+    
+    setEditingCalendar(prev => ({
+      ...prev!,
+      holidays: [...prev!.holidays, {
+        date: '',
+        name: '',
+        type: 'public'
+      }]
+    }))
+  }
+
+  const removeEditingHoliday = (index: number) => {
+    if (!editingCalendar) return
+    
+    setEditingCalendar(prev => ({
+      ...prev!,
+      holidays: prev!.holidays.filter((_, i) => i !== index)
+    }))
+  }
+
+  const handleDeleteHoliday = async (calendarId: string) => {
+    if (!confirm('Are you sure you want to delete this holiday calendar? This action cannot be undone.')) {
+      return
+    }
+    
+    setLoading(true)
+    setError('')
+    setSuccess('')
+
+    try {
+      await deleteHolidayCalendar(calendarId)
+      setSuccess('Holiday calendar deleted successfully!')
+      loadData()
+    } catch (error: any) {
+      setError(error.message || 'Failed to delete holiday calendar')
     } finally {
       setLoading(false)
     }
@@ -301,15 +385,35 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
           <div>
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-semibold text-gray-900">Holiday Calendars</h2>
-              <button
-                onClick={() => setShowCreateHoliday(true)}
-                className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors"
-              >
-                Add Holiday Calendar
-              </button>
+              <div className="flex space-x-3">
+                <button
+                  onClick={loadData}
+                  className="bg-gray-600 text-white px-3 py-2 rounded-lg hover:bg-gray-700 transition-colors text-sm"
+                >
+                  🔄 Refresh
+                </button>
+                <button
+                  onClick={() => setShowCreateHoliday(true)}
+                  className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors"
+                >
+                  Add Holiday Calendar
+                </button>
+              </div>
             </div>
 
             {/* Holiday Calendars */}
+            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex items-center space-x-2 text-sm text-blue-700">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>
+                  <strong>Real-time Updates:</strong> When you update holiday calendars, users will see the changes immediately in their leave request forms. 
+                  Use the Refresh button to ensure you have the latest data.
+                </span>
+              </div>
+            </div>
+
             <div className="grid gap-6">
               {holidayCalendars.map((calendar) => (
                 <div key={calendar.id} className="bg-white shadow rounded-lg p-6">
@@ -317,9 +421,23 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
                     <h3 className="text-lg font-semibold text-gray-900">
                       {calendar.country} - {calendar.year}
                     </h3>
-                    <span className="text-sm text-gray-500">
-                      {calendar.holidays.length} holidays
-                    </span>
+                    <div className="flex items-center space-x-3">
+                      <span className="text-sm text-gray-500">
+                        {calendar.holidays.length} holidays
+                      </span>
+                      <button
+                        onClick={() => startEditHoliday(calendar)}
+                        className="text-sm text-orange-600 hover:text-orange-700 font-medium"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDeleteHoliday(calendar.id)}
+                        className="text-sm text-red-600 hover:text-red-700 font-medium"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </div>
                   
                   <div className="grid gap-3">
@@ -563,6 +681,95 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
                       className="px-4 py-2 text-sm font-medium text-white bg-orange-600 border border-transparent rounded-md hover:bg-orange-700 disabled:opacity-50"
                     >
                       {loading ? 'Creating...' : 'Create Calendar'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Edit Holiday Modal */}
+        {showEditHoliday && editingCalendar && (
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+            <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+              <div className="mt-3">
+                <h3 className="text-lg font-medium text-gray-900 mb-4">
+                  Edit Holiday Calendar - {editingCalendar.country} {editingCalendar.year}
+                </h3>
+                <form onSubmit={handleEditHoliday} className="space-y-4">
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <label className="block text-sm font-medium text-gray-700">Holidays</label>
+                      <button
+                        type="button"
+                        onClick={addHolidayToEditing}
+                        className="text-sm text-orange-600 hover:text-orange-700"
+                      >
+                        + Add Holiday
+                      </button>
+                    </div>
+                    <div className="space-y-3">
+                      {editingCalendar.holidays.map((holiday, index) => (
+                        <div key={index} className="p-3 border border-gray-200 rounded-lg">
+                          <div className="grid grid-cols-2 gap-2 mb-2">
+                            <input
+                              type="date"
+                              required
+                              value={holiday.date}
+                              onChange={(e) => updateEditingHoliday(index, 'date', e.target.value)}
+                              className="block w-full border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                            />
+                            <select
+                              required
+                              value={holiday.type}
+                              onChange={(e) => updateEditingHoliday(index, 'type', e.target.value) as any}
+                              className="block w-full border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                            >
+                              <option value="public">Public</option>
+                              <option value="company">Company</option>
+                              <option value="optional">Optional</option>
+                            </select>
+                          </div>
+                          <div className="flex gap-2">
+                            <input
+                              type="text"
+                              required
+                              placeholder="Holiday name"
+                              value={holiday.name}
+                              onChange={(e) => updateEditingHoliday(index, 'name', e.target.value)}
+                              className="flex-1 border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => removeEditingHoliday(index)}
+                              className="text-red-600 hover:text-red-700 text-sm"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div className="flex justify-end space-x-3 pt-4">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowEditHoliday(false)
+                        setEditingCalendar(null)
+                      }}
+                      className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={loading || editingCalendar.holidays.length === 0}
+                      className="px-4 py-2 text-sm font-medium text-white bg-orange-600 border border-transparent hover:bg-orange-700 disabled:opacity-50"
+                    >
+                      {loading ? 'Updating...' : 'Update Calendar'}
                     </button>
                   </div>
                 </form>

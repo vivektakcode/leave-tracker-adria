@@ -648,6 +648,25 @@ export async function updateHolidayCalendar(id: string, updates: Partial<Holiday
   }
 }
 
+export async function deleteHolidayCalendar(id: string): Promise<boolean> {
+  try {
+    const { error } = await supabase
+      .from('holiday_calendars')
+      .delete()
+      .eq('id', id)
+
+    if (error) {
+      console.error('Error deleting holiday calendar:', error)
+      return false
+    }
+
+    return true
+  } catch (error) {
+    console.error('Error deleting holiday calendar:', error)
+    return false
+  }
+}
+
 export async function getHolidaysForPeriod(country: string, startDate: string, endDate: string): Promise<Holiday[]> {
   try {
     const { data, error } = await supabase
