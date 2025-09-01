@@ -76,7 +76,7 @@ INSERT INTO holiday_calendars (id, country, year, holidays, created_by) VALUES
     {"date": "2024-08-15", "name": "Independence Day", "type": "public"},
     {"date": "2024-09-27", "name": "Prophet Muhammad Birthday", "type": "public"},
     {"date": "2024-10-02", "name": "Gandhi Jayanti", "type": "public"},
-    {"date": "2024-11-14", "name": "Children\'s Day", "type": "public"}
+    {"date": "2024-11-14", "name": "Children''s Day", "type": "public"}
   ]',
   (SELECT id FROM users WHERE role = 'manager' LIMIT 1)
 ) ON CONFLICT (country, year) DO NOTHING;
