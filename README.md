@@ -321,4 +321,4 @@ For support or questions:
 
 ---
 
-**Built with ❤️ for simple, effective leave management with Vercel KV** 
+**Built with ❤️ for simple, effective leave management with Vercel KV** # Force rebuild Mon Sep  1 13:03:24 IST 2025
