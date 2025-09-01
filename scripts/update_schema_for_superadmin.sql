@@ -171,6 +171,10 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- 7. Create function to calculate working days (excluding holidays)
+-- Drop existing function first to handle parameter changes
+DROP FUNCTION IF EXISTS calculate_working_days(DATE, DATE, TEXT);
+DROP FUNCTION IF EXISTS calculate_working_days(DATE, DATE, TEXT DEFAULT 'Morocco');
+
 CREATE OR REPLACE FUNCTION calculate_working_days(
   start_date DATE,
   end_date DATE,
