@@ -1,238 +1,150 @@
-import { Resend } from 'resend';
+import { createTransport } from 'nodemailer'
 
-// Initialize Resend client lazily to avoid build-time errors
-let resend: Resend | null = null;
-
-function getResendClient(): Resend | null {
-  const apiKey = process.env.RESEND_API_KEY;
-  
-  if (!resend && apiKey) {
-    resend = new Resend(apiKey);
-  }
-  
-  return resend;
+// Email configuration - supports both Gmail and custom domains
+const emailConfig = {
+  host: process.env.SMTP_HOST || 'smtp.gmail.com',
+  port: parseInt(process.env.SMTP_PORT || '587'),
+  secure: false, // true for 465, false for other ports
+  auth: {
+    user: process.env.SMTP_USER || process.env.GMAIL_USER,
+    pass: process.env.SMTP_PASS || process.env.GMAIL_APP_PASSWORD,
+  },
 }
 
-export interface EmailNotificationData {
-  managerName: string;
-  managerEmail: string;
-  employeeName: string;
-  leaveType: string;
-  startDate: string;
-  endDate: string;
-  reason: string;
-  requestId: string;
-  websiteUrl: string;
-}
+// Create transporter
+const transporter = createTransport(emailConfig)
 
-export async function sendLeaveRequestNotification(data: EmailNotificationData): Promise<boolean> {
-  const timestamp = new Date().toISOString()
-  
-  try {
-    console.log(`[${timestamp}] 📧 Starting email notification to:`, data.managerEmail)
-    
-    if (!process.env.RESEND_API_KEY) {
-      console.error(`[${timestamp}] ❌ RESEND_API_KEY environment variable is not set`);
-      return false;
-    }
-
-    const resendClient = getResendClient();
-    if (!resendClient) {
-      console.error(`[${timestamp}] ❌ Failed to initialize Resend client`);
-      return false;
-    }
-    
-    console.log(`[${timestamp}] 📧 Sending email via Resend...`)
-    
-    const { data: emailResult, error } = await resendClient.emails.send({
-      from: 'Leave Tracker <onboarding@resend.dev>',
-      to: [data.managerEmail],
-      subject: `Leave Request from ${data.employeeName} - Action Required`,
-      html: generateLeaveRequestEmailHTML(data),
-    });
-
-    if (error) {
-      console.error(`[${timestamp}] ❌ Resend API error:`, error);
-      return false;
-    }
-
-    console.log(`[${timestamp}] ✅ Email sent successfully via Resend. ID:`, emailResult?.id);
-    return true;
-  } catch (error) {
-    console.error(`[${timestamp}] ❌ Unexpected error sending email:`, error);
-    return false;
-  }
-}
-
-function generateLeaveRequestEmailHTML(data: EmailNotificationData): string {
-  const formattedStartDate = new Date(data.startDate).toLocaleDateString();
-  const formattedEndDate = new Date(data.endDate).toLocaleDateString();
-  
-  return `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Leave Request Notification</title>
-      <style>
-        body {
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-          line-height: 1.6;
-          color: #333;
-          max-width: 600px;
-          margin: 0 auto;
-          padding: 20px;
-          background-color: #f8f9fa;
-        }
-        .container {
-          background-color: white;
-          border-radius: 8px;
-          padding: 30px;
-          box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        .header {
-          text-align: center;
-          margin-bottom: 30px;
-          padding-bottom: 20px;
-          border-bottom: 2px solid #e9ecef;
-        }
-        .logo {
-          font-size: 24px;
-          font-weight: bold;
-          color: #007bff;
-          margin-bottom: 10px;
-        }
-        .title {
-          color: #495057;
-          font-size: 18px;
-          margin: 0;
-        }
-        .content {
-          margin-bottom: 30px;
-        }
-        .request-details {
-          background-color: #f8f9fa;
-          border-radius: 6px;
-          padding: 20px;
-          margin: 20px 0;
-        }
-        .detail-row {
-          display: flex;
-          justify-content: space-between;
-          margin-bottom: 10px;
-          padding: 8px 0;
-          border-bottom: 1px solid #e9ecef;
-        }
-        .detail-row:last-child {
-          border-bottom: none;
-        }
-        .detail-label {
-          font-weight: 600;
-          color: #495057;
-        }
-        .detail-value {
-          color: #6c757d;
-        }
-        .cta-section {
-          text-align: center;
-          margin: 30px 0;
-        }
-        .cta-button {
-          display: inline-block;
-          background-color: #007bff;
-          color: white;
-          text-decoration: none;
-          padding: 15px 30px;
-          border-radius: 6px;
-          font-weight: 600;
-          font-size: 16px;
-          transition: background-color 0.2s;
-        }
-        .cta-button:hover {
-          background-color: #0056b3;
-        }
-        .footer {
-          text-align: center;
-          margin-top: 30px;
-          padding-top: 20px;
-          border-top: 1px solid #e9ecef;
-          color: #6c757d;
-          font-size: 14px;
-        }
-        .highlight {
-          background-color: #fff3cd;
-          border: 1px solid #ffeaa7;
-          border-radius: 4px;
-          padding: 15px;
-          margin: 20px 0;
-        }
-        .highlight-title {
-          font-weight: 600;
-          color: #856404;
-          margin-bottom: 8px;
-        }
-      </style>
-    </head>
-    <body>
-      <div class="container">
-        <div class="header">
-          <div class="logo">🏢 Leave Tracker</div>
-          <h1 class="title">Leave Request Notification</h1>
+// Email templates
+const emailTemplates = {
+  leaveRequest: (managerName: string, employeeName: string, startDate: string, endDate: string, leaveType: string) => ({
+    subject: `Leave Request from ${employeeName}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #f97316;">Leave Request Notification</h2>
+        <p>Hello ${managerName},</p>
+        <p>You have received a leave request from <strong>${employeeName}</strong>:</p>
+        <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <p><strong>Leave Type:</strong> ${leaveType}</p>
+          <p><strong>Start Date:</strong> ${startDate}</p>
+          <p><strong>End Date:</strong> ${endDate}</p>
         </div>
-        
-        <div class="content">
-          <p>Hello <strong>${data.managerName}</strong>,</p>
-          
-          <p>A new leave request has been submitted by one of your team members and requires your approval.</p>
-          
-          <div class="request-details">
-            <div class="detail-row">
-              <span class="detail-label">Employee:</span>
-              <span class="detail-value">${data.employeeName}</span>
-            </div>
-            <div class="detail-row">
-              <span class="detail-label">Leave Type:</span>
-              <span class="detail-value">${data.leaveType.charAt(0).toUpperCase() + data.leaveType.slice(1)} Leave</span>
-            </div>
-            <div class="detail-row">
-              <span class="detail-label">Start Date:</span>
-              <span class="detail-value">${formattedStartDate}</span>
-            </div>
-            <div class="detail-row">
-              <span class="detail-label">End Date:</span>
-              <span class="detail-value">${formattedEndDate}</span>
-            </div>
-            <div class="detail-row">
-              <span class="detail-label">Reason:</span>
-              <span class="detail-value">${data.reason}</span>
-            </div>
-            <div class="detail-row">
-              <span class="detail-label">Request ID:</span>
-              <span class="detail-value">${data.requestId}</span>
-            </div>
-          </div>
-          
-          <div class="highlight">
-            <div class="highlight-title">⚠️ Action Required</div>
-            <p>Please review and approve/reject this leave request as soon as possible.</p>
-          </div>
+        <p>Please review and approve/reject this request.</p>
+        <p>Best regards,<br>Leave Management System</p>
+      </div>
+    `
+  }),
+
+  leaveReminder: (managerName: string, employeeName: string, startDate: string, endDate: string, daysPending: number) => ({
+    subject: `REMINDER: Pending Leave Request from ${employeeName} (${daysPending} days pending)`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #dc2626;">Leave Request Reminder</h2>
+        <p>Hello ${managerName},</p>
+        <p><strong>This is a reminder</strong> that you have a pending leave request that needs your attention:</p>
+        <div style="background-color: #fef2f2; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #dc2626;">
+          <p><strong>Employee:</strong> ${employeeName}</p>
+          <p><strong>Start Date:</strong> ${startDate}</p>
+          <p><strong>End Date:</strong> ${endDate}</p>
+          <p><strong>Days Pending:</strong> ${daysPending} days</p>
         </div>
-        
-        <div class="cta-section">
-          <a href="${data.websiteUrl}/admin/dashboard" class="cta-button">
-            📋 Review Leave Request
+        <p style="color: #dc2626; font-weight: bold;">Please review and take action on this request.</p>
+        <p>Best regards,<br>Leave Management System</p>
+      </div>
+    `
+  }),
+
+  emailVerification: (userName: string, verificationToken: string) => ({
+    subject: `Verify Your Email Address`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #f97316;">Email Verification Required</h2>
+        <p>Hello ${userName},</p>
+        <p>Welcome to the Leave Management System! Please verify your email address to activate your account.</p>
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${process.env.NEXT_PUBLIC_APP_URL}/verify-email?token=${verificationToken}" 
+             style="background-color: #f97316; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
+            Verify Email Address
           </a>
         </div>
-        
-        <div class="footer">
-          <p>This is an automated notification from the Leave Tracker system.</p>
-          <p>If you have any questions, please contact your system administrator.</p>
-        </div>
+        <p>If the button doesn't work, copy and paste this link into your browser:</p>
+        <p style="word-break: break-all; color: #6b7280;">
+          ${process.env.NEXT_PUBLIC_APP_URL}/verify-email?token=${verificationToken}
+        </p>
+        <p>This link will expire in 24 hours.</p>
+        <p>Best regards,<br>Leave Management System</p>
       </div>
-    </body>
-    </html>
-  `;
+    `
+  })
+}
+
+// Email sending functions
+export async function sendLeaveRequestEmail(managerEmail: string, managerName: string, employeeName: string, startDate: string, endDate: string, leaveType: string): Promise<boolean> {
+  try {
+    const { subject, html } = emailTemplates.leaveRequest(managerName, employeeName, startDate, endDate, leaveType)
+    
+    await transporter.sendMail({
+      from: process.env.SMTP_FROM || process.env.GMAIL_USER,
+      to: managerEmail,
+      subject,
+      html
+    })
+    
+    console.log(`✅ Leave request email sent to ${managerEmail}`)
+    return true
+  } catch (error) {
+    console.error('❌ Error sending leave request email:', error)
+    return false
+  }
+}
+
+export async function sendLeaveReminderEmail(managerEmail: string, managerName: string, employeeName: string, startDate: string, endDate: string, daysPending: number): Promise<boolean> {
+  try {
+    const { subject, html } = emailTemplates.leaveReminder(managerName, employeeName, startDate, endDate, daysPending)
+    
+    await transporter.sendMail({
+      from: process.env.SMTP_FROM || process.env.GMAIL_USER,
+      to: managerEmail,
+      subject,
+      html
+    })
+    
+    console.log(`✅ Leave reminder email sent to ${managerEmail}`)
+    return true
+  } catch (error) {
+    console.error('❌ Error sending leave reminder email:', error)
+    return false
+  }
+}
+
+export async function sendVerificationEmail(userEmail: string, userName: string, verificationToken: string): Promise<boolean> {
+  try {
+    const { subject, html } = emailTemplates.emailVerification(userName, verificationToken)
+    
+    await transporter.sendMail({
+      from: process.env.SMTP_FROM || process.env.GMAIL_USER,
+      to: userEmail,
+      subject,
+      html
+    })
+    
+    console.log(`✅ Verification email sent to ${userEmail}`)
+    return true
+  } catch (error) {
+    console.error('❌ Error sending verification email:', error)
+    return false
+  }
+}
+
+// Test email configuration
+export async function testEmailConfiguration(): Promise<boolean> {
+  try {
+    await transporter.verify()
+    console.log('✅ Email configuration is valid')
+    return true
+  } catch (error) {
+    console.error('❌ Email configuration error:', error)
+    return false
+  }
 }
 
 

@@ -840,3 +840,195 @@ export function getTotalAllocatedLeave(): { casual: number; sick: number; privil
     privilege: 18
   }
 } 
+
+// Auto-approval logic for leave requests
+export function shouldAutoApproveLeave(
+  startDate: string, 
+  endDate: string, 
+  leaveType: string, 
+  numberOfDays: number
+): boolean {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  
+  const start = new Date(startDate)
+  const end = new Date(endDate)
+  
+  // Auto-approve if dates are in the past
+  if (start < today) {
+    return true
+  }
+  
+  // Auto-approve CL for 1-2 days
+  if (leaveType === 'casual' && numberOfDays <= 2) {
+    return true
+  }
+  
+  // Auto-approve PL for any number of days
+  if (leaveType === 'privilege') {
+    return true
+  }
+  
+  return false
+}
+
+// Get pending leave requests that need reminders
+export async function getPendingLeaveRequestsForReminders(): Promise<any[]> {
+  try {
+    const threeDaysAgo = new Date()
+    threeDaysAgo.setDate(threeDaysAgo.getDate() - 3)
+    
+    const { data, error } = await supabase
+      .from('leave_requests')
+      .select(`
+        *,
+        users!leave_requests_user_id_fkey (
+          name,
+          email,
+          manager_id
+        ),
+        managers:users!leave_requests_processed_by_fkey (
+          name,
+          email
+        )
+      `)
+      .eq('status', 'pending')
+      .lt('requested_at', threeDaysAgo.toISOString())
+      .is('processed_at', null)
+
+    if (error) {
+      console.error('Error getting pending leave requests for reminders:', error)
+      return []
+    }
+
+    return data || []
+  } catch (error) {
+    console.error('Error getting pending leave requests for reminders:', error)
+    return []
+  }
+}
+
+// Send leave reminders to managers
+export async function sendLeaveReminders(): Promise<void> {
+  try {
+    const pendingRequests = await getPendingLeaveRequestsForReminders()
+    
+    for (const request of pendingRequests) {
+      if (request.users?.manager_id) {
+        const manager = await getUserById(request.users.manager_id)
+        if (manager) {
+          const daysPending = Math.floor(
+            (new Date().getTime() - new Date(request.requested_at).getTime()) / (1000 * 60 * 60 * 24)
+          )
+          
+          // Import email service dynamically to avoid circular dependencies
+          const { sendLeaveReminderEmail } = await import('./emailService')
+          
+          await sendLeaveReminderEmail(
+            manager.email,
+            manager.name,
+            request.users.name,
+            request.start_date,
+            request.end_date,
+            daysPending
+          )
+        }
+      }
+    }
+    
+    console.log(`✅ Sent ${pendingRequests.length} leave reminders`)
+  } catch (error) {
+    console.error('Error sending leave reminders:', error)
+  }
+}
+
+// Auto-approve eligible leave requests
+export async function autoApproveEligibleLeaves(): Promise<void> {
+  try {
+    const { data: pendingRequests, error } = await supabase
+      .from('leave_requests')
+      .select(`
+        *,
+        users!leave_requests_user_id_fkey (
+          name,
+          email
+        )
+      `)
+      .eq('status', 'pending')
+      .is('processed_at', null)
+
+    if (error) {
+      console.error('Error getting pending leave requests for auto-approval:', error)
+      return
+    }
+
+    for (const request of pendingRequests) {
+      const numberOfDays = calculateDays(request.start_date, request.end_date, request.is_half_day)
+      
+      if (shouldAutoApproveLeave(request.start_date, request.end_date, request.leave_type, numberOfDays)) {
+        // Auto-approve the request
+        const { error: updateError } = await supabase
+          .from('leave_requests')
+          .update({
+            status: 'approved',
+            processed_at: new Date().toISOString(),
+            processed_by: request.user_id, // Self-approved
+            comments: 'Auto-approved based on system rules'
+          })
+          .eq('id', request.id)
+
+        if (updateError) {
+          console.error('Error auto-approving leave request:', updateError)
+        } else {
+          console.log(`✅ Auto-approved leave request ${request.id} for ${request.users.name}`)
+          
+          // Update leave balance
+          await updateLeaveBalanceAfterApproval(request.user_id, request.leave_type, numberOfDays)
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Error auto-approving eligible leaves:', error)
+  }
+}
+
+// Update leave balance after approval
+async function updateLeaveBalanceAfterApproval(userId: string, leaveType: string, numberOfDays: number): Promise<void> {
+  try {
+    const { data: balance, error: fetchError } = await supabase
+      .from('leave_balances')
+      .select('*')
+      .eq('user_id', userId)
+      .single()
+
+    if (fetchError || !balance) {
+      console.error('Error fetching leave balance for auto-approval:', fetchError)
+      return
+    }
+
+    const fieldMap = {
+      casual: 'casual_leave',
+      sick: 'sick_leave',
+      privilege: 'privilege_leave'
+    }
+
+    const field = fieldMap[leaveType as keyof typeof fieldMap]
+    if (!field) return
+
+    const newBalance = Math.max(0, balance[field] - numberOfDays)
+
+    const { error: updateError } = await supabase
+      .from('leave_balances')
+      .update({
+        [field]: newBalance,
+        updated_at: new Date().toISOString()
+      })
+      .eq('user_id', userId)
+
+    if (updateError) {
+      console.error('Error updating leave balance after auto-approval:', updateError)
+    }
+  } catch (error) {
+    console.error('Error updating leave balance after auto-approval:', error)
+  }
+} 

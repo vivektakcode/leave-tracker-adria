@@ -192,6 +192,173 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- 8. Add email verification fields to users table
+DO $$ 
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                   WHERE table_name = 'users' AND column_name = 'email_verified') THEN
+        ALTER TABLE users ADD COLUMN email_verified BOOLEAN DEFAULT FALSE;
+    END IF;
+    
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                   WHERE table_name = 'users' AND column_name = 'verification_token') THEN
+        ALTER TABLE users ADD COLUMN verification_token TEXT;
+    END IF;
+    
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                   WHERE table_name = 'users' AND column_name = 'verification_expires') THEN
+        ALTER TABLE users ADD COLUMN verification_expires TIMESTAMP WITH TIME ZONE;
+    END IF;
+END $$;
+
+-- 9. Create email verification tokens table
+CREATE TABLE IF NOT EXISTS email_verification_tokens (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  token TEXT NOT NULL UNIQUE,
+  expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  used_at TIMESTAMP WITH TIME ZONE
+);
+
+-- 10. Create index for verification tokens
+CREATE INDEX IF NOT EXISTS idx_email_verification_tokens_token ON email_verification_tokens(token);
+CREATE INDEX IF NOT EXISTS idx_email_verification_tokens_user_id ON email_verification_tokens(user_id);
+
+-- 11. Add auto-approval logic to leave_requests table
+DO $$ 
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                   WHERE table_name = 'leave_requests' AND column_name = 'auto_approved') THEN
+        ALTER TABLE leave_requests ADD COLUMN auto_approved BOOLEAN DEFAULT FALSE;
+    END IF;
+    
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                   WHERE table_name = 'leave_requests' AND column_name = 'auto_approval_reason') THEN
+        ALTER TABLE leave_requests ADD COLUMN auto_approval_reason TEXT;
+    END IF;
+END $$;
+
+-- 12. Create function to check if leave should be auto-approved
+CREATE OR REPLACE FUNCTION should_auto_approve_leave(
+  start_date DATE,
+  end_date DATE,
+  leave_type TEXT,
+  number_of_days NUMERIC
+) RETURNS BOOLEAN AS $$
+BEGIN
+  -- Auto-approve if dates are in the past
+  IF start_date < CURRENT_DATE THEN
+    RETURN TRUE;
+  END IF;
+  
+  -- Auto-approve CL for 1-2 days
+  IF leave_type = 'casual' AND number_of_days <= 2 THEN
+    RETURN TRUE;
+  END IF;
+  
+  -- Auto-approve PL for any number of days
+  IF leave_type = 'privilege' THEN
+    RETURN TRUE;
+  END IF;
+  
+  RETURN FALSE;
+END;
+$$ LANGUAGE plpgsql;
+
+-- 13. Create function to auto-approve eligible leaves
+CREATE OR REPLACE FUNCTION auto_approve_eligible_leaves() RETURNS INTEGER AS $$
+DECLARE
+  request RECORD;
+  auto_approved_count INTEGER := 0;
+BEGIN
+  FOR request IN 
+    SELECT 
+      lr.id,
+      lr.user_id,
+      lr.leave_type,
+      lr.start_date,
+      lr.end_date,
+      lr.is_half_day,
+      u.name as user_name
+    FROM leave_requests lr
+    JOIN users u ON lr.user_id = u.id
+    WHERE lr.status = 'pending' 
+      AND lr.processed_at IS NULL
+      AND lr.auto_approved = FALSE
+  LOOP
+    -- Calculate number of days
+    DECLARE
+      days_count NUMERIC;
+    BEGIN
+      IF request.start_date = request.end_date THEN
+        days_count := CASE WHEN request.is_half_day THEN 0.5 ELSE 1 END;
+      ELSE
+        days_count := (request.end_date - request.start_date + 1)::NUMERIC;
+        IF request.is_half_day THEN
+          days_count := GREATEST(0.5, days_count - 0.5);
+        END IF;
+      END IF;
+      
+      -- Check if should auto-approve
+      IF should_auto_approve_leave(request.start_date, request.end_date, request.leave_type, days_count) THEN
+        -- Auto-approve the request
+        UPDATE leave_requests 
+        SET 
+          status = 'approved',
+          processed_at = NOW(),
+          processed_by = request.user_id,
+          auto_approved = TRUE,
+          auto_approval_reason = 'Auto-approved based on system rules',
+          comments = COALESCE(comments, '') || ' [Auto-approved]'
+        WHERE id = request.id;
+        
+        auto_approved_count := auto_approved_count + 1;
+        
+        -- Log the auto-approval
+        RAISE NOTICE 'Auto-approved leave request % for user %', request.id, request.user_name;
+      END IF;
+    END;
+  END LOOP;
+  
+  RETURN auto_approved_count;
+END;
+$$ LANGUAGE plpgsql;
+
+-- 14. Create function to get pending leave requests for reminders
+CREATE OR REPLACE FUNCTION get_pending_leave_reminders() RETURNS TABLE (
+  request_id UUID,
+  employee_name TEXT,
+  employee_email TEXT,
+  manager_name TEXT,
+  manager_email TEXT,
+  leave_type TEXT,
+  start_date DATE,
+  end_date DATE,
+  days_pending INTEGER
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT 
+    lr.id as request_id,
+    u.name as employee_name,
+    u.email as employee_email,
+    m.name as manager_name,
+    m.email as manager_email,
+    lr.leave_type,
+    lr.start_date,
+    lr.end_date,
+    EXTRACT(DAY FROM (NOW() - lr.requested_at))::INTEGER as days_pending
+  FROM leave_requests lr
+  JOIN users u ON lr.user_id = u.id
+  LEFT JOIN users m ON u.manager_id = m.id
+  WHERE lr.status = 'pending'
+    AND lr.processed_at IS NULL
+    AND lr.requested_at < (NOW() - INTERVAL '3 days')
+    AND u.manager_id IS NOT NULL;
+END;
+$$ LANGUAGE plpgsql;
+
 -- 8. Create view for user management (HR use)
 CREATE OR REPLACE VIEW user_management_view AS
 SELECT 
