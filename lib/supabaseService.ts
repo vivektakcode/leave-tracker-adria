@@ -669,7 +669,7 @@ export async function getHolidaysForPeriod(country: string, startDate: string, e
   }
 }
 
-export async function calculateWorkingDays(startDate: string, endDate: string, country: string = 'UAE'): Promise<number> {
+export async function calculateWorkingDays(startDate: string, endDate: string, country: string): Promise<number> {
   try {
     const { data, error } = await supabase
       .rpc('calculate_working_days', {
@@ -742,7 +742,7 @@ export async function initializeDatabase(): Promise<void> {
         email: 'manager@company.com',
         role: 'manager' as const,
         department: 'Management',
-        country: 'UAE'
+        country: ''
       },
       {
         username: 'employee1',
@@ -751,7 +751,7 @@ export async function initializeDatabase(): Promise<void> {
         email: 'employee@company.com',
         role: 'employee' as const,
         department: 'Engineering',
-        country: 'UAE'
+        country: ''
       }
     ]
 

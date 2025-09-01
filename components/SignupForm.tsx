@@ -14,7 +14,7 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
     name: '',
     email: '',
     department: '',
-    country: 'UAE',
+    country: '',
     role: 'employee' as 'employee' | 'manager' | 'hr',
     manager_id: ''
   })
@@ -51,16 +51,11 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
   ]
 
   const countries = [
-    'UAE',
-    'Saudi Arabia',
-    'Qatar',
-    'Kuwait',
-    'Oman',
-    'Bahrain',
-    'Jordan',
-    'Egypt',
+    'Morocco',
     'India',
-    'Other'
+    'Tunisia',
+    'Senegal',
+    'UAE'
   ]
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -69,7 +64,7 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
   }
 
   const validateForm = () => {
-    if (!formData.username || !formData.password || !formData.name || !formData.email || !formData.department) {
+    if (!formData.username || !formData.password || !formData.name || !formData.email || !formData.department || !formData.country) {
       setError('Please fill in all required fields')
       return false
     }
@@ -118,7 +113,7 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
         name: '',
         email: '',
         department: '',
-        country: 'UAE',
+        country: '',
         role: 'employee',
         manager_id: ''
       })

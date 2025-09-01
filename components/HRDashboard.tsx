@@ -40,7 +40,7 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
   // Holiday management state
   const [showCreateHoliday, setShowCreateHoliday] = useState(false)
   const [newHoliday, setNewHoliday] = useState({
-    country: 'UAE',
+    country: '',
     year: new Date().getFullYear(),
     holidays: [] as Holiday[]
   })
@@ -110,7 +110,7 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
       setSuccess('Holiday calendar created successfully!')
       setShowCreateHoliday(false)
       setNewHoliday({
-        country: 'UAE',
+        country: '',
         year: new Date().getFullYear(),
         holidays: []
       })
@@ -400,13 +400,15 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
                       onChange={(e) => setNewUser({...newUser, department: e.target.value})}
                       className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
                     >
-                      <option value="">Select department</option>
-                      <option value="Engineering">Engineering</option>
-                      <option value="Sales">Sales</option>
-                      <option value="Marketing">Marketing</option>
-                      <option value="HR">HR</option>
-                      <option value="Finance">Finance</option>
-                      <option value="Operations">Operations</option>
+                                           <option value="">Select department</option>
+                     <option value="Engineering">Engineering</option>
+                     <option value="Sales">Sales</option>
+                     <option value="Marketing">Marketing</option>
+                     <option value="HR">HR</option>
+                     <option value="Finance">Finance</option>
+                     <option value="Operations">Operations</option>
+                     <option value="Product">Product</option>
+                     <option value="Other">Other</option>
                     </select>
                   </div>
                   <div>
@@ -474,11 +476,11 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
                       onChange={(e) => setNewHoliday({...newHoliday, country: e.target.value})}
                       className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
                     >
+                      <option value="Morocco">Morocco</option>
+                      <option value="India">India</option>
+                      <option value="Tunisia">Tunisia</option>
+                      <option value="Senegal">Senegal</option>
                       <option value="UAE">UAE</option>
-                      <option value="Saudi Arabia">Saudi Arabia</option>
-                      <option value="Qatar">Qatar</option>
-                      <option value="Kuwait">Kuwait</option>
-                      <option value="Oman">Oman</option>
                     </select>
                   </div>
                   <div>
