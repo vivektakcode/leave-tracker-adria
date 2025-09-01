@@ -12,9 +12,10 @@ export interface User {
   password: string
   name: string
   email: string
-  role: 'manager' | 'employee'
+  role: 'employee' | 'manager' | 'hr'
   department: string
-  manager_id?: string  // Added manager relationship
+  country: string
+  manager_id?: string
   created_at: string
 }
 
@@ -31,7 +32,7 @@ export interface LeaveBalance {
 export interface LeaveRequest {
   id: string
   user_id: string
-  username?: string  // Added username field
+  username?: string
   leave_type: 'casual' | 'sick' | 'privilege'
   start_date: string
   end_date: string
@@ -42,9 +43,24 @@ export interface LeaveRequest {
   processed_at?: string
   processed_by?: string
   comments?: string
-  // Manager information
   manager_name?: string
   manager_department?: string
+}
+
+export interface HolidayCalendar {
+  id: string
+  country: string
+  year: number
+  holidays: Holiday[]
+  created_by: string
+  created_at: string
+  updated_at: string
+}
+
+export interface Holiday {
+  date: string
+  name: string
+  type: 'public' | 'company' | 'optional'
 }
 
 // User functions
@@ -70,7 +86,6 @@ export async function getUserByUsername(username: string): Promise<User | null> 
 
 export async function getUserManager(userId: string): Promise<User | null> {
   try {
-    // First get the user to find their manager_id
     const { data: userData, error: userError } = await supabase
       .from('users')
       .select('manager_id')
@@ -81,7 +96,6 @@ export async function getUserManager(userId: string): Promise<User | null> {
       return null
     }
 
-    // Then get the manager's details
     const { data: managerData, error: managerError } = await supabase
       .from('users')
       .select('*')
@@ -217,7 +231,6 @@ export async function createUser(userData: Omit<User, 'id' | 'created_at'>): Pro
     const balanceInitSuccess = await initializeLeaveBalance(data.id)
     if (!balanceInitSuccess) {
       console.warn('⚠️ Failed to initialize leave balance for user:', data.id)
-      // Don't fail the user creation, just log a warning
     }
 
     console.log('✅ User created:', data.id)
@@ -297,8 +310,6 @@ export async function checkDuplicateLeaveRequest(
   leaveType?: string
 ): Promise<boolean> {
   try {
-    // Check if there are any existing leave requests (pending or approved) 
-    // that overlap with the requested date range
     const { data, error } = await supabase
       .from('leave_requests')
       .select('*')
@@ -310,7 +321,6 @@ export async function checkDuplicateLeaveRequest(
       return false
     }
 
-    // Check for overlapping dates manually since Supabase OR syntax can be tricky
     if (data && data.length > 0) {
       const requestedStart = new Date(startDate)
       const requestedEnd = new Date(endDate)
@@ -319,22 +329,14 @@ export async function checkDuplicateLeaveRequest(
         const existingStart = new Date(existingRequest.start_date)
         const existingEnd = new Date(existingRequest.end_date)
         
-        // Check if dates overlap: 
-        // (requestedStart <= existingEnd) AND (requestedEnd >= existingStart)
         if (requestedStart <= existingEnd && requestedEnd >= existingStart) {
-          // If it's the same leave type on the same day, it's definitely a duplicate
           if (leaveType && existingRequest.leave_type === leaveType && 
               startDate === existingRequest.start_date && endDate === existingRequest.end_date) {
             console.log(`🚫 Exact duplicate leave request detected for user ${userId} on dates ${startDate} to ${endDate}`)
-            console.log('Existing overlapping request:', existingRequest)
             return true
           }
           
-          // For overlapping dates with different leave types, we'll allow it but log a warning
           console.log(`⚠️ Overlapping dates detected for user ${userId} on dates ${startDate} to ${endDate}`)
-          console.log('Existing overlapping request:', existingRequest)
-          console.log('This might be intentional (e.g., different leave types on same day)')
-          // Don't block the request, just warn
         }
       }
     }
@@ -348,13 +350,11 @@ export async function checkDuplicateLeaveRequest(
 
 export async function createLeaveRequest(request: Omit<LeaveRequest, 'id' | 'status' | 'requested_at'>): Promise<string> {
   try {
-    // Check for duplicate leave requests first
     const isDuplicate = await checkDuplicateLeaveRequest(request.user_id, request.start_date, request.end_date, request.leave_type)
     if (isDuplicate) {
       throw new Error('You already have a leave request for these dates. Please check your existing requests.')
     }
 
-    // Get user and manager information
     const [userData, managerData] = await Promise.all([
       supabase.from('users').select('username').eq('id', request.user_id).single(),
       getUserManager(request.user_id)
@@ -371,7 +371,6 @@ export async function createLeaveRequest(request: Omit<LeaveRequest, 'id' | 'sta
       id: crypto.randomUUID(),
       status: 'pending',
       requested_at: new Date().toISOString(),
-      // Add manager information
       manager_name: managerData?.name,
       manager_department: managerData?.department
     }
@@ -454,7 +453,6 @@ export async function getAllLeaveRequests(): Promise<LeaveRequest[]> {
 
 export async function getLeaveRequestsByManager(managerId: string): Promise<LeaveRequest[]> {
   try {
-    // First get all users managed by this manager
     const managedUsers = await getUsersByManager(managerId)
     const managedUserIds = managedUsers.map(user => user.id)
 
@@ -462,7 +460,6 @@ export async function getLeaveRequestsByManager(managerId: string): Promise<Leav
       return []
     }
 
-    // Then get leave requests for those users
     const { data, error } = await supabase
       .from('leave_requests')
       .select('*')
@@ -488,7 +485,6 @@ export async function processLeaveRequest(
   comments?: string
 ): Promise<boolean> {
   try {
-    // Get the current request
     const { data: request, error: fetchError } = await supabase
       .from('leave_requests')
       .select('*')
@@ -500,7 +496,6 @@ export async function processLeaveRequest(
       return false
     }
 
-    // Update the request
     const updateData: Partial<LeaveRequest> = {
       status,
       processed_at: new Date().toISOString(),
@@ -521,7 +516,6 @@ export async function processLeaveRequest(
       return false
     }
 
-    // Update user leave balance if approved
     if (status === 'approved') {
       const days = calculateDays(request.start_date, request.end_date, request.is_half_day)
       const leaveBalance = await getLeaveBalance(request.user_id)
@@ -551,7 +545,6 @@ export async function processLeaveRequest(
 
 export async function cancelLeaveRequest(requestId: string): Promise<boolean> {
   try {
-    // Get the current request to check if it's pending
     const { data: request, error: fetchError } = await supabase
       .from('leave_requests')
       .select('*')
@@ -563,13 +556,11 @@ export async function cancelLeaveRequest(requestId: string): Promise<boolean> {
       return false
     }
 
-    // Only allow cancellation of pending requests
     if (request.status !== 'pending') {
       console.error('Cannot cancel non-pending request')
       return false
     }
 
-    // Delete the request
     const { error: deleteError } = await supabase
       .from('leave_requests')
       .delete()
@@ -588,26 +579,142 @@ export async function cancelLeaveRequest(requestId: string): Promise<boolean> {
   }
 }
 
+// Holiday Calendar functions
+export async function getHolidayCalendar(country: string, year: number): Promise<HolidayCalendar | null> {
+  try {
+    const { data, error } = await supabase
+      .from('holiday_calendars')
+      .select('*')
+      .eq('country', country)
+      .eq('year', year)
+      .single()
+
+    if (error) {
+      console.error('Error getting holiday calendar:', error)
+      return null
+    }
+
+    return data as HolidayCalendar
+  } catch (error) {
+    console.error('Error getting holiday calendar:', error)
+    return null
+  }
+}
+
+export async function createHolidayCalendar(calendar: Omit<HolidayCalendar, 'id' | 'created_at' | 'updated_at'>): Promise<string | null> {
+  try {
+    const { data, error } = await supabase
+      .from('holiday_calendars')
+      .insert([{
+        ...calendar,
+        id: crypto.randomUUID(),
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }])
+      .select('id')
+      .single()
+
+    if (error) {
+      console.error('Error creating holiday calendar:', error)
+      return null
+    }
+
+    return data.id
+  } catch (error) {
+    console.error('Error creating holiday calendar:', error)
+    return null
+  }
+}
+
+export async function updateHolidayCalendar(id: string, updates: Partial<HolidayCalendar>): Promise<boolean> {
+  try {
+    const { error } = await supabase
+      .from('holiday_calendars')
+      .update({
+        ...updates,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', id)
+
+    if (error) {
+      console.error('Error updating holiday calendar:', error)
+      return false
+    }
+
+    return true
+  } catch (error) {
+    console.error('Error updating holiday calendar:', error)
+    return false
+  }
+}
+
+export async function getHolidaysForPeriod(country: string, startDate: string, endDate: string): Promise<Holiday[]> {
+  try {
+    const { data, error } = await supabase
+      .rpc('get_holidays_for_period', {
+        country_param: country,
+        start_date: startDate,
+        end_date: endDate
+      })
+
+    if (error) {
+      console.error('Error getting holidays for period:', error)
+      return []
+    }
+
+    return data || []
+  } catch (error) {
+    console.error('Error getting holidays for period:', error)
+    return []
+  }
+}
+
+export async function calculateWorkingDays(startDate: string, endDate: string, country: string = 'UAE'): Promise<number> {
+  try {
+    const { data, error } = await supabase
+      .rpc('calculate_working_days', {
+        start_date: startDate,
+        end_date: endDate,
+        country_param: country
+      })
+
+    if (error) {
+      console.error('Error calculating working days:', error)
+      // Fallback to simple calculation
+      const start = new Date(startDate)
+      const end = new Date(endDate)
+      const diffTime = Math.abs(end.getTime() - start.getTime())
+      return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1
+    }
+
+    return data || 0
+  } catch (error) {
+    console.error('Error calculating working days:', error)
+    // Fallback to simple calculation
+    const start = new Date(startDate)
+    const end = new Date(endDate)
+    const diffTime = Math.abs(end.getTime() - start.getTime())
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1
+  }
+}
+
 // Helper functions
 export function calculateDays(startDate: string, endDate: string, isHalfDay: boolean = false): number {
   const start = new Date(startDate)
   const end = new Date(endDate)
   
-  // If same day, it's 1 day (or 0.5 if half day)
   if (start.toDateString() === end.toDateString()) {
     return isHalfDay ? 0.5 : 1
   }
   
-  // For different dates, calculate the difference
   const diffTime = Math.abs(end.getTime() - start.getTime())
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
   
-  // If half day, reduce by 0.5
   if (isHalfDay) {
     return Math.max(0.5, diffDays - 0.5)
   }
   
-  return diffDays + 1 // Include both start and end dates
+  return diffDays + 1
 }
 
 // Initialize database function with sample data
@@ -634,7 +741,8 @@ export async function initializeDatabase(): Promise<void> {
         name: 'John Manager',
         email: 'manager@company.com',
         role: 'manager' as const,
-        department: 'Management'
+        department: 'Management',
+        country: 'UAE'
       },
       {
         username: 'employee1',
@@ -642,7 +750,8 @@ export async function initializeDatabase(): Promise<void> {
         name: 'Jane Employee',
         email: 'employee@company.com',
         role: 'employee' as const,
-        department: 'Engineering'
+        department: 'Engineering',
+        country: 'UAE'
       }
     ]
 
@@ -660,22 +769,20 @@ export async function initializeDatabase(): Promise<void> {
 
 export async function initializeLeaveBalance(userId: string): Promise<boolean> {
   try {
-    // Check if leave balance already exists
     const existingBalance = await getLeaveBalance(userId)
     if (existingBalance) {
       console.log('✅ Leave balance already exists for user:', userId)
       return true
     }
 
-    // Create new leave balance with default values
     const { error } = await supabase
       .from('leave_balances')
       .insert([{
         id: crypto.randomUUID(),
         user_id: userId,
-        casual_leave: 6,      // Default 6 days
-        sick_leave: 6,        // Default 6 days
-        privilege_leave: 18,  // Default 18 days
+        casual_leave: 6,
+        sick_leave: 6,
+        privilege_leave: 18,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       }])
@@ -700,7 +807,6 @@ export async function ensureLeaveBalanceExists(userId: string): Promise<boolean>
       return true
     }
     
-    // If no balance exists, create one with default values
     return await initializeLeaveBalance(userId)
   } catch (error) {
     console.error('Error ensuring leave balance exists:', error)
@@ -710,8 +816,8 @@ export async function ensureLeaveBalanceExists(userId: string): Promise<boolean>
 
 export function getTotalAllocatedLeave(): { casual: number; sick: number; privilege: number } {
   return {
-    casual: 6,      // Default 6 days
-    sick: 6,        // Default 6 days
-    privilege: 18   // Default 18 days
+    casual: 6,
+    sick: 6,
+    privilege: 18
   }
 } 

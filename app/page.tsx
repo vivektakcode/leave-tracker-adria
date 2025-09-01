@@ -5,6 +5,7 @@ import { useAuth } from '../contexts/JsonAuthContext'
 import SignupForm from '../components/SignupForm'
 import LoginForm from '../components/LoginForm'
 import LeaveBalanceDashboard from '../components/LeaveBalanceDashboard'
+import HRDashboard from '../components/HRDashboard'
 
 export default function Home() {
   const { currentUser } = useAuth()
@@ -12,6 +13,12 @@ export default function Home() {
   const [showLogin, setShowLogin] = useState(false)
 
   if (currentUser) {
+    // Show HR Dashboard for HR users
+    if (currentUser.role === 'hr') {
+      return <HRDashboard currentUser={currentUser} />
+    }
+    
+    // Show regular dashboard for other users
     return <LeaveBalanceDashboard employee={currentUser} />
   }
 
