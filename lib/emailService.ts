@@ -1,18 +1,7 @@
-import { createTransport } from 'nodemailer'
+import { Resend } from 'resend'
 
-// Email configuration - supports both Gmail and custom domains
-const emailConfig = {
-  host: process.env.SMTP_HOST || 'smtp.gmail.com',
-  port: parseInt(process.env.SMTP_PORT || '587'),
-  secure: false, // true for 465, false for other ports
-  auth: {
-    user: process.env.SMTP_USER || process.env.GMAIL_USER,
-    pass: process.env.SMTP_PASS || process.env.GMAIL_APP_PASSWORD,
-  },
-}
-
-// Create transporter
-const transporter = createTransport(emailConfig)
+// Initialize Resend
+const resend = new Resend(process.env.RESEND_API_KEY)
 
 // Email templates
 const emailTemplates = {
@@ -82,8 +71,8 @@ export async function sendLeaveRequestEmail(managerEmail: string, managerName: s
   try {
     const { subject, html } = emailTemplates.leaveRequest(managerName, employeeName, startDate, endDate, leaveType)
     
-    await transporter.sendMail({
-      from: process.env.SMTP_FROM || process.env.GMAIL_USER,
+    await resend.emails.send({
+      from: process.env.RESEND_FROM_EMAIL || 'noreply@yourdomain.com',
       to: managerEmail,
       subject,
       html
@@ -101,8 +90,8 @@ export async function sendLeaveReminderEmail(managerEmail: string, managerName: 
   try {
     const { subject, html } = emailTemplates.leaveReminder(managerName, employeeName, startDate, endDate, daysPending)
     
-    await transporter.sendMail({
-      from: process.env.SMTP_FROM || process.env.GMAIL_USER,
+    await resend.emails.send({
+      from: process.env.RESEND_FROM_EMAIL || 'noreply@yourdomain.com',
       to: managerEmail,
       subject,
       html
@@ -120,8 +109,8 @@ export async function sendVerificationEmail(userEmail: string, userName: string,
   try {
     const { subject, html } = emailTemplates.emailVerification(userName, verificationToken)
     
-    await transporter.sendMail({
-      from: process.env.SMTP_FROM || process.env.GMAIL_USER,
+    await resend.emails.send({
+      from: process.env.RESEND_FROM_EMAIL || 'noreply@yourdomain.com',
       to: userEmail,
       subject,
       html
@@ -138,11 +127,18 @@ export async function sendVerificationEmail(userEmail: string, userName: string,
 // Test email configuration
 export async function testEmailConfiguration(): Promise<boolean> {
   try {
-    await transporter.verify()
-    console.log('✅ Email configuration is valid')
+    // Send a test email to verify configuration
+    await resend.emails.send({
+      from: process.env.RESEND_FROM_EMAIL || 'noreply@yourdomain.com',
+      to: 'test@example.com',
+      subject: 'Test Email Configuration',
+      html: '<p>This is a test email to verify the configuration.</p>'
+    })
+    
+    console.log('✅ Resend email configuration is valid')
     return true
   } catch (error) {
-    console.error('❌ Email configuration error:', error)
+    console.error('❌ Resend email configuration error:', error)
     return false
   }
 }
