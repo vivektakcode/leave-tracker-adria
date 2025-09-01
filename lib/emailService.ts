@@ -72,7 +72,7 @@ export async function sendLeaveRequestEmail(managerEmail: string, managerName: s
     const { subject, html } = emailTemplates.leaveRequest(managerName, employeeName, startDate, endDate, leaveType)
     
     await resend.emails.send({
-      from: process.env.RESEND_FROM_EMAIL || 'noreply@yourdomain.com',
+      from: 'Leave Management <onboarding@resend.dev>',
       to: managerEmail,
       subject,
       html
@@ -91,7 +91,7 @@ export async function sendLeaveReminderEmail(managerEmail: string, managerName: 
     const { subject, html } = emailTemplates.leaveReminder(managerName, employeeName, startDate, endDate, daysPending)
     
     await resend.emails.send({
-      from: process.env.RESEND_FROM_EMAIL || 'noreply@yourdomain.com',
+      from: 'Leave Management <onboarding@resend.dev>',
       to: managerEmail,
       subject,
       html
@@ -110,7 +110,7 @@ export async function sendVerificationEmail(userEmail: string, userName: string,
     const { subject, html } = emailTemplates.emailVerification(userName, verificationToken)
     
     await resend.emails.send({
-      from: process.env.RESEND_FROM_EMAIL || 'noreply@yourdomain.com',
+      from: 'Leave Management <onboarding@resend.dev>',
       to: userEmail,
       subject,
       html
@@ -129,7 +129,7 @@ export async function testEmailConfiguration(): Promise<boolean> {
   try {
     // Send a test email to verify configuration
     await resend.emails.send({
-      from: process.env.RESEND_FROM_EMAIL || 'noreply@yourdomain.com',
+      from: 'Leave Management <onboarding@resend.dev>',
       to: 'test@example.com',
       subject: 'Test Email Configuration',
       html: '<p>This is a test email to verify the configuration.</p>'
