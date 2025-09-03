@@ -2,12 +2,14 @@
 
 import { useState } from 'react'
 import { useAuth } from '../contexts/JsonAuthContext'
+import ForgotPasswordForm from './ForgotPasswordForm'
 
 export default function LoginForm() {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showForgotPassword, setShowForgotPassword] = useState(false)
   const { login } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -25,6 +27,10 @@ export default function LoginForm() {
     } finally {
       setLoading(false)
     }
+  }
+
+  if (showForgotPassword) {
+    return <ForgotPasswordForm onBack={() => setShowForgotPassword(false)} />
   }
 
   return (
@@ -58,9 +64,18 @@ export default function LoginForm() {
         </div>
 
         <div>
-          <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
-            Password
-          </label>
+          <div className="flex justify-between items-center mb-2">
+            <label htmlFor="password" className="block text-sm font-semibold text-gray-700">
+              Password
+            </label>
+            <button
+              type="button"
+              onClick={() => setShowForgotPassword(true)}
+              className="text-sm text-orange-600 hover:text-orange-700 font-medium"
+            >
+              Forgot Password?
+            </button>
+          </div>
           <input
             id="password"
             type="password"

@@ -63,6 +63,30 @@ const emailTemplates = {
         <p>Best regards,<br>Leave Management System</p>
       </div>
     `
+  }),
+
+  passwordReset: (userName: string, resetToken: string) => ({
+    subject: `Password Reset Request`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #f97316;">Password Reset Request</h2>
+        <p>Hello ${userName},</p>
+        <p>You requested to reset your password for your Leave Management System account.</p>
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${process.env.NEXT_PUBLIC_APP_URL}/reset-password?token=${resetToken}" 
+             style="background-color: #f97316; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
+            Reset Password
+          </a>
+        </div>
+        <p>If the button doesn't work, copy and paste this link into your browser:</p>
+        <p style="word-break: break-all; color: #6b7280;">
+          ${process.env.NEXT_PUBLIC_APP_URL}/reset-password?token=${resetToken}
+        </p>
+        <p><strong>This link will expire in 1 hour.</strong></p>
+        <p>If you didn't request this password reset, please ignore this email.</p>
+        <p>Best regards,<br>Leave Management System</p>
+      </div>
+    `
   })
 }
 
@@ -120,6 +144,25 @@ export async function sendVerificationEmail(userEmail: string, userName: string,
     return true
   } catch (error) {
     console.error('❌ Error sending verification email:', error)
+    return false
+  }
+}
+
+export async function sendPasswordResetEmail(userEmail: string, userName: string, resetToken: string): Promise<boolean> {
+  try {
+    const { subject, html } = emailTemplates.passwordReset(userName, resetToken)
+    
+    await resend.emails.send({
+      from: 'Leave Management <onboarding@resend.dev>',
+      to: userEmail,
+      subject,
+      html
+    })
+    
+    console.log(`✅ Password reset email sent to ${userEmail}`)
+    return true
+  } catch (error) {
+    console.error('❌ Error sending password reset email:', error)
     return false
   }
 }

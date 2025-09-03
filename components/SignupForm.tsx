@@ -17,8 +17,7 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
     country: '',
     manager_id: ''
   })
-  const [verificationSent, setVerificationSent] = useState(false)
-  const [verificationEmail, setVerificationEmail] = useState('')
+
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
@@ -114,22 +113,7 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
       }
       const userId = await createUser(userData)
       
-      // Send verification email if user was created
-      if (userId) {
-        try {
-          const { sendVerificationEmail } = await import('../lib/emailService')
-          // Generate a simple verification token (in production, use crypto.randomUUID())
-          const verificationToken = Math.random().toString(36).substring(2) + Date.now().toString(36)
-          await sendVerificationEmail(formData.email, formData.name, verificationToken)
-          setVerificationSent(true)
-          setVerificationEmail(formData.email)
-        } catch (emailError) {
-          console.error('Failed to send verification email:', emailError)
-          // Continue with signup even if email fails
-        }
-      }
-      
-      setSuccess('Account created successfully! Please check your email to verify your account before logging in.')
+      setSuccess('Account created successfully! You can now log in with your credentials.')
       
       // Reset form
       setFormData({
@@ -142,10 +126,10 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
         manager_id: ''
       })
       
-      // Redirect to login page after a longer delay for email verification
+      // Redirect to login page after a short delay
       setTimeout(() => {
         onSignupSuccess?.()
-      }, 5000)
+      }, 2000)
     } catch (error: any) {
       setError(error.message || 'Failed to create account. Please try again.')
     } finally {
@@ -318,18 +302,6 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
         {success && (
           <div className="bg-green-50 border border-green-200 text-green-700 px-3 py-2 rounded-lg text-sm font-medium">
             {success}
-            {verificationSent && (
-              <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                <div className="flex items-center space-x-2 text-sm text-blue-700">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <span>
-                    <strong>Verification email sent!</strong> Please check your inbox at <strong>{verificationEmail}</strong> and click the verification link to activate your account.
-                  </span>
-                </div>
-              </div>
-            )}
           </div>
         )}
 
