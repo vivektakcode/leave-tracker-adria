@@ -23,7 +23,7 @@ ORDER BY u.role, u.username;
 
 -- Show leave requests that will be deleted
 SELECT '=== LEAVE REQUESTS TO BE DELETED ===' as section;
-SELECT lr.id, lr.user_id, u.username, lr.leave_type, lr.start_date, lr.end_date, lr.status
+SELECT lr.id, lr.user_id, u.username, lr.leave_type, lr.start_date, lr.end_date, lr.status, lr.requested_at
 FROM leave_requests lr
 INNER JOIN users u ON lr.user_id = u.id
 WHERE lr.user_id IN (
@@ -39,7 +39,7 @@ WHERE lr.user_id IN (
     'd6539121-640f-4ca8-b47a-01b645094ec9', -- megatron
     'fd9a646f-0984-47e0-8c79-94d710a3a5a2'  -- punisher
 )
-ORDER BY lr.created_at DESC;
+ORDER BY lr.requested_at DESC;
 
 -- Show leave balances that will be deleted
 SELECT '=== LEAVE BALANCES TO BE DELETED ===' as section;
