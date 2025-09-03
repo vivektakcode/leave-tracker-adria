@@ -296,8 +296,8 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
   })
 
   // Get unique countries and years for filters
-  const uniqueCountries = [...new Set(holidayCalendars.map(cal => cal.country))].sort()
-  const uniqueYears = [...new Set(holidayCalendars.map(cal => cal.year))].sort((a, b) => b - a)
+  const uniqueCountries = Array.from(new Set(holidayCalendars.map(cal => cal.country))).sort()
+  const uniqueYears = Array.from(new Set(holidayCalendars.map(cal => cal.year))).sort((a, b) => b - a)
 
   if (currentUser.role !== 'hr') {
     return (
