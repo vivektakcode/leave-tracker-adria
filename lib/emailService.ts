@@ -42,28 +42,7 @@ const emailTemplates = {
     `
   }),
 
-  emailVerification: (userName: string, verificationToken: string) => ({
-    subject: `Verify Your Email Address`,
-    html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2 style="color: #f97316;">Email Verification Required</h2>
-        <p>Hello ${userName},</p>
-        <p>Welcome to the Leave Management System! Please verify your email address to activate your account.</p>
-        <div style="text-align: center; margin: 30px 0;">
-          <a href="${process.env.NEXT_PUBLIC_APP_URL}/verify-email?token=${verificationToken}" 
-             style="background-color: #f97316; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
-            Verify Email Address
-          </a>
-        </div>
-        <p>If the button doesn't work, copy and paste this link into your browser:</p>
-        <p style="word-break: break-all; color: #6b7280;">
-          ${process.env.NEXT_PUBLIC_APP_URL}/verify-email?token=${verificationToken}
-        </p>
-        <p>This link will expire in 24 hours.</p>
-        <p>Best regards,<br>Leave Management System</p>
-      </div>
-    `
-  }),
+
 
   passwordReset: (userName: string, resetToken: string) => ({
     subject: `Password Reset Request`,
@@ -129,24 +108,7 @@ export async function sendLeaveReminderEmail(managerEmail: string, managerName: 
   }
 }
 
-export async function sendVerificationEmail(userEmail: string, userName: string, verificationToken: string): Promise<boolean> {
-  try {
-    const { subject, html } = emailTemplates.emailVerification(userName, verificationToken)
-    
-    await resend.emails.send({
-      from: 'Leave Management <onboarding@resend.dev>',
-      to: userEmail,
-      subject,
-      html
-    })
-    
-    console.log(`✅ Verification email sent to ${userEmail}`)
-    return true
-  } catch (error) {
-    console.error('❌ Error sending verification email:', error)
-    return false
-  }
-}
+
 
 export async function sendPasswordResetEmail(userEmail: string, userName: string, resetToken: string): Promise<boolean> {
   try {
