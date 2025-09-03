@@ -46,7 +46,15 @@ export default function WeekendAwareDatePicker({
   }
 
   const isSelected = (date: Date): boolean => {
-    return Boolean(value && date.toISOString().split('T')[0] === value)
+    if (!value) return false
+    
+    // Use local date format to match handleDateClick
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    const dateStr = `${year}-${month}-${day}`
+    
+    return dateStr === value
   }
 
   const getDaysInMonth = (year: number, month: number): Date[] => {
@@ -77,7 +85,12 @@ export default function WeekendAwareDatePicker({
   const handleDateClick = (date: Date) => {
     if (disabled || isWeekend(date)) return
     
-    const dateStr = date.toISOString().split('T')[0]
+    // Use local date format to avoid timezone issues
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    const dateStr = `${year}-${month}-${day}`
+    
     onChange(dateStr)
     setIsOpen(false)
   }
