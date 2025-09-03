@@ -15,7 +15,6 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
     email: '',
     department: '',
     country: '',
-    role: 'employee' as 'employee' | 'manager' | 'hr',
     manager_id: ''
   })
   const [verificationSent, setVerificationSent] = useState(false)
@@ -86,8 +85,8 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
       return false
     }
 
-    // Require manager_id for employees
-    if (formData.role === 'employee' && !formData.manager_id) {
+    // Require manager_id for all new users (they will be employees by default)
+    if (!formData.manager_id) {
       setError('Please select a manager')
       return false
     }
@@ -102,16 +101,18 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
 
     if (!validateForm()) return
 
-    // Prevent @adria-bt.com users from being created as HR
-    if (formData.email.includes('@adria-bt.com') && formData.role === 'hr') {
-      setError('HR role cannot be assigned during signup for @adria-bt.com users. Please contact an existing HR user.')
-      return
-    }
+    // All new users will be created as employees by default
+    // HR can promote users to manager or HR roles through the HR dashboard
 
     setLoading(true)
 
     try {
-      const userId = await createUser(formData)
+      // All new users are created as employees by default
+      const userData = {
+        ...formData,
+        role: 'employee' as const
+      }
+      const userId = await createUser(userData)
       
       // Send verification email if user was created
       if (userId) {
@@ -138,7 +139,6 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
         email: '',
         department: '',
         country: '',
-        role: 'employee',
         manager_id: ''
       })
       
@@ -163,7 +163,7 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
           </svg>
         </div>
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Join Leave Tracker</h1>
-        <p className="text-sm text-gray-600">Create your professional account</p>
+        <p className="text-sm text-gray-600">Create your employee account</p>
       </div>
 
       {/* Form */}
@@ -241,54 +241,28 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
           </div>
         </div>
 
-        {/* Country and Role Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="country" className="block text-sm font-semibold text-gray-700 mb-2">
-              Country *
-            </label>
-            <select
-              id="country"
-              name="country"
-              required
-              value={formData.country}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 text-gray-900 bg-white"
-            >
-              {countries.map((country) => (
-                <option key={country} value={country}>{country}</option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Role *
-            </label>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {(['employee', 'manager', 'hr'] as const).map((role) => (
-                <button
-                  key={role}
-                  type="button"
-                  onClick={() => setFormData({ ...formData, role, manager_id: role === 'employee' ? formData.manager_id : '' })}
-                  className={`p-3 border-2 rounded-lg text-center transition-all duration-200 ${
-                    formData.role === role 
-                      ? 'border-orange-500 bg-orange-50 text-orange-700 shadow-md' 
-                      : 'border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-50'
-                  }`}
-                >
-                  <div className="text-base font-semibold capitalize mb-1">{role}</div>
-                  <div className="text-xs text-gray-600">
-                    {role === 'hr' ? 'Full system access' : role === 'manager' ? 'Can approve requests' : 'Can submit requests'}
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
+        {/* Country */}
+        <div>
+          <label htmlFor="country" className="block text-sm font-semibold text-gray-700 mb-2">
+            Country *
+          </label>
+          <select
+            id="country"
+            name="country"
+            required
+            value={formData.country}
+            onChange={handleInputChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 text-gray-900 bg-white"
+          >
+            <option value="">Select your country</option>
+            {countries.map((country) => (
+              <option key={country} value={country}>{country}</option>
+            ))}
+          </select>
         </div>
 
-        {/* Manager Selection (only for employees) */}
-        {formData.role === 'employee' && managers.length > 0 && (
+        {/* Manager Selection (required for all new users) */}
+        {managers.length > 0 && (
           <div>
             <label htmlFor="manager_id" className="block text-sm font-semibold text-gray-700 mb-2">
               Manager *
@@ -309,7 +283,7 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
               ))}
             </select>
             <p className="text-xs text-gray-500 mt-1">
-              Your manager will review and approve your leave requests
+              Your manager will review and approve your leave requests. HR can promote you to manager or HR roles later.
             </p>
           </div>
         )}
@@ -371,7 +345,7 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
               <span>Creating Account...</span>
             </div>
           ) : (
-            'Create Professional Account'
+            'Create Employee Account'
           )}
         </button>
       </form>
