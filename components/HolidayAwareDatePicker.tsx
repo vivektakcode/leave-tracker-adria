@@ -45,12 +45,20 @@ export default function HolidayAwareDatePicker({
   }
 
   const isHoliday = (date: Date): boolean => {
-    const dateStr = date.toISOString().split('T')[0]
+    // Use local date format to avoid timezone issues
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    const dateStr = `${year}-${month}-${day}`
     return holidays.some(holiday => holiday.date === dateStr)
   }
 
   const getHolidayName = (date: Date): string | null => {
-    const dateStr = date.toISOString().split('T')[0]
+    // Use local date format to avoid timezone issues
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    const dateStr = `${year}-${month}-${day}`
     const holiday = holidays.find(h => h.date === dateStr)
     return holiday ? holiday.name : null
   }
@@ -64,11 +72,27 @@ export default function HolidayAwareDatePicker({
   }
 
   const isStartDate = (date: Date): boolean => {
-    return Boolean(startDate && date.toISOString().split('T')[0] === startDate)
+    if (!startDate) return false
+    
+    // Use local date format to avoid timezone issues
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    const dateStr = `${year}-${month}-${day}`
+    
+    return dateStr === startDate
   }
 
   const isEndDate = (date: Date): boolean => {
-    return Boolean(endDate && date.toISOString().split('T')[0] === endDate)
+    if (!endDate) return false
+    
+    // Use local date format to avoid timezone issues
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    const dateStr = `${year}-${month}-${day}`
+    
+    return dateStr === endDate
   }
 
   const getDaysInMonth = (year: number, month: number): Date[] => {
@@ -99,7 +123,12 @@ export default function HolidayAwareDatePicker({
   const handleDateClick = (date: Date) => {
     if (disabled) return
     
-    const dateStr = date.toISOString().split('T')[0]
+    // Use local date format to avoid timezone issues
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    const dateStr = `${year}-${month}-${day}`
+    
     const today = new Date()
     today.setHours(0, 0, 0, 0)
     
