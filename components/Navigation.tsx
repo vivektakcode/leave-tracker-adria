@@ -5,7 +5,7 @@ import { useAuth } from '../contexts/JsonAuthContext'
 
 interface NavigationProps {
   userEmail: string
-  role: 'manager' | 'employee'
+  role: 'manager' | 'employee' | 'hr'
 }
 
 export default function Navigation({ userEmail, role }: NavigationProps) {
