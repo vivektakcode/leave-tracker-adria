@@ -49,7 +49,7 @@ export default function WeekendAwareDatePicker({
     
     // Add next month's days to fill last week
     const lastDayOfWeek = lastDay.getDay()
-    for (day = 1; day <= 6 - lastDayOfWeek; day++) {
+    for (let day = 1; day <= 6 - lastDayOfWeek; day++) {
       days.push(new Date(year, month + 1, day))
     }
     
