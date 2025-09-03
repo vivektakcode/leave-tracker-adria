@@ -10,6 +10,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@react-email/render": "^1.2.1",
     "@supabase/supabase-js": "^2.56.0",
     "@types/node": "^20",
     "@types/nodemailer": "^7.0.1",
