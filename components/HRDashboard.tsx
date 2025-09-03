@@ -9,7 +9,7 @@ import {
   createHolidayCalendar,
   updateHolidayCalendar,
   deleteHolidayCalendar,
-  getLeaveRequestsByManager,
+  getAllLeaveRequests,
   processLeaveRequest,
   User,
   HolidayCalendar,
@@ -77,7 +77,7 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
       const [usersData, calendarsData, requestsData] = await Promise.all([
         getAllUsers(),
         getAllHolidayCalendars(),
-        getLeaveRequestsByManager(currentUser.id)
+        getAllLeaveRequests()
       ])
       
       setUsers(usersData)
@@ -1091,7 +1091,7 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
                               <div className="ml-4">
                                 <div className="flex items-center">
                                   <h4 className="font-medium text-gray-900">
-                                    User {request.user_id}
+                                    {users.find(u => u.id === request.user_id)?.name || `User ${request.user_id}`}
                                   </h4>
                                   <span className={`ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getLeaveTypeColor(request.leave_type)}`}>
                                     {request.leave_type}
@@ -1104,6 +1104,14 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
                                   {request.start_date} to {request.end_date} ({request.number_of_days} days)
                                 </p>
                                 <p className="text-sm text-gray-600 mt-1">{request.reason}</p>
+                                {(() => {
+                                  const user = users.find(u => u.id === request.user_id)
+                                  return user ? (
+                                    <p className="text-xs text-gray-400 mt-1">
+                                      {user.email} • {user.department}
+                                    </p>
+                                  ) : null
+                                })()}
                               </div>
                             </div>
                             <div className="flex items-center space-x-2">
@@ -1137,7 +1145,7 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
               <div className="mt-3">
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Process Leave Request</h3>
                 <p className="text-sm text-gray-600 mb-4">
-                  <strong>User {selectedRequest.user_id}</strong> is requesting {selectedRequest.leave_type} leave
+                  <strong>{users.find(u => u.id === selectedRequest.user_id)?.name || `User ${selectedRequest.user_id}`}</strong> is requesting {selectedRequest.leave_type} leave
                 </p>
                 
                 <div className="mb-4">
