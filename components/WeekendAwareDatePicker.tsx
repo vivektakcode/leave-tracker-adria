@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 interface WeekendAwareDatePickerProps {
   value: string
@@ -17,6 +17,24 @@ export default function WeekendAwareDatePicker({
 }: WeekendAwareDatePickerProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [currentMonth, setCurrentMonth] = useState(new Date())
+  const datePickerRef = useRef<HTMLDivElement>(null)
+
+  // Close date picker when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (datePickerRef.current && !datePickerRef.current.contains(event.target as Node)) {
+        setIsOpen(false)
+      }
+    }
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isOpen])
 
   const isWeekend = (date: Date): boolean => {
     const day = date.getDay()
@@ -79,7 +97,7 @@ export default function WeekendAwareDatePicker({
   ]
 
   return (
-    <div className="relative">
+    <div className="relative" ref={datePickerRef}>
       <input
         type="text"
         value={value}
@@ -91,7 +109,10 @@ export default function WeekendAwareDatePicker({
       />
       
       {isOpen && !disabled && (
-        <div className="absolute top-full left-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 p-4 z-50 min-w-80">
+        <div 
+          className="absolute top-full left-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 p-4 z-50 min-w-80"
+          onClick={(e) => e.stopPropagation()}
+        >
           {/* Calendar Header */}
           <div className="flex items-center justify-between mb-4">
             <button

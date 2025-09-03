@@ -311,33 +311,54 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
+    <div className="min-h-screen relative py-8">
+      {/* Navigation Header */}
+      <nav className="bg-gradient-to-r from-slate-100 to-slate-200 shadow-lg border-b border-slate-300">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-20">
             <div className="flex items-center space-x-4">
-              <img 
-                src="/Adria_logo.png" 
-                alt="Adria Logo" 
-                className="h-12 w-auto"
-              />
+              <div className="h-20 w-20 flex items-center justify-center">
+                <img 
+                  src="/Adria_logo.png" 
+                  alt="Adria Logo" 
+                  className="h-full w-full object-contain"
+                />
+              </div>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">HR Dashboard</h1>
-                <p className="text-gray-600 mt-2">Manage users, roles, and holiday calendars</p>
+                <h1 className="text-2xl font-bold text-slate-800">
+                  HR Dashboard
+                </h1>
+                <p className="text-slate-600 text-sm">
+                  Manage users, roles, and holiday calendars
+                </p>
               </div>
             </div>
-            <button
-              onClick={logout}
-              className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors flex items-center space-x-2"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
-              <span>Logout</span>
-            </button>
+            
+            <div className="flex items-center space-x-6">
+              <div className="text-right">
+                <p className="text-slate-800 font-semibold">
+                  Welcome back!
+                </p>
+                <p className="text-slate-600 text-sm">
+                  {currentUser.email}
+                </p>
+              </div>
+              
+              <button
+                onClick={logout}
+                className="bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 hover:border-slate-600 font-semibold py-2 px-4 rounded-xl transition-all duration-200 flex items-center space-x-2"
+              >
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                <span>Logout</span>
+              </button>
+            </div>
           </div>
         </div>
+      </nav>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
         {/* Tabs */}
         <div className="border-b border-gray-200 mb-6">
@@ -976,3 +997,4 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
     </div>
   )
 }
+
