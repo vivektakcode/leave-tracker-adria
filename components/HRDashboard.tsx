@@ -9,9 +9,12 @@ import {
   createHolidayCalendar,
   updateHolidayCalendar,
   deleteHolidayCalendar,
+  getLeaveRequestsByManager,
+  processLeaveRequest,
   User,
   HolidayCalendar,
-  Holiday
+  Holiday,
+  LeaveRequest
 } from '../lib/supabaseService'
 import WeekendAwareDatePicker from './WeekendAwareDatePicker'
 import { useAuth } from '../contexts/JsonAuthContext'
@@ -24,7 +27,7 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
   const { logout } = useAuth()
   const [users, setUsers] = useState<User[]>([])
   const [holidayCalendars, setHolidayCalendars] = useState<HolidayCalendar[]>([])
-  const [activeTab, setActiveTab] = useState<'users' | 'holidays'>('users')
+  const [activeTab, setActiveTab] = useState<'users' | 'holidays' | 'leave-requests'>('users')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
@@ -51,6 +54,13 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
   const [showCreateHoliday, setShowCreateHoliday] = useState(false)
   const [showEditHoliday, setShowEditHoliday] = useState(false)
   const [editingCalendar, setEditingCalendar] = useState<HolidayCalendar | null>(null)
+
+  // Leave request management state
+  const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([])
+  const [selectedRequest, setSelectedRequest] = useState<LeaveRequest | null>(null)
+  const [showApprovalModal, setShowApprovalModal] = useState(false)
+  const [approvalStatus, setApprovalStatus] = useState<'approved' | 'rejected'>('approved')
+  const [comments, setComments] = useState('')
   const [newHoliday, setNewHoliday] = useState({
     country: '',
     year: new Date().getFullYear(),
@@ -64,13 +74,15 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
   const loadData = async () => {
     setLoading(true)
     try {
-      const [usersData, calendarsData] = await Promise.all([
+      const [usersData, calendarsData, requestsData] = await Promise.all([
         getAllUsers(),
-        getAllHolidayCalendars()
+        getAllHolidayCalendars(),
+        getLeaveRequestsByManager(currentUser.id)
       ])
       
       setUsers(usersData)
       setHolidayCalendars(calendarsData)
+      setLeaveRequests(requestsData)
     } catch (error) {
       setError('Failed to load data')
     } finally {
@@ -286,6 +298,53 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
     }
   }
 
+  // Leave request processing functions
+  const handleProcessRequest = async () => {
+    if (!selectedRequest) return
+    
+    setLoading(true)
+    setError('')
+    setSuccess('')
+
+    try {
+      await processLeaveRequest(selectedRequest.id, approvalStatus, comments, currentUser.id)
+      setSuccess(`Leave request ${approvalStatus} successfully!`)
+      setShowApprovalModal(false)
+      setSelectedRequest(null)
+      setComments('')
+      await loadData() // Refresh data
+    } catch (error: any) {
+      setError(error.message || 'Failed to process request')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const openApprovalModal = (request: LeaveRequest) => {
+    setSelectedRequest(request)
+    setApprovalStatus('approved')
+    setComments('')
+    setShowApprovalModal(true)
+  }
+
+  const getLeaveTypeColor = (type: string) => {
+    switch (type) {
+      case 'casual': return 'bg-blue-100 text-blue-800'
+      case 'sick': return 'bg-red-100 text-red-800'
+      case 'privilege': return 'bg-green-100 text-green-800'
+      default: return 'bg-gray-100 text-gray-800'
+    }
+  }
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'approved': return 'bg-green-100 text-green-800'
+      case 'rejected': return 'bg-red-100 text-red-800'
+      case 'pending': return 'bg-yellow-100 text-yellow-800'
+      default: return 'bg-gray-100 text-gray-800'
+    }
+  }
+
   // Get filtered holiday calendars
   const filteredHolidayCalendars = holidayCalendars.filter(calendar => {
     const countryMatch = !selectedCountry || calendar.country === selectedCountry
@@ -380,6 +439,16 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
               }`}
             >
               Holiday Calendars
+            </button>
+            <button
+              onClick={() => setActiveTab('leave-requests')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'leave-requests'
+                  ? 'border-orange-500 text-orange-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              Leave Requests
             </button>
           </nav>
         </div>
@@ -977,6 +1046,150 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
                     </button>
                   </div>
                 </form>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Leave Requests Tab */}
+        {activeTab === 'leave-requests' && (
+          <div>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-semibold text-gray-900">Leave Requests</h2>
+              <button
+                onClick={loadData}
+                className="px-4 py-2 text-sm font-medium text-orange-600 bg-orange-50 border border-orange-200 rounded-md hover:bg-orange-100"
+              >
+                Refresh
+              </button>
+            </div>
+
+            {loading ? (
+              <div className="flex justify-center items-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
+              </div>
+            ) : (
+              <div className="bg-white shadow overflow-hidden sm:rounded-md">
+                {leaveRequests.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-gray-500">No leave requests found.</p>
+                  </div>
+                ) : (
+                  <ul className="divide-y divide-gray-200">
+                    {leaveRequests.map((request) => (
+                      <li key={request.id}>
+                        <div className="px-4 py-4 sm:px-6 hover:bg-gray-50">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center">
+                              <div className="flex-shrink-0">
+                                <div className="h-10 w-10 rounded-full bg-orange-100 flex items-center justify-center">
+                                  <span className="text-orange-600 font-medium text-sm">
+                                    {request.user_id.substring(0, 2).toUpperCase()}
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="ml-4">
+                                <div className="flex items-center">
+                                  <h4 className="font-medium text-gray-900">
+                                    User {request.user_id}
+                                  </h4>
+                                  <span className={`ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getLeaveTypeColor(request.leave_type)}`}>
+                                    {request.leave_type}
+                                  </span>
+                                  <span className={`ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(request.status)}`}>
+                                    {request.status}
+                                  </span>
+                                </div>
+                                <p className="text-sm text-gray-500">
+                                  {request.start_date} to {request.end_date} ({request.number_of_days} days)
+                                </p>
+                                <p className="text-sm text-gray-600 mt-1">{request.reason}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              {request.status === 'pending' && (
+                                <button
+                                  onClick={() => openApprovalModal(request)}
+                                  className="px-3 py-1 text-sm font-medium text-orange-600 bg-orange-50 border border-orange-200 rounded-md hover:bg-orange-100"
+                                >
+                                  Process
+                                </button>
+                              )}
+                              <span className="text-xs text-gray-400">
+                                {new Date(request.requested_at).toLocaleDateString()}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Leave Request Approval Modal */}
+        {showApprovalModal && selectedRequest && (
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+            <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+              <div className="mt-3">
+                <h3 className="text-lg font-medium text-gray-900 mb-4">Process Leave Request</h3>
+                <p className="text-sm text-gray-600 mb-4">
+                  <strong>User {selectedRequest.user_id}</strong> is requesting {selectedRequest.leave_type} leave
+                </p>
+                
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Status
+                  </label>
+                  <select
+                    value={approvalStatus}
+                    onChange={(e) => setApprovalStatus(e.target.value as 'approved' | 'rejected')}
+                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                  >
+                    <option value="approved">Approve</option>
+                    <option value="rejected">Reject</option>
+                  </select>
+                </div>
+
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Comments
+                  </label>
+                  <textarea
+                    value={comments}
+                    onChange={(e) => setComments(e.target.value)}
+                    rows={3}
+                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                    placeholder="Add comments (optional)"
+                  />
+                </div>
+
+                <div className="flex justify-end space-x-3">
+                  <button
+                    onClick={() => {
+                      setShowApprovalModal(false)
+                      setSelectedRequest(null)
+                      setComments('')
+                    }}
+                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleProcessRequest}
+                    disabled={loading}
+                    className={`px-4 py-2 text-sm font-medium text-white border border-transparent rounded-md disabled:opacity-50 ${
+                      approvalStatus === 'approved'
+                        ? 'bg-green-600 hover:bg-green-700'
+                        : 'bg-red-600 hover:bg-red-700'
+                    }`}
+                  >
+                    {loading ? 'Processing...' : `${approvalStatus === 'approved' ? 'Approve' : 'Reject'} Request`}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
