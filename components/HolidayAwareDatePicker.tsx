@@ -64,11 +64,11 @@ export default function HolidayAwareDatePicker({
   }
 
   const isStartDate = (date: Date): boolean => {
-    return startDate && date.toISOString().split('T')[0] === startDate
+    return Boolean(startDate && date.toISOString().split('T')[0] === startDate)
   }
 
   const isEndDate = (date: Date): boolean => {
-    return endDate && date.toISOString().split('T')[0] === endDate
+    return Boolean(endDate && date.toISOString().split('T')[0] === endDate)
   }
 
   const getDaysInMonth = (year: number, month: number): Date[] => {
