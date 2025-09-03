@@ -485,7 +485,7 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
             {/* Medical Document Upload (for sick leave > 2 days) */}
             {leaveType === 'sick' && numberOfDays > 2 && (
               <div>
-                <label htmlFor="medicalDocument" className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Medical Document *
                   <span className="text-red-500 ml-1">(Required for sick leave > 2 days)</span>
                 </label>
@@ -497,7 +497,10 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
                     onChange={(e) => setMedicalDocument(e.target.files?.[0] || null)}
                     className="hidden"
                   />
-                  <label htmlFor="medicalDocument" className="cursor-pointer">
+                  <div 
+                    onClick={() => document.getElementById('medicalDocument')?.click()}
+                    className="cursor-pointer"
+                  >
                     {medicalDocument ? (
                       <div className="text-green-600">
                         <svg className="mx-auto h-12 w-12 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -515,7 +518,7 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
                         <p className="text-xs">PDF, JPG, PNG, DOC, DOCX (Max 10MB)</p>
                       </div>
                     )}
-                  </label>
+                  </div>
                 </div>
                 <p className="text-xs text-gray-500 mt-2">
                   Medical certificate or doctor's note required for sick leave exceeding 2 days
