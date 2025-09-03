@@ -6,7 +6,7 @@ import {
   getUserById,
   getUserManager
 } from '../../../lib/supabaseService'
-import { sendLeaveRequestNotification } from '../../../lib/emailService'
+import { sendLeaveRequestEmail } from '../../../lib/emailService'
 
 export async function GET() {
   try {
@@ -136,25 +136,15 @@ async function sendManagerNotification(
       return false
     }
 
-    // Get website URL from environment
-    const websiteUrl = process.env.NEXT_PUBLIC_WEBSITE_URL
-    if (!websiteUrl) {
-      console.error('NEXT_PUBLIC_WEBSITE_URL environment variable is not set')
-      return false
-    }
-    
-    // Send email notification
-    const emailSent = await sendLeaveRequestNotification({
-      managerName: manager.name,
-      managerEmail: manager.email,
-      employeeName: user.name,
-      leaveType,
+    // Send email notification using the correct function
+    const emailSent = await sendLeaveRequestEmail(
+      manager.email,
+      manager.name,
+      user.name,
       startDate,
       endDate,
-      reason,
-      requestId,
-      websiteUrl
-    })
+      leaveType
+    )
 
     if (emailSent) {
       console.log('Manager notification sent successfully to:', manager.email)
