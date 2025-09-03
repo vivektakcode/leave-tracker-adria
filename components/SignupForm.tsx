@@ -9,7 +9,6 @@ interface SignupFormProps {
 
 export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
   const [formData, setFormData] = useState({
-    username: '', // Optional - will be auto-generated if not provided
     password: '',
     name: '',
     email: '',
@@ -101,13 +100,9 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
     setLoading(true)
 
     try {
-      // Auto-generate username if not provided (use email prefix)
-      const username = formData.username || formData.email.split('@')[0]
-      
       // All new users are created as employees by default
       const userData = {
         ...formData,
-        username,
         role: 'employee' as const
       }
       const userId = await createUser(userData)
@@ -116,7 +111,6 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
       
       // Reset form
       setFormData({
-        username: '',
         password: '',
         name: '',
         email: '',
@@ -151,41 +145,21 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
 
       {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-3">
-        {/* Name and Username Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="name" className="block text-sm font-semibold text-gray-700 mb-2">
-              Full Name *
-            </label>
-            <input
-              id="name"
-              name="name"
-              type="text"
-              required
-              value={formData.name}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 text-gray-900 placeholder-gray-500"
-              placeholder="Enter your full name"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="username" className="block text-sm font-semibold text-gray-700 mb-2">
-              Username (Optional)
-            </label>
-            <input
-              id="username"
-              name="username"
-              type="text"
-              value={formData.username}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 text-gray-900 placeholder-gray-500"
-              placeholder="Leave blank to auto-generate from email"
-            />
-            <p className="text-xs text-gray-500 mt-1">
-              If left blank, username will be auto-generated from your email
-            </p>
-          </div>
+        {/* Name Field */}
+        <div>
+          <label htmlFor="name" className="block text-sm font-semibold text-gray-700 mb-2">
+            Full Name *
+          </label>
+          <input
+            id="name"
+            name="name"
+            type="text"
+            required
+            value={formData.name}
+            onChange={handleInputChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 text-gray-900 placeholder-gray-500"
+            placeholder="Enter your full name"
+          />
         </div>
 
         {/* Email and Department Row */}

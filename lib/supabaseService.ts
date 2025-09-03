@@ -8,7 +8,6 @@ export const supabase = createClient(supabaseUrl, supabaseKey)
 
 export interface User {
   id: string
-  username: string
   password: string
   name: string
   email: string
@@ -32,7 +31,6 @@ export interface LeaveBalance {
 export interface LeaveRequest {
   id: string
   user_id: string
-  username?: string
   leave_type: 'casual' | 'sick' | 'privilege'
   start_date: string
   end_date: string
@@ -80,27 +78,6 @@ export async function getUserByEmail(email: string): Promise<User | null> {
     return data as User
   } catch (error) {
     console.error('Error getting user by email:', error)
-    return null
-  }
-}
-
-// Keep the old function for backward compatibility (in case it's used elsewhere)
-export async function getUserByUsername(username: string): Promise<User | null> {
-  try {
-    const { data, error } = await supabase
-      .from('users')
-      .select('*')
-      .eq('username', username)
-      .single()
-
-    if (error) {
-      console.error('Error getting user by username:', error)
-      return null
-    }
-
-    return data as User
-  } catch (error) {
-    console.error('Error getting user by username:', error)
     return null
   }
 }
@@ -195,11 +172,11 @@ export async function getUsersByManager(managerId: string): Promise<User[]> {
 
 export async function createUser(userData: Omit<User, 'id' | 'created_at'>): Promise<string> {
   try {
-    // Check if username or email already exists
+    // Check if email already exists
     const { data: existingUser, error: checkError } = await supabase
       .from('users')
-      .select('username, email')
-      .or(`username.eq.${userData.username},email.eq.${userData.email}`)
+      .select('email')
+      .eq('email', userData.email)
       .limit(1)
 
     if (checkError) {
@@ -208,12 +185,7 @@ export async function createUser(userData: Omit<User, 'id' | 'created_at'>): Pro
     }
 
     if (existingUser && existingUser.length > 0) {
-      if (existingUser[0].username === userData.username) {
-        throw new Error('Username already exists')
-      }
-      if (existingUser[0].email === userData.email) {
-        throw new Error('Email already exists')
-      }
+      throw new Error('Email already exists')
     }
 
     // Validate manager_id if provided
@@ -376,19 +348,10 @@ export async function createLeaveRequest(request: Omit<LeaveRequest, 'id' | 'sta
       throw new Error('You already have a leave request for these dates. Please check your existing requests.')
     }
 
-    const [userData, managerData] = await Promise.all([
-      supabase.from('users').select('username').eq('id', request.user_id).single(),
-      getUserManager(request.user_id)
-    ])
-
-    if (userData.error || !userData.data) {
-      console.error('Error fetching user data:', userData.error)
-      throw new Error('Failed to fetch user data')
-    }
+    const managerData = await getUserManager(request.user_id)
 
     const newRequest: LeaveRequest = {
       ...request,
-      username: userData.data.username,
       id: crypto.randomUUID(),
       status: 'pending',
       requested_at: new Date().toISOString(),
@@ -815,7 +778,6 @@ export async function initializeDatabase(): Promise<void> {
     // Sample users
     const users = [
       {
-        username: 'manager1',
         password: 'manager123',
         name: 'John Manager',
         email: 'manager@company.com',
@@ -824,7 +786,6 @@ export async function initializeDatabase(): Promise<void> {
         country: ''
       },
       {
-        username: 'employee1',
         password: 'emp123',
         name: 'Jane Employee',
         email: 'employee@company.com',
