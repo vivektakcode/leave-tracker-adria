@@ -1,6 +1,6 @@
 /**
  * Date utility functions for leave management system
- * Handles weekend detection, business day calculations, and future holiday support
+ * Handles weekend detection, business day calculations, and holiday support
  */
 
 export interface Holiday {
@@ -9,12 +9,53 @@ export interface Holiday {
   description?: string
 }
 
-// TODO: Future enhancement - load holidays from database or API
-const HOLIDAYS: Holiday[] = [
-  // Example holidays - replace with actual holiday data
-  // { date: '2024-01-01', name: 'New Year\'s Day' },
-  // { date: '2024-12-25', name: 'Christmas Day' },
-]
+// Cache for holidays to avoid repeated API calls
+let holidaysCache: Holiday[] = []
+let cacheTimestamp: number = 0
+const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
+
+/**
+ * Fetch holidays from database for a specific country and year
+ * @param country - Country code
+ * @param year - Year to fetch holidays for
+ * @returns Promise<Holiday[]> - Array of holidays
+ */
+export const fetchHolidaysFromDB = async (country: string, year: number): Promise<Holiday[]> => {
+  try {
+    const response = await fetch(`/api/holidays?country=${country}&year=${year}`)
+    if (!response.ok) {
+      console.warn('Failed to fetch holidays from database')
+      return []
+    }
+    const data = await response.json()
+    return data.holidays || []
+  } catch (error) {
+    console.warn('Error fetching holidays:', error)
+    return []
+  }
+}
+
+/**
+ * Get holidays for current user's country and year
+ * @param country - User's country
+ * @param year - Year to get holidays for
+ * @returns Promise<Holiday[]> - Array of holidays
+ */
+export const getHolidays = async (country: string, year: number): Promise<Holiday[]> => {
+  const now = Date.now()
+  
+  // Check if cache is still valid
+  if (holidaysCache.length > 0 && (now - cacheTimestamp) < CACHE_DURATION) {
+    return holidaysCache
+  }
+  
+  // Fetch fresh data
+  const holidays = await fetchHolidaysFromDB(country, year)
+  holidaysCache = holidays
+  cacheTimestamp = now
+  
+  return holidays
+}
 
 /**
  * Check if a date is a weekend (Saturday or Sunday)
@@ -30,10 +71,30 @@ export const isWeekend = (dateString: string): boolean => {
 /**
  * Check if a date is a holiday
  * @param dateString - Date in YYYY-MM-DD format
+ * @param country - User's country (optional, for async holiday checking)
+ * @param year - Year to check (optional, for async holiday checking)
  * @returns true if the date is a holiday
  */
-export const isHoliday = (dateString: string): boolean => {
-  return HOLIDAYS.some(holiday => holiday.date === dateString)
+export const isHoliday = (dateString: string, country?: string, year?: number): boolean => {
+  // For synchronous calls, check cache first
+  if (holidaysCache.length > 0) {
+    return holidaysCache.some(holiday => holiday.date === dateString)
+  }
+  
+  // If no cache and no country/year provided, return false
+  return false
+}
+
+/**
+ * Check if a date is a holiday (async version)
+ * @param dateString - Date in YYYY-MM-DD format
+ * @param country - User's country
+ * @param year - Year to check
+ * @returns Promise<boolean> - true if the date is a holiday
+ */
+export const isHolidayAsync = async (dateString: string, country: string, year: number): Promise<boolean> => {
+  const holidays = await getHolidays(country, year)
+  return holidays.some(holiday => holiday.date === dateString)
 }
 
 /**

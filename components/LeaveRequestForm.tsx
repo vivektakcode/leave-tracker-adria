@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { User, createLeaveRequest, getLeaveBalance, getUserManager } from '../lib/supabaseService'
 import { isDateDisabled, getMinEndDate, getNextBusinessDay } from '../utils/dateUtils'
 import BusinessDatePicker from './BusinessDatePicker'
-import HolidayAwareDatePicker from './HolidayAwareDatePicker'
 
 interface LeaveRequestFormProps {
   employee: User
@@ -24,7 +23,6 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
   const [success, setSuccess] = useState('')
   const [leaveBalance, setLeaveBalance] = useState({ casual_leave: 0, sick_leave: 0, privilege_leave: 0 })
   const [managerInfo, setManagerInfo] = useState<{ name: string; department: string } | null>(null)
-  const [showHolidayCalendar, setShowHolidayCalendar] = useState(false)
 
 
 
@@ -316,71 +314,44 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
 
             {/* Date Selection */}
             <div>
-              <div className="flex items-center justify-between mb-4">
-                <label className="block text-sm font-medium text-gray-700">
-                  Date Selection *
-                </label>
-                <button
-                  type="button"
-                  onClick={() => setShowHolidayCalendar(!showHolidayCalendar)}
-                  className="text-sm text-orange-600 hover:text-orange-700 font-medium flex items-center space-x-1"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                  <span>{showHolidayCalendar ? 'Hide' : 'Show'} Holiday Calendar</span>
-                </button>
-              </div>
+              <label className="block text-sm font-medium text-gray-700 mb-4">
+                Date Selection *
+              </label>
 
               {/* Holiday Calendar Info */}
-              {!showHolidayCalendar && (
-                <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                  <div className="flex items-center space-x-2 text-sm text-blue-700">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <span>
-                      <strong>Tip:</strong> Use the Holiday Calendar to see holidays in red and plan your leave better. 
-                      Holidays are automatically excluded from working day calculations.
-                    </span>
-                  </div>
+              <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex items-center space-x-2 text-sm text-blue-700">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span>
+                    <strong>Tip:</strong> Holidays are shown in light red and are automatically excluded from working day calculations.
+                  </span>
                 </div>
-              )}
+              </div>
 
-              {showHolidayCalendar ? (
-                /* Holiday-Aware Calendar */
-                <div className="mb-4">
-                  <HolidayAwareDatePicker
-                    startDate={startDate}
-                    endDate={endDate}
-                    country={employee.country || 'Morocco'}
-                    onStartDateChange={handleStartDateChange}
-                    onEndDateChange={handleEndDateChange}
-                    disabled={loading}
+              {/* Date Pickers with Holiday Support */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <BusinessDatePicker
+                    value={startDate}
+                    onChange={handleStartDateChange}
+                    label="Start Date *"
+                    placeholder="Select start date"
+                    country={employee.country || 'India'}
                   />
                 </div>
-              ) : (
-                /* Simple Date Pickers */
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <BusinessDatePicker
-                      value={startDate}
-                      onChange={handleStartDateChange}
-                      label="Start Date *"
-                      placeholder="Select start date"
-                    />
-                  </div>
 
-                  <div>
-                    <BusinessDatePicker
-                      value={endDate}
-                      onChange={handleEndDateChange}
-                      label="End Date *"
-                      placeholder="Select end date"
-                    />
-                  </div>
+                <div>
+                  <BusinessDatePicker
+                    value={endDate}
+                    onChange={handleEndDateChange}
+                    label="End Date *"
+                    placeholder="Select end date"
+                    country={employee.country || 'India'}
+                  />
                 </div>
-              )}
+              </div>
             </div>
 
             {/* Half Day Option */}

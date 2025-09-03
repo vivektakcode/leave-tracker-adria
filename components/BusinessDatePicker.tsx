@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { isDateDisabled } from '../utils/dateUtils'
+import { isDateDisabled, getHolidays, isHoliday } from '../utils/dateUtils'
 
 interface BusinessDatePickerProps {
   value: string
@@ -10,6 +10,7 @@ interface BusinessDatePickerProps {
   label: string
   minDate?: string
   className?: string
+  country?: string
 }
 
 export default function BusinessDatePicker({
@@ -18,11 +19,13 @@ export default function BusinessDatePicker({
   placeholder = "Select date",
   label,
   minDate,
-  className = ""
+  className = "",
+  country = "India"
 }: BusinessDatePickerProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState(value ? new Date(value) : null)
+  const [holidays, setHolidays] = useState<any[]>([])
   const pickerRef = useRef<HTMLDivElement>(null)
 
   // Close picker when clicking outside
@@ -43,6 +46,22 @@ export default function BusinessDatePicker({
       setSelectedDate(new Date(value))
     }
   }, [value])
+
+  // Load holidays when component mounts or country changes
+  useEffect(() => {
+    const loadHolidays = async () => {
+      try {
+        const year = currentMonth.getFullYear()
+        const holidaysData = await getHolidays(country, year)
+        setHolidays(holidaysData)
+      } catch (error) {
+        console.warn('Failed to load holidays:', error)
+        setHolidays([])
+      }
+    }
+
+    loadHolidays()
+  }, [country, currentMonth.getFullYear()])
 
   const getDaysInMonth = (date: Date) => {
     const year = date.getFullYear()
@@ -141,10 +160,19 @@ export default function BusinessDatePicker({
     const dayOfWeek = date.getDay()
     const isWeekendDate = dayOfWeek === 0 || dayOfWeek === 6
     
-    // Debug logging
-    console.log(`Date: ${dateString}, Day: ${dayOfWeek} (${dayOfWeek === 0 ? 'Sunday' : dayOfWeek === 6 ? 'Saturday' : 'Weekday'}), isWeekend: ${isWeekendDate}`)
+    // Check if it's a holiday
+    const isHolidayDate = isHoliday(dateString, country, year)
     
-    return isWeekendDate
+    return isWeekendDate || isHolidayDate
+  }
+
+  const isHolidayDate = (date: Date) => {
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    const dateString = `${year}-${month}-${day}`
+    
+    return isHoliday(dateString, country, year)
   }
 
   const days = getDaysInMonth(currentMonth)
@@ -225,6 +253,7 @@ export default function BusinessDatePicker({
               const disabled = isDisabled(date)
               const today = isToday(date)
               const selected = isSelected(date)
+              const isHoliday = isHolidayDate(date)
 
               return (
                 <button
@@ -234,7 +263,9 @@ export default function BusinessDatePicker({
                   className={`
                     h-8 w-full text-sm rounded-md transition-colors duration-200
                     ${disabled 
-                      ? 'text-gray-400 bg-gray-100 cursor-not-allowed' 
+                      ? isHoliday
+                        ? 'text-red-400 bg-red-50 cursor-not-allowed' // Light red for holidays
+                        : 'text-gray-400 bg-gray-100 cursor-not-allowed' // Gray for weekends
                       : today 
                         ? 'text-white bg-orange-500 hover:bg-orange-600' 
                         : selected 
@@ -242,6 +273,7 @@ export default function BusinessDatePicker({
                           : 'text-gray-700 hover:bg-gray-100'
                     }
                   `}
+                  title={isHoliday ? `Holiday: ${holidays.find(h => h.date === `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`)?.name || 'Holiday'}` : ''}
                 >
                   {date.getDate()}
                 </button>
