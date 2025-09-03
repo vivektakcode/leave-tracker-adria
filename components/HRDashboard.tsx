@@ -345,6 +345,27 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
     }
   }
 
+  // Calculate number of days between start and end date
+  const calculateNumberOfDays = (startDate: string, endDate: string, isHalfDay?: boolean) => {
+    if (!startDate || !endDate) return 0
+    
+    const start = new Date(startDate)
+    const end = new Date(endDate)
+    
+    // Handle same-day requests
+    if (start.toDateString() === end.toDateString()) {
+      return isHalfDay ? 0.5 : 1
+    }
+    
+    // For different dates, calculate the difference
+    const diffTime = Math.abs(end.getTime() - start.getTime())
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+    const calculatedDays = diffDays + 1 // Include both start and end dates
+    
+    // If it's a half day, reduce by 0.5
+    return isHalfDay ? Math.max(0.5, calculatedDays - 0.5) : calculatedDays
+  }
+
   // Get filtered holiday calendars
   const filteredHolidayCalendars = holidayCalendars.filter(calendar => {
     const countryMatch = !selectedCountry || calendar.country === selectedCountry
@@ -1125,7 +1146,7 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
                                         </span>
                                       </div>
                                       <p className="text-sm text-gray-500">
-                                        {request.start_date} to {request.end_date} ({request.number_of_days} days)
+                                        {request.start_date} to {request.end_date} ({calculateNumberOfDays(request.start_date, request.end_date, request.is_half_day)} days)
                                       </p>
                                       <p className="text-sm text-gray-600 mt-1">{request.reason}</p>
                                       {(() => {
