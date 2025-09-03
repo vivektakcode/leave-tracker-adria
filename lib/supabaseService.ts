@@ -200,8 +200,8 @@ export async function createUser(userData: Omit<User, 'id' | 'created_at'>): Pro
         throw new Error('Invalid manager ID')
       }
 
-      if (managerData.role !== 'manager') {
-        throw new Error('Manager ID must reference a user with manager role')
+      if (managerData.role !== 'manager' && managerData.role !== 'hr') {
+        throw new Error('Manager ID must reference a user with manager or HR role')
       }
     }
 
@@ -687,6 +687,93 @@ export async function updateUser(userId: string, updates: Partial<User>): Promis
   } catch (error) {
     console.error('Error updating user:', error)
     return false
+  }
+}
+
+// Reassign pending leave requests when manager changes
+export async function reassignLeaveRequestsToNewManager(
+  userId: string, 
+  newManagerId: string | undefined, 
+  oldManagerId: string | undefined
+): Promise<number> {
+  try {
+    // Get pending leave requests for this user
+    const { data: pendingRequests, error: fetchError } = await supabase
+      .from('leave_requests')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('status', 'pending')
+
+    if (fetchError) {
+      console.error('Error fetching pending leave requests:', fetchError)
+      return 0
+    }
+
+    if (!pendingRequests || pendingRequests.length === 0) {
+      return 0
+    }
+
+    // Get new manager info if provided
+    let newManagerInfo = null
+    if (newManagerId) {
+      const { data: managerData, error: managerError } = await supabase
+        .from('users')
+        .select('name, department')
+        .eq('id', newManagerId)
+        .single()
+
+      if (managerError) {
+        console.error('Error fetching new manager info:', managerError)
+      } else {
+        newManagerInfo = managerData
+      }
+    }
+
+    // Update all pending requests with new manager info
+    const { error: updateError } = await supabase
+      .from('leave_requests')
+      .update({
+        manager_name: newManagerInfo?.name || null,
+        manager_department: newManagerInfo?.department || null,
+        updated_at: new Date().toISOString()
+      })
+      .eq('user_id', userId)
+      .eq('status', 'pending')
+
+    if (updateError) {
+      console.error('Error updating leave requests:', updateError)
+      return 0
+    }
+
+    // Send notification to user about manager change
+    if (newManagerId && newManagerInfo) {
+      try {
+        const { sendManagerChangeNotification } = await import('./emailService')
+        const { data: userData } = await supabase
+          .from('users')
+          .select('name, email')
+          .eq('id', userId)
+          .single()
+
+        if (userData) {
+          await sendManagerChangeNotification(
+            userData.email,
+            userData.name,
+            newManagerInfo.name,
+            newManagerInfo.department
+          )
+        }
+      } catch (emailError) {
+        console.error('Error sending manager change notification:', emailError)
+        // Don't fail the reassignment if email fails
+      }
+    }
+
+    console.log(`✅ Reassigned ${pendingRequests.length} pending leave requests for user ${userId}`)
+    return pendingRequests.length
+  } catch (error) {
+    console.error('Error reassigning leave requests:', error)
+    return 0
   }
 }
 

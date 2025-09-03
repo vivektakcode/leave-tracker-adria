@@ -21,25 +21,32 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [managers, setManagers] = useState<any[]>([])
+  const [refreshingManagers, setRefreshingManagers] = useState(false)
+
+  // Fetch managers function
+  const fetchManagers = async () => {
+    setRefreshingManagers(true)
+    try {
+      const allUsers = await getAllUsers()
+      const managerUsers = allUsers.filter(user => user.role === 'manager')
+      
+      // If no managers exist, include HR users as potential managers
+      if (managerUsers.length === 0) {
+        const hrUsers = allUsers.filter(user => user.role === 'hr')
+        setManagers(hrUsers)
+      } else {
+        setManagers(managerUsers)
+      }
+    } catch (error) {
+      console.error('Error fetching managers:', error)
+      setError('Failed to load managers. Please try again.')
+    } finally {
+      setRefreshingManagers(false)
+    }
+  }
 
   // Fetch managers when component mounts
   useEffect(() => {
-    const fetchManagers = async () => {
-      try {
-        const allUsers = await getAllUsers()
-        const managerUsers = allUsers.filter(user => user.role === 'manager')
-        
-        // If no managers exist, include HR users as potential managers
-        if (managerUsers.length === 0) {
-          const hrUsers = allUsers.filter(user => user.role === 'hr')
-          setManagers(hrUsers)
-        } else {
-          setManagers(managerUsers)
-        }
-      } catch (error) {
-        console.error('Error fetching managers:', error)
-      }
-    }
     fetchManagers()
   }, [])
 
@@ -91,6 +98,13 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
       return false
     }
 
+    // Validate that selected manager has appropriate role
+    const selectedManager = managers.find(m => m.id === formData.manager_id)
+    if (selectedManager && selectedManager.role !== 'manager' && selectedManager.role !== 'hr') {
+      setError('Selected manager must have manager or HR role')
+      return false
+    }
+
     return true
   }
 
@@ -131,7 +145,20 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
         onSignupSuccess?.()
       }, 2000)
     } catch (error: any) {
-      setError(error.message || 'Failed to create account. Please try again.')
+      // Handle specific validation errors with user-friendly messages
+      if (error.message.includes('Manager ID must reference')) {
+        setError('The selected manager is not valid. Please refresh the manager list and select a different manager, or contact HR to set up a proper manager.')
+        // Auto-refresh manager list when this error occurs
+        fetchManagers()
+      } else if (error.message.includes('Email already exists')) {
+        setError('An account with this email already exists. Please use a different email or try logging in.')
+      } else if (error.message.includes('Invalid manager ID')) {
+        setError('The selected manager is no longer available. Please refresh the manager list and select a different manager.')
+        // Auto-refresh manager list when this error occurs
+        fetchManagers()
+      } else {
+        setError(error.message || 'Failed to create account. Please try again.')
+      }
     } finally {
       setLoading(false)
     }
@@ -230,9 +257,19 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
         {/* Manager Selection (required for all new users) */}
         {managers.length > 0 && (
           <div>
-            <label htmlFor="manager_id" className="block text-sm font-semibold text-gray-700 mb-2">
-              Manager *
-            </label>
+            <div className="flex justify-between items-center mb-2">
+              <label htmlFor="manager_id" className="block text-sm font-semibold text-gray-700">
+                Manager *
+              </label>
+              <button
+                type="button"
+                onClick={fetchManagers}
+                disabled={refreshingManagers}
+                className="text-xs text-orange-600 hover:text-orange-700 font-medium disabled:opacity-50"
+              >
+                {refreshingManagers ? 'Refreshing...' : 'Refresh List'}
+              </button>
+            </div>
             <select
               id="manager_id"
               name="manager_id"

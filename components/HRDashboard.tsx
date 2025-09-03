@@ -97,6 +97,22 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
     setSuccess('')
 
     try {
+      // Validate manager assignment for employees
+      if (newUser.role === 'employee') {
+        if (!newUser.manager_id) {
+          setError('All employees must have a manager assigned')
+          setLoading(false)
+          return
+        }
+        
+        const selectedManager = users.find(u => u.id === newUser.manager_id)
+        if (selectedManager && selectedManager.role !== 'manager' && selectedManager.role !== 'hr') {
+          setError('Selected manager must have manager or HR role')
+          setLoading(false)
+          return
+        }
+      }
+
       await createUser(newUser)
       setSuccess('User created successfully!')
       setShowCreateUser(false)
@@ -126,6 +142,20 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
     setSuccess('')
 
     try {
+      // Validate manager assignment for employees
+      if (editingUser.role === 'employee' && editingUser.manager_id) {
+        const selectedManager = users.find(u => u.id === editingUser.manager_id)
+        if (selectedManager && selectedManager.role !== 'manager' && selectedManager.role !== 'hr') {
+          setError('Selected manager must have manager or HR role')
+          setLoading(false)
+          return
+        }
+      }
+
+      // Check if manager is changing
+      const originalUser = users.find(u => u.id === editingUser.id)
+      const managerChanged = originalUser?.manager_id !== editingUser.manager_id
+
       await updateUser(editingUser.id, {
         name: editingUser.name,
         email: editingUser.email,
@@ -134,6 +164,12 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
         country: editingUser.country,
         manager_id: editingUser.manager_id
       })
+
+      // Handle manager change - reassign pending leave requests
+      if (managerChanged && editingUser.role === 'employee') {
+        await handleManagerChange(editingUser.id, editingUser.manager_id, originalUser?.manager_id)
+      }
+
       setSuccess('User updated successfully!')
       setShowEditUser(false)
       setEditingUser(null)
@@ -148,6 +184,24 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
   const startEditUser = (user: User) => {
     setEditingUser({ ...user })
     setShowEditUser(true)
+  }
+
+  // Handle manager change - reassign pending leave requests
+  const handleManagerChange = async (userId: string, newManagerId: string | undefined, oldManagerId: string | undefined) => {
+    try {
+      // Import the function to reassign leave requests
+      const { reassignLeaveRequestsToNewManager } = await import('../lib/supabaseService')
+      
+      // Reassign pending leave requests to new manager
+      const reassignedCount = await reassignLeaveRequestsToNewManager(userId, newManagerId, oldManagerId)
+      
+      if (reassignedCount > 0) {
+        console.log(`✅ Reassigned ${reassignedCount} pending leave requests to new manager`)
+      }
+    } catch (error) {
+      console.error('Error reassigning leave requests:', error)
+      // Don't fail the user update if leave request reassignment fails
+    }
   }
 
   const handleCreateHoliday = async (e: React.FormEvent) => {
@@ -756,13 +810,14 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
                   {/* Manager Assignment - only show for employees */}
                   {newUser.role === 'employee' && (
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Manager</label>
+                      <label className="block text-sm font-medium text-gray-700">Manager *</label>
                       <select
+                        required
                         value={newUser.manager_id}
                         onChange={(e) => setNewUser({...newUser, manager_id: e.target.value})}
                         className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
                       >
-                        <option value="">No Manager</option>
+                        <option value="">Select a manager</option>
                         {users
                           .filter(user => user.role === 'manager' || user.role === 'hr')
                           .map((manager) => (
@@ -772,7 +827,7 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
                           ))}
                       </select>
                       <p className="text-xs text-gray-500 mt-1">
-                        Assign a manager or HR user to approve this employee's leave requests
+                        All employees must have a manager or HR user to approve their leave requests
                       </p>
                     </div>
                   )}

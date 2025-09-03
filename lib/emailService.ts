@@ -66,6 +66,24 @@ const emailTemplates = {
         <p>Best regards,<br>Leave Management System</p>
       </div>
     `
+  }),
+
+  managerChange: (userName: string, managerName: string, managerDepartment: string) => ({
+    subject: `Manager Assignment Update`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #f97316;">Manager Assignment Update</h2>
+        <p>Hello ${userName},</p>
+        <p>Your manager assignment has been updated in the Leave Management System.</p>
+        <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <p><strong>New Manager:</strong> ${managerName}</p>
+          <p><strong>Department:</strong> ${managerDepartment}</p>
+        </div>
+        <p>Your new manager will now review and approve your leave requests. Any pending leave requests have been automatically reassigned to your new manager.</p>
+        <p>If you have any questions about this change, please contact your HR department.</p>
+        <p>Best regards,<br>Leave Management System</p>
+      </div>
+    `
   })
 }
 
@@ -125,6 +143,25 @@ export async function sendPasswordResetEmail(userEmail: string, userName: string
     return true
   } catch (error) {
     console.error('❌ Error sending password reset email:', error)
+    return false
+  }
+}
+
+export async function sendManagerChangeNotification(userEmail: string, userName: string, managerName: string, managerDepartment: string): Promise<boolean> {
+  try {
+    const { subject, html } = emailTemplates.managerChange(userName, managerName, managerDepartment)
+    
+    await resend.emails.send({
+      from: 'Leave Management <onboarding@resend.dev>',
+      to: userEmail,
+      subject,
+      html
+    })
+    
+    console.log(`✅ Manager change notification sent to ${userEmail}`)
+    return true
+  } catch (error) {
+    console.error('❌ Error sending manager change notification:', error)
     return false
   }
 }
