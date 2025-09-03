@@ -193,29 +193,29 @@ export const getMinEndDate = (startDate: string): string => {
 }
 
 /**
- * Add holidays to the system
+ * Add holidays to the cache
  * @param holidays - Array of holiday objects
  */
 export const addHolidays = (holidays: Holiday[]): void => {
-  HOLIDAYS.push(...holidays)
+  holidaysCache.push(...holidays)
 }
 
 /**
- * Remove holidays from the system
+ * Remove holidays from the cache
  * @param dateStrings - Array of dates to remove
  */
 export const removeHolidays = (dateStrings: string[]): void => {
   const datesToRemove = new Set(dateStrings)
-  const index = HOLIDAYS.findIndex(holiday => datesToRemove.has(holiday.date))
+  const index = holidaysCache.findIndex(holiday => datesToRemove.has(holiday.date))
   if (index > -1) {
-    HOLIDAYS.splice(index, 1)
+    holidaysCache.splice(index, 1)
   }
 }
 
 /**
- * Get all holidays
+ * Get all holidays from cache
  * @returns Array of all holidays
  */
 export const getAllHolidays = (): Holiday[] => {
-  return [...HOLIDAYS]
+  return [...holidaysCache]
 }
