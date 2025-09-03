@@ -893,30 +893,27 @@ export function shouldAutoApproveLeave(
   const start = new Date(startDate)
   const end = new Date(endDate)
   
-  // Auto-approve if dates are in the past
+  // ONLY auto-approve if dates are in the past (regardless of leave type)
+  // This covers both casual leave and privilege leave for past dates
   if (start < today) {
     return true
   }
   
-  // Auto-approve CL for 1-2 days
-  if (leaveType === 'casual' && numberOfDays <= 2) {
-    return true
-  }
-  
-  // Auto-approve PL for any number of days
-  if (leaveType === 'privilege') {
-    return true
-  }
-  
+  // For future dates, NEVER auto-approve - manager must review
   return false
 }
 
 // Get pending leave requests that need reminders
 export async function getPendingLeaveRequestsForReminders(): Promise<any[]> {
   try {
+    const now = new Date()
     const threeDaysAgo = new Date()
     threeDaysAgo.setDate(threeDaysAgo.getDate() - 3)
     
+    // Get requests that need reminders:
+    // 1. Status is pending
+    // 2. Requested more than 3 days ago
+    // 3. Either no reminder sent yet, or last reminder was more than 3 days ago
     const { data, error } = await supabase
       .from('leave_requests')
       .select(`
@@ -934,6 +931,7 @@ export async function getPendingLeaveRequestsForReminders(): Promise<any[]> {
       .eq('status', 'pending')
       .lt('requested_at', threeDaysAgo.toISOString())
       .is('processed_at', null)
+      .or(`last_reminder_sent.is.null,last_reminder_sent.lt.${threeDaysAgo.toISOString()}`)
 
     if (error) {
       console.error('Error getting pending leave requests for reminders:', error)
@@ -963,7 +961,7 @@ export async function sendLeaveReminders(): Promise<void> {
           // Import email service dynamically to avoid circular dependencies
           const { sendLeaveReminderEmail } = await import('./emailService')
           
-          await sendLeaveReminderEmail(
+          const emailSent = await sendLeaveReminderEmail(
             manager.email,
             manager.name,
             request.users.name,
@@ -971,6 +969,21 @@ export async function sendLeaveReminders(): Promise<void> {
             request.end_date,
             daysPending
           )
+          
+          // Update reminder tracking if email was sent successfully
+          if (emailSent) {
+            const newReminderCount = (request.reminder_count || 0) + 1
+            
+            await supabase
+              .from('leave_requests')
+              .update({
+                last_reminder_sent: new Date().toISOString(),
+                reminder_count: newReminderCount
+              })
+              .eq('id', request.id)
+              
+            console.log(`📧 Sent reminder #${newReminderCount} for request ${request.id}`)
+          }
         }
       }
     }
