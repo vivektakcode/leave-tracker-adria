@@ -487,7 +487,7 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Medical Document *
-                  <span className="text-red-500 ml-1">(Required for sick leave > 2 days)</span>
+                  <span className="text-red-500 ml-1">(Required for sick leave &gt; 2 days)</span>
                 </label>
                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-orange-400 transition-colors">
                   <input
