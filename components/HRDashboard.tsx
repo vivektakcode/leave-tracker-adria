@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react'
 import { 
   getAllUsers, 
   createUser, 
-  getHolidayCalendar, 
+  getAllHolidayCalendars,
+  updateUser,
   createHolidayCalendar,
   updateHolidayCalendar,
   deleteHolidayCalendar,
@@ -12,6 +13,7 @@ import {
   HolidayCalendar,
   Holiday
 } from '../lib/supabaseService'
+import WeekendAwareDatePicker from './WeekendAwareDatePicker'
 
 interface HRDashboardProps {
   currentUser: User
@@ -27,13 +29,15 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
 
   // User management state
   const [showCreateUser, setShowCreateUser] = useState(false)
+  const [showEditUser, setShowEditUser] = useState(false)
+  const [editingUser, setEditingUser] = useState<User | null>(null)
   const [newUser, setNewUser] = useState({
     username: '',
     password: '',
     name: '',
     email: '',
     department: '',
-    country: 'UAE',
+    country: 'India',
     role: 'employee' as 'employee' | 'manager' | 'hr',
     manager_id: ''
   })
@@ -57,13 +61,11 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
     try {
       const [usersData, calendarsData] = await Promise.all([
         getAllUsers(),
-        getHolidayCalendar('UAE', new Date().getFullYear())
+        getAllHolidayCalendars()
       ])
       
       setUsers(usersData)
-      if (calendarsData) {
-        setHolidayCalendars([calendarsData])
-      }
+      setHolidayCalendars(calendarsData)
     } catch (error) {
       setError('Failed to load data')
     } finally {
@@ -87,7 +89,7 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
         name: '',
         email: '',
         department: '',
-        country: 'UAE',
+        country: 'India',
         role: 'employee',
         manager_id: ''
       })
@@ -97,6 +99,39 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleEditUser = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editingUser) return
+    
+    setLoading(true)
+    setError('')
+    setSuccess('')
+
+    try {
+      await updateUser(editingUser.id, {
+        name: editingUser.name,
+        email: editingUser.email,
+        role: editingUser.role,
+        department: editingUser.department,
+        country: editingUser.country,
+        manager_id: editingUser.manager_id
+      })
+      setSuccess('User updated successfully!')
+      setShowEditUser(false)
+      setEditingUser(null)
+      loadData()
+    } catch (error: any) {
+      setError(error.message || 'Failed to update user')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const startEditUser = (user: User) => {
+    setEditingUser({ ...user })
+    setShowEditUser(true)
   }
 
   const handleCreateHoliday = async (e: React.FormEvent) => {
@@ -342,6 +377,9 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Created
                       </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Actions
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
@@ -370,6 +408,14 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {new Date(user.created_at).toLocaleDateString()}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <button
+                            onClick={() => startEditUser(user)}
+                            className="text-orange-600 hover:text-orange-700 font-medium"
+                          >
+                            Edit
+                          </button>
                         </td>
                       </tr>
                     ))}
@@ -537,7 +583,11 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
                       onChange={(e) => setNewUser({...newUser, country: e.target.value})}
                       className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
                     >
+                      <option value="India">India</option>
                       <option value="UAE">UAE</option>
+                      <option value="Morocco">Morocco</option>
+                      <option value="Tunisia">Tunisia</option>
+                      <option value="Senegal">Senegal</option>
                       <option value="Saudi Arabia">Saudi Arabia</option>
                       <option value="Qatar">Qatar</option>
                       <option value="Kuwait">Kuwait</option>
@@ -627,12 +677,10 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
                       {newHoliday.holidays.map((holiday, index) => (
                         <div key={index} className="p-3 border border-gray-200 rounded-lg">
                           <div className="grid grid-cols-2 gap-2 mb-2">
-                            <input
-                              type="date"
-                              required
+                            <WeekendAwareDatePicker
                               value={holiday.date}
-                              onChange={(e) => updateHoliday(index, 'date', e.target.value)}
-                              className="block w-full border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                              onChange={(date) => updateHoliday(index, 'date', date)}
+                              placeholder="Select date"
                             />
                             <select
                               required
@@ -713,12 +761,10 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
                       {editingCalendar.holidays.map((holiday, index) => (
                         <div key={index} className="p-3 border border-gray-200 rounded-lg">
                           <div className="grid grid-cols-2 gap-2 mb-2">
-                            <input
-                              type="date"
-                              required
+                            <WeekendAwareDatePicker
                               value={holiday.date}
-                              onChange={(e) => updateEditingHoliday(index, 'date', e.target.value)}
-                              className="block w-full border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                              onChange={(date) => updateEditingHoliday(index, 'date', date)}
+                              placeholder="Select date"
                             />
                             <select
                               required
@@ -770,6 +816,109 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
                       className="px-4 py-2 text-sm font-medium text-white bg-orange-600 border border-transparent hover:bg-orange-700 disabled:opacity-50"
                     >
                       {loading ? 'Updating...' : 'Update Calendar'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Edit User Modal */}
+        {showEditUser && editingUser && (
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+            <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+              <div className="mt-3">
+                <h3 className="text-lg font-medium text-gray-900 mb-4">Edit User</h3>
+                <form onSubmit={handleEditUser} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Full Name *</label>
+                    <input
+                      type="text"
+                      required
+                      value={editingUser.name}
+                      onChange={(e) => setEditingUser({...editingUser, name: e.target.value})}
+                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Email *</label>
+                    <input
+                      type="email"
+                      required
+                      value={editingUser.email}
+                      onChange={(e) => setEditingUser({...editingUser, email: e.target.value})}
+                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Department *</label>
+                    <select
+                      required
+                      value={editingUser.department}
+                      onChange={(e) => setEditingUser({...editingUser, department: e.target.value})}
+                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                    >
+                      <option value="">Select department</option>
+                      <option value="Engineering">Engineering</option>
+                      <option value="Sales">Sales</option>
+                      <option value="Marketing">Marketing</option>
+                      <option value="HR">HR</option>
+                      <option value="Finance">Finance</option>
+                      <option value="Operations">Operations</option>
+                      <option value="Product">Product</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Country *</label>
+                    <select
+                      required
+                      value={editingUser.country}
+                      onChange={(e) => setEditingUser({...editingUser, country: e.target.value})}
+                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                    >
+                      <option value="India">India</option>
+                      <option value="UAE">UAE</option>
+                      <option value="Morocco">Morocco</option>
+                      <option value="Tunisia">Tunisia</option>
+                      <option value="Senegal">Senegal</option>
+                      <option value="Saudi Arabia">Saudi Arabia</option>
+                      <option value="Qatar">Qatar</option>
+                      <option value="Kuwait">Kuwait</option>
+                      <option value="Oman">Oman</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Role *</label>
+                    <select
+                      required
+                      value={editingUser.role}
+                      onChange={(e) => setEditingUser({...editingUser, role: e.target.value as 'employee' | 'manager' | 'hr'})}
+                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                    >
+                      <option value="employee">Employee</option>
+                      <option value="manager">Manager</option>
+                      <option value="hr">HR</option>
+                    </select>
+                  </div>
+                  <div className="flex justify-end space-x-3 pt-4">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowEditUser(false)
+                        setEditingUser(null)
+                      }}
+                      className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="px-4 py-2 text-sm font-medium text-white bg-orange-600 border border-transparent rounded-md hover:bg-orange-700 disabled:opacity-50"
+                    >
+                      {loading ? 'Updating...' : 'Update User'}
                     </button>
                   </div>
                 </form>

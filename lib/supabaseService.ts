@@ -667,6 +667,45 @@ export async function deleteHolidayCalendar(id: string): Promise<boolean> {
   }
 }
 
+export async function getAllHolidayCalendars(): Promise<HolidayCalendar[]> {
+  try {
+    const { data, error } = await supabase
+      .from('holiday_calendars')
+      .select('*')
+      .order('country', { ascending: true })
+      .order('year', { ascending: false })
+
+    if (error) {
+      console.error('Error getting all holiday calendars:', error)
+      return []
+    }
+
+    return data as HolidayCalendar[]
+  } catch (error) {
+    console.error('Error getting all holiday calendars:', error)
+    return []
+  }
+}
+
+export async function updateUser(userId: string, updates: Partial<User>): Promise<boolean> {
+  try {
+    const { error } = await supabase
+      .from('users')
+      .update(updates)
+      .eq('id', userId)
+
+    if (error) {
+      console.error('Error updating user:', error)
+      return false
+    }
+
+    return true
+  } catch (error) {
+    console.error('Error updating user:', error)
+    return false
+  }
+}
+
 export async function getHolidaysForPeriod(country: string, startDate: string, endDate: string): Promise<Holiday[]> {
   try {
     const { data, error } = await supabase
