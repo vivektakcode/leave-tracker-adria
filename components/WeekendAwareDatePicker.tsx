@@ -28,7 +28,7 @@ export default function WeekendAwareDatePicker({
   }
 
   const isSelected = (date: Date): boolean => {
-    return value && date.toISOString().split('T')[0] === value
+    return Boolean(value && date.toISOString().split('T')[0] === value)
   }
 
   const getDaysInMonth = (year: number, month: number): Date[] => {
