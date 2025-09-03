@@ -752,6 +752,30 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
                       <option value="hr">HR</option>
                     </select>
                   </div>
+                  
+                  {/* Manager Assignment - only show for employees */}
+                  {newUser.role === 'employee' && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Manager</label>
+                      <select
+                        value={newUser.manager_id}
+                        onChange={(e) => setNewUser({...newUser, manager_id: e.target.value})}
+                        className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                      >
+                        <option value="">No Manager</option>
+                        {users
+                          .filter(user => user.role === 'manager' || user.role === 'hr')
+                          .map((manager) => (
+                            <option key={manager.id} value={manager.id}>
+                              {manager.name} ({manager.department}) - {manager.role === 'hr' ? 'HR' : 'Manager'}
+                            </option>
+                          ))}
+                      </select>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Assign a manager or HR user to approve this employee's leave requests
+                      </p>
+                    </div>
+                  )}
                   <div className="flex justify-end space-x-3 pt-4">
                     <button
                       type="button"
@@ -1047,6 +1071,31 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
                       <option value="hr">HR</option>
                     </select>
                   </div>
+                  
+                  {/* Manager Assignment - only show for employees */}
+                  {editingUser.role === 'employee' && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Manager</label>
+                      <select
+                        value={editingUser.manager_id || ''}
+                        onChange={(e) => setEditingUser({...editingUser, manager_id: e.target.value})}
+                        className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                      >
+                        <option value="">No Manager</option>
+                        {users
+                          .filter(user => user.role === 'manager' || user.role === 'hr')
+                          .filter(user => user.id !== editingUser.id) // Can't be their own manager
+                          .map((manager) => (
+                            <option key={manager.id} value={manager.id}>
+                              {manager.name} ({manager.department}) - {manager.role === 'hr' ? 'HR' : 'Manager'}
+                            </option>
+                          ))}
+                      </select>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Assign a manager or HR user to approve this employee's leave requests
+                      </p>
+                    </div>
+                  )}
                   <div className="flex justify-end space-x-3 pt-4">
                     <button
                       type="button"

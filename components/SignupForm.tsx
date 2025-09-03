@@ -28,7 +28,14 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
       try {
         const allUsers = await getAllUsers()
         const managerUsers = allUsers.filter(user => user.role === 'manager')
-        setManagers(managerUsers)
+        
+        // If no managers exist, include HR users as potential managers
+        if (managerUsers.length === 0) {
+          const hrUsers = allUsers.filter(user => user.role === 'hr')
+          setManagers(hrUsers)
+        } else {
+          setManagers(managerUsers)
+        }
       } catch (error) {
         console.error('Error fetching managers:', error)
       }
@@ -237,12 +244,22 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
               <option value="">Select your manager</option>
               {managers.map((manager) => (
                 <option key={manager.id} value={manager.id}>
-                  {manager.name} ({manager.department})
+                  {manager.name} ({manager.department}) - {manager.role === 'hr' ? 'HR' : 'Manager'}
                 </option>
               ))}
             </select>
             <p className="text-xs text-gray-500 mt-1">
-              Your manager will review and approve your leave requests. HR can promote you to manager or HR roles later.
+              Your manager will review and approve your leave requests. HR can change your manager or promote you to manager/HR roles later.
+            </p>
+          </div>
+        )}
+
+        {/* No managers available message */}
+        {managers.length === 0 && (
+          <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 px-3 py-2 rounded-lg text-sm">
+            <p className="font-medium">No managers available</p>
+            <p className="text-xs mt-1">
+              Please contact your HR team to set up a manager before creating your account, or ask an HR team member to create your account.
             </p>
           </div>
         )}
