@@ -5,7 +5,7 @@ import { User, authenticateUser } from '../lib/supabaseService'
 
 interface AuthContextType {
   currentUser: User | null
-  login: (username: string, password: string) => Promise<User | null>
+  login: (email: string, password: string) => Promise<User | null>
   logout: () => void
 }
 
@@ -40,8 +40,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return null
   })
 
-  async function login(username: string, password: string): Promise<User | null> {
-    const user = await authenticateUser(username, password)
+  async function login(email: string, password: string): Promise<User | null> {
+    const user = await authenticateUser(email, password)
     if (user) {
       setCurrentUser(user)
       // Save user to localStorage for persistence

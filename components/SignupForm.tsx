@@ -9,7 +9,7 @@ interface SignupFormProps {
 
 export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
   const [formData, setFormData] = useState({
-    username: '',
+    username: '', // Optional - will be auto-generated if not provided
     password: '',
     name: '',
     email: '',
@@ -64,13 +64,8 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
   }
 
   const validateForm = () => {
-    if (!formData.username || !formData.password || !formData.name || !formData.email || !formData.department || !formData.country) {
+    if (!formData.password || !formData.name || !formData.email || !formData.department || !formData.country) {
       setError('Please fill in all required fields')
-      return false
-    }
-
-    if (formData.username.length < 3) {
-      setError('Username must be at least 3 characters long')
       return false
     }
 
@@ -106,14 +101,18 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
     setLoading(true)
 
     try {
+      // Auto-generate username if not provided (use email prefix)
+      const username = formData.username || formData.email.split('@')[0]
+      
       // All new users are created as employees by default
       const userData = {
         ...formData,
+        username,
         role: 'employee' as const
       }
       const userId = await createUser(userData)
       
-      setSuccess('Account created successfully! You can now log in with your credentials.')
+      setSuccess('Account created successfully! You can now log in with your email and password.')
       
       // Reset form
       setFormData({
@@ -172,18 +171,20 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
 
           <div>
             <label htmlFor="username" className="block text-sm font-semibold text-gray-700 mb-2">
-              Username *
+              Username (Optional)
             </label>
             <input
               id="username"
               name="username"
               type="text"
-              required
               value={formData.username}
               onChange={handleInputChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 text-gray-900 placeholder-gray-500"
-              placeholder="Choose a username"
+              placeholder="Leave blank to auto-generate from email"
             />
+            <p className="text-xs text-gray-500 mt-1">
+              If left blank, username will be auto-generated from your email
+            </p>
           </div>
         </div>
 

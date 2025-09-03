@@ -64,6 +64,27 @@ export interface Holiday {
 }
 
 // User functions
+export async function getUserByEmail(email: string): Promise<User | null> {
+  try {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('email', email)
+      .single()
+
+    if (error) {
+      console.error('Error getting user by email:', error)
+      return null
+    }
+
+    return data as User
+  } catch (error) {
+    console.error('Error getting user by email:', error)
+    return null
+  }
+}
+
+// Keep the old function for backward compatibility (in case it's used elsewhere)
 export async function getUserByUsername(username: string): Promise<User | null> {
   try {
     const { data, error } = await supabase
@@ -242,9 +263,9 @@ export async function createUser(userData: Omit<User, 'id' | 'created_at'>): Pro
 }
 
 // Authentication function
-export async function authenticateUser(username: string, password: string): Promise<User | null> {
+export async function authenticateUser(email: string, password: string): Promise<User | null> {
   try {
-    const user = await getUserByUsername(username)
+    const user = await getUserByEmail(email)
     if (user && user.password === password) {
       return user
     }
