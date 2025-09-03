@@ -103,7 +103,10 @@ export default function WeekendAwareDatePicker({
         value={value}
         readOnly
         placeholder={placeholder}
-        onClick={() => !disabled && setIsOpen(!isOpen)}
+        onClick={(e) => {
+          e.preventDefault()
+          if (!disabled) setIsOpen(!isOpen)
+        }}
         className="block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-orange-500 focus:border-orange-500 cursor-pointer"
         disabled={disabled}
       />
@@ -116,6 +119,7 @@ export default function WeekendAwareDatePicker({
           {/* Calendar Header */}
           <div className="flex items-center justify-between mb-4">
             <button
+              type="button"
               onClick={prevMonth}
               className="p-2 hover:bg-gray-100 rounded-lg"
             >
@@ -129,6 +133,7 @@ export default function WeekendAwareDatePicker({
             </h3>
             
             <button
+              type="button"
               onClick={nextMonth}
               className="p-2 hover:bg-gray-100 rounded-lg"
             >
@@ -178,7 +183,10 @@ export default function WeekendAwareDatePicker({
               return (
                 <div
                   key={index}
-                  onClick={() => handleDateClick(date)}
+                  onClick={(e) => {
+                    e.preventDefault()
+                    handleDateClick(date)
+                  }}
                   className={`
                     relative p-2 text-center text-sm font-medium rounded-lg
                     transition-colors duration-200 border-2 border-transparent
