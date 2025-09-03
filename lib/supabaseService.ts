@@ -969,14 +969,10 @@ export function shouldAutoApproveLeave(
       return true
     }
     
-    // For sick leave > 2 days, require manager approval (need medical document)
-    if (leaveType === 'sick' && numberOfDays > 2) {
+    // Sick leave ALWAYS requires manager approval regardless of number of days
+    // This ensures proper verification of medical documentation and sick leave policies
+    if (leaveType === 'sick') {
       return false // Manager must review and verify medical document
-    }
-    
-    // Auto-approve sick leave <= 2 days for past dates
-    if (leaveType === 'sick' && numberOfDays <= 2) {
-      return true
     }
   }
   
