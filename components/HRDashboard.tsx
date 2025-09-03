@@ -1069,69 +1069,96 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
               </div>
             ) : (
-              <div className="bg-white shadow overflow-hidden sm:rounded-md">
+              <div className="space-y-6">
                 {leaveRequests.length === 0 ? (
                   <div className="text-center py-8">
                     <p className="text-gray-500">No leave requests found.</p>
                   </div>
                 ) : (
-                  <ul className="divide-y divide-gray-200">
-                    {leaveRequests.map((request) => (
-                      <li key={request.id}>
-                        <div className="px-4 py-4 sm:px-6 hover:bg-gray-50">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center">
-                              <div className="flex-shrink-0">
-                                <div className="h-10 w-10 rounded-full bg-orange-100 flex items-center justify-center">
-                                  <span className="text-orange-600 font-medium text-sm">
-                                    {request.user_id.substring(0, 2).toUpperCase()}
-                                  </span>
-                                </div>
-                              </div>
-                              <div className="ml-4">
-                                <div className="flex items-center">
-                                  <h4 className="font-medium text-gray-900">
-                                    {users.find(u => u.id === request.user_id)?.name || `User ${request.user_id}`}
-                                  </h4>
-                                  <span className={`ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getLeaveTypeColor(request.leave_type)}`}>
-                                    {request.leave_type}
-                                  </span>
-                                  <span className={`ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(request.status)}`}>
-                                    {request.status}
-                                  </span>
-                                </div>
-                                <p className="text-sm text-gray-500">
-                                  {request.start_date} to {request.end_date} ({request.number_of_days} days)
-                                </p>
-                                <p className="text-sm text-gray-600 mt-1">{request.reason}</p>
-                                {(() => {
-                                  const user = users.find(u => u.id === request.user_id)
-                                  return user ? (
-                                    <p className="text-xs text-gray-400 mt-1">
-                                      {user.email} • {user.department}
-                                    </p>
-                                  ) : null
-                                })()}
-                              </div>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              {request.status === 'pending' && (
-                                <button
-                                  onClick={() => openApprovalModal(request)}
-                                  className="px-3 py-1 text-sm font-medium text-orange-600 bg-orange-50 border border-orange-200 rounded-md hover:bg-orange-100"
-                                >
-                                  Process
-                                </button>
-                              )}
-                              <span className="text-xs text-gray-400">
-                                {new Date(request.requested_at).toLocaleDateString()}
-                              </span>
-                            </div>
-                          </div>
+                  (() => {
+                    // Group leave requests by manager
+                    const groupedRequests = leaveRequests.reduce((groups, request) => {
+                      const user = users.find(u => u.id === request.user_id)
+                      const manager = user?.manager_id ? users.find(u => u.id === user.manager_id) : null
+                      const managerName = manager ? manager.name : 'No Manager'
+                      
+                      if (!groups[managerName]) {
+                        groups[managerName] = []
+                      }
+                      groups[managerName].push(request)
+                      return groups
+                    }, {} as Record<string, LeaveRequest[]>)
+
+                    return Object.entries(groupedRequests).map(([managerName, requests]) => (
+                      <div key={managerName} className="bg-white shadow overflow-hidden sm:rounded-md">
+                        <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
+                          <h3 className="text-lg font-medium text-gray-900">
+                            {managerName}
+                            <span className="ml-2 text-sm font-normal text-gray-500">
+                              ({requests.length} request{requests.length !== 1 ? 's' : ''})
+                            </span>
+                          </h3>
                         </div>
-                      </li>
-                    ))}
-                  </ul>
+                        <ul className="divide-y divide-gray-200">
+                          {requests.map((request) => (
+                            <li key={request.id}>
+                              <div className="px-4 py-4 sm:px-6 hover:bg-gray-50">
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center">
+                                    <div className="flex-shrink-0">
+                                      <div className="h-10 w-10 rounded-full bg-orange-100 flex items-center justify-center">
+                                        <span className="text-orange-600 font-medium text-sm">
+                                          {request.user_id.substring(0, 2).toUpperCase()}
+                                        </span>
+                                      </div>
+                                    </div>
+                                    <div className="ml-4">
+                                      <div className="flex items-center">
+                                        <h4 className="font-medium text-gray-900">
+                                          {users.find(u => u.id === request.user_id)?.name || `User ${request.user_id}`}
+                                        </h4>
+                                        <span className={`ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getLeaveTypeColor(request.leave_type)}`}>
+                                          {request.leave_type}
+                                        </span>
+                                        <span className={`ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(request.status)}`}>
+                                          {request.status}
+                                        </span>
+                                      </div>
+                                      <p className="text-sm text-gray-500">
+                                        {request.start_date} to {request.end_date} ({request.number_of_days} days)
+                                      </p>
+                                      <p className="text-sm text-gray-600 mt-1">{request.reason}</p>
+                                      {(() => {
+                                        const user = users.find(u => u.id === request.user_id)
+                                        return user ? (
+                                          <p className="text-xs text-gray-400 mt-1">
+                                            {user.email} • {user.department}
+                                          </p>
+                                        ) : null
+                                      })()}
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center space-x-2">
+                                    {request.status === 'pending' && (
+                                      <button
+                                        onClick={() => openApprovalModal(request)}
+                                        className="px-3 py-1 text-sm font-medium text-orange-600 bg-orange-50 border border-orange-200 rounded-md hover:bg-orange-100"
+                                      >
+                                        Process
+                                      </button>
+                                    )}
+                                    <span className="text-xs text-gray-400">
+                                      {new Date(request.requested_at).toLocaleDateString()}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))
+                  })()
                 )}
               </div>
             )}
