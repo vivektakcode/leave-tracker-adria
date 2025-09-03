@@ -726,16 +726,6 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
                 <form onSubmit={handleCreateUser} className="space-y-4">
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Password *</label>
-                    <input
-                      type="password"
-                      required
-                      value={newUser.password}
-                      onChange={(e) => setNewUser({...newUser, password: e.target.value})}
-                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
-                    />
-                  </div>
-                  <div>
                     <label className="block text-sm font-medium text-gray-700">Full Name *</label>
                     <input
                       type="text"
@@ -831,6 +821,23 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
                       </p>
                     </div>
                   )}
+                  
+                  {/* Password Field - placed at the end for better UX */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Password *</label>
+                    <input
+                      type="password"
+                      required
+                      value={newUser.password}
+                      onChange={(e) => setNewUser({...newUser, password: e.target.value})}
+                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                      placeholder="Enter password for the new user"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Password must be at least 6 characters long
+                    </p>
+                  </div>
+                  
                   <div className="flex justify-end space-x-3 pt-4">
                     <button
                       type="button"
