@@ -18,6 +18,7 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
   const [reason, setReason] = useState('')
   const [numberOfDays, setNumberOfDays] = useState(0)
   const [isHalfDay, setIsHalfDay] = useState(false)
+  const [medicalDocument, setMedicalDocument] = useState<File | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
@@ -149,6 +150,11 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
       return false
     }
     
+    // For sick leave > 2 days, medical document is required
+    if (leaveType === 'sick' && numberOfDays > 2 && !medicalDocument) {
+      return false
+    }
+    
     // Allow previous dates - removed the date restriction
     // if (startDateObj < currentDateStart) {
     //   return false
@@ -217,6 +223,7 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
       setReason('')
       setNumberOfDays(0)
       setIsHalfDay(false)
+      setMedicalDocument(null)
 
       // Auto-redirect after 2 seconds
       setTimeout(() => {
@@ -474,6 +481,47 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
                 placeholder="Please provide a detailed reason for your leave request..."
               />
             </div>
+
+            {/* Medical Document Upload (for sick leave > 2 days) */}
+            {leaveType === 'sick' && numberOfDays > 2 && (
+              <div>
+                <label htmlFor="medicalDocument" className="block text-sm font-medium text-gray-700 mb-2">
+                  Medical Document *
+                  <span className="text-red-500 ml-1">(Required for sick leave > 2 days)</span>
+                </label>
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-orange-400 transition-colors">
+                  <input
+                    id="medicalDocument"
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                    onChange={(e) => setMedicalDocument(e.target.files?.[0] || null)}
+                    className="hidden"
+                  />
+                  <label htmlFor="medicalDocument" className="cursor-pointer">
+                    {medicalDocument ? (
+                      <div className="text-green-600">
+                        <svg className="mx-auto h-12 w-12 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <p className="text-sm font-medium">Document uploaded: {medicalDocument.name}</p>
+                        <p className="text-xs text-gray-500">Click to change</p>
+                      </div>
+                    ) : (
+                      <div className="text-gray-500">
+                        <svg className="mx-auto h-12 w-12 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                        <p className="text-sm font-medium">Upload Medical Document</p>
+                        <p className="text-xs">PDF, JPG, PNG, DOC, DOCX (Max 10MB)</p>
+                      </div>
+                    )}
+                  </label>
+                </div>
+                <p className="text-xs text-gray-500 mt-2">
+                  Medical certificate or doctor's note required for sick leave exceeding 2 days
+                </p>
+              </div>
+            )}
 
             {/* Error/Success Messages */}
             {error && (

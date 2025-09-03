@@ -893,10 +893,22 @@ export function shouldAutoApproveLeave(
   const start = new Date(startDate)
   const end = new Date(endDate)
   
-  // ONLY auto-approve if dates are in the past (regardless of leave type)
-  // This covers both casual leave and privilege leave for past dates
+  // ONLY auto-approve if dates are in the past
   if (start < today) {
-    return true
+    // Auto-approve casual and privilege leave for past dates
+    if (leaveType === 'casual' || leaveType === 'privilege') {
+      return true
+    }
+    
+    // For sick leave > 2 days, require manager approval (need medical document)
+    if (leaveType === 'sick' && numberOfDays > 2) {
+      return false // Manager must review and verify medical document
+    }
+    
+    // Auto-approve sick leave <= 2 days for past dates
+    if (leaveType === 'sick' && numberOfDays <= 2) {
+      return true
+    }
   }
   
   // For future dates, NEVER auto-approve - manager must review
