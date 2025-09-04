@@ -74,6 +74,10 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
       
       if (manager) {
         setManagerInfo({ name: manager.name, department: manager.department })
+        console.log('✅ Manager found for employee:', manager.name, manager.department)
+      } else {
+        console.warn('⚠️ No manager found for employee:', employee.name, employee.email)
+        setError('No manager assigned. Please contact HR to assign a manager before submitting leave requests.')
       }
     }
     
@@ -182,6 +186,12 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
 
     if (!isRequestValid()) {
       setError('Please check your input. Make sure dates are valid and you have sufficient leave balance.')
+      return
+    }
+
+    // Check if employee has a manager assigned
+    if (!managerInfo || !managerInfo.name) {
+      setError('No manager assigned. Please contact HR to assign a manager before submitting leave requests.')
       return
     }
 
