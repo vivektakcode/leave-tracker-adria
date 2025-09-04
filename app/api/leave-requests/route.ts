@@ -63,9 +63,10 @@ export async function POST(request: NextRequest) {
 
     // Send email notification to manager
     console.log(`[${timestamp}] Starting email notification process`)
+    let emailResult = false
     try {
       console.log(`[${timestamp}] Calling sendManagerNotification with:`, { requestId, user_id, leave_type, start_date, end_date })
-      const emailResult = await sendManagerNotification(requestId, user_id, leave_type, start_date, end_date, reason)
+      emailResult = await sendManagerNotification(requestId, user_id, leave_type, start_date, end_date, reason)
       console.log(`[${timestamp}] sendManagerNotification result:`, emailResult)
       if (emailResult) {
         console.log(`[${timestamp}] ✅ Manager notification sent successfully`);
@@ -80,7 +81,7 @@ export async function POST(request: NextRequest) {
     console.log(`[${timestamp}] Request processing completed successfully`)
     return NextResponse.json({ 
       id: requestId,
-      emailSent: emailResult || false,
+      emailSent: emailResult,
       message: emailResult ? 'Leave request created and manager notified' : 'Leave request created but email notification failed'
     }, { status: 201 })
 
