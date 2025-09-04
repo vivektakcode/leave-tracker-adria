@@ -88,31 +88,29 @@ export async function getUserByEmail(email: string): Promise<User | null> {
 
 export async function getUserManager(userId: string): Promise<User | null> {
   try {
-    // Single query with join to get manager data directly
-    const { data, error } = await supabase
+    // First get the user to find their manager_id
+    const { data: userData, error: userError } = await supabase
       .from('users')
-      .select(`
-        id,
-        name,
-        email,
-        department,
-        role,
-        manager:users!manager_id (
-          id,
-          name,
-          email,
-          department,
-          role
-        )
-      `)
+      .select('manager_id')
       .eq('id', userId)
       .single()
 
-    if (error || !data || !data.manager) {
+    if (userError || !userData || !userData.manager_id) {
       return null
     }
 
-    return data.manager as User
+    // Then get the manager details
+    const { data: managerData, error: managerError } = await supabase
+      .from('users')
+      .select('id, name, email, department, role, country, created_at')
+      .eq('id', userData.manager_id)
+      .single()
+
+    if (managerError || !managerData) {
+      return null
+    }
+
+    return managerData as User
   } catch (error) {
     console.error('Error getting user manager:', error)
     return null
