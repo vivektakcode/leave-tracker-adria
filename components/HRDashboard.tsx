@@ -97,10 +97,10 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
     setSuccess('')
 
     try {
-      // Validate manager assignment for employees
-      if (newUser.role === 'employee') {
+      // Validate manager assignment for all roles except HR
+      if (newUser.role !== 'hr') {
         if (!newUser.manager_id) {
-          setError('All employees must have a manager assigned')
+          setError('All users must have a manager assigned')
           setLoading(false)
           return
         }
@@ -142,8 +142,8 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
     setSuccess('')
 
     try {
-      // Validate manager assignment for employees
-      if (editingUser.role === 'employee' && editingUser.manager_id) {
+      // Validate manager assignment for all roles except HR
+      if (editingUser.role !== 'hr' && editingUser.manager_id) {
         const selectedManager = users.find(u => u.id === editingUser.manager_id)
         if (selectedManager && selectedManager.role !== 'manager' && selectedManager.role !== 'hr') {
           setError('Selected manager must have manager or HR role')
@@ -753,15 +753,16 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
                       onChange={(e) => setNewUser({...newUser, department: e.target.value})}
                       className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
                     >
-                                           <option value="">Select department</option>
-                     <option value="Engineering">Engineering</option>
-                     <option value="Sales">Sales</option>
-                     <option value="Marketing">Marketing</option>
-                     <option value="HR">HR</option>
-                     <option value="Finance">Finance</option>
-                     <option value="Operations">Operations</option>
-                     <option value="Product">Product</option>
-                     <option value="Other">Other</option>
+                      <option value="">Select department</option>
+                      <option value="Management">Management</option>
+                      <option value="Engineering">Engineering</option>
+                      <option value="Sales">Sales</option>
+                      <option value="Marketing">Marketing</option>
+                      <option value="HR">HR</option>
+                      <option value="Finance">Finance</option>
+                      <option value="Operations">Operations</option>
+                      <option value="Product">Product</option>
+                      <option value="Other">Other</option>
                     </select>
                   </div>
                   <div>
@@ -773,14 +774,10 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
                       className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
                     >
                       <option value="India">India</option>
-                      <option value="UAE">UAE</option>
                       <option value="Morocco">Morocco</option>
+                      <option value="UAE">UAE</option>
                       <option value="Tunisia">Tunisia</option>
                       <option value="Senegal">Senegal</option>
-                      <option value="Saudi Arabia">Saudi Arabia</option>
-                      <option value="Qatar">Qatar</option>
-                      <option value="Kuwait">Kuwait</option>
-                      <option value="Oman">Oman</option>
                     </select>
                   </div>
                   <div>
@@ -797,8 +794,8 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
                     </select>
                   </div>
                   
-                  {/* Manager Assignment - only show for employees */}
-                  {newUser.role === 'employee' && (
+                  {/* Manager Assignment - show for all roles except HR */}
+                  {newUser.role !== 'hr' && (
                     <div>
                       <label className="block text-sm font-medium text-gray-700">Manager *</label>
                       <select
@@ -817,7 +814,7 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
                           ))}
                       </select>
                       <p className="text-xs text-gray-500 mt-1">
-                        All employees must have a manager or HR user to approve their leave requests
+                        All users must have a manager or HR user to approve their leave requests
                       </p>
                     </div>
                   )}
@@ -1134,16 +1131,17 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
                     </select>
                   </div>
                   
-                  {/* Manager Assignment - only show for employees */}
-                  {editingUser.role === 'employee' && (
+                  {/* Manager Assignment - show for all roles except HR */}
+                  {editingUser.role !== 'hr' && (
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Manager</label>
+                      <label className="block text-sm font-medium text-gray-700">Manager *</label>
                       <select
+                        required
                         value={editingUser.manager_id || ''}
                         onChange={(e) => setEditingUser({...editingUser, manager_id: e.target.value})}
                         className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
                       >
-                        <option value="">No Manager</option>
+                        <option value="">Select a manager</option>
                         {users
                           .filter(user => user.role === 'manager' || user.role === 'hr')
                           .filter(user => user.id !== editingUser.id) // Can't be their own manager
@@ -1154,7 +1152,7 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
                           ))}
                       </select>
                       <p className="text-xs text-gray-500 mt-1">
-                        Assign a manager or HR user to approve this employee's leave requests
+                        All users must have a manager or HR user to approve their leave requests
                       </p>
                     </div>
                   )}
