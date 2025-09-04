@@ -6,7 +6,7 @@ import {
   getUserById,
   getUserManager
 } from '../../../lib/supabaseService'
-import { queueLeaveRequestEmail } from '../../../lib/emailQueue'
+import { sendLeaveRequestEmail } from '../../../lib/emailService'
 
 export async function GET() {
   try {
@@ -62,14 +62,18 @@ export async function POST(request: NextRequest) {
 
     console.log(`[${timestamp}] Request processing completed successfully`)
     
-    // Queue email notification to manager (non-blocking)
+    // Send email notification to manager (non-blocking)
     console.log(`[${timestamp}] Starting email notification process (non-blocking)`)
-    queueManagerNotification(requestId, user_id, leave_type, start_date, end_date, reason)
-      .then((emailJobId) => {
-        console.log(`[${timestamp}] ✅ Manager notification queued successfully (Job ID: ${emailJobId})`);
+    sendManagerNotification(requestId, user_id, leave_type, start_date, end_date, reason)
+      .then((emailResult) => {
+        if (emailResult) {
+          console.log(`[${timestamp}] ✅ Manager notification sent successfully`);
+        } else {
+          console.log(`[${timestamp}] ❌ Manager notification failed to send`);
+        }
       })
       .catch((error) => {
-        console.error(`[${timestamp}] ❌ Error queuing manager notification:`, error)
+        console.error(`[${timestamp}] ❌ Error sending manager notification:`, error)
       })
 
     // Return immediately without waiting for email
@@ -123,29 +127,31 @@ export async function PUT(request: NextRequest) {
   }
 }
 
-// Helper function to queue manager notification
-async function queueManagerNotification(
+// Helper function to send manager notification
+async function sendManagerNotification(
   requestId: string,
   userId: string,
   leaveType: string,
   startDate: string,
   endDate: string,
   reason: string
-): Promise<string> {
+): Promise<boolean> {
   try {
-    console.log('📧 queueManagerNotification called with:', { requestId, userId, leaveType, startDate, endDate })
+    console.log('📧 sendManagerNotification called with:', { requestId, userId, leaveType, startDate, endDate })
     
     // Get user details
     const user = await getUserById(userId)
     if (!user) {
-      throw new Error(`User not found for notification: ${userId}`)
+      console.warn('❌ User not found for notification:', userId)
+      return false
     }
     console.log('📧 User found for notification:', { name: user.name, email: user.email })
 
     // Get manager details
     const manager = await getUserManager(userId)
     if (!manager) {
-      throw new Error(`Manager not found for user: ${userId}`)
+      console.warn('❌ Manager not found for user:', userId)
+      return false
     }
     console.log('📧 Manager found for notification:', { name: manager.name, email: manager.email, id: manager.id })
     
@@ -154,17 +160,9 @@ async function queueManagerNotification(
       console.warn('⚠️ WARNING: Email is going to test address instead of actual manager!')
     }
 
-    // Queue email notification
-    console.log('📧 Queuing leave request email with:', { 
-      managerEmail: manager.email, 
-      managerName: manager.name, 
-      employeeName: user.name, 
-      startDate, 
-      endDate, 
-      leaveType 
-    })
-    
-    const emailJobId = await queueLeaveRequestEmail(
+    // Send email notification directly
+    console.log('📧 Sending leave request email to:', manager.email)
+    const emailSent = await sendLeaveRequestEmail(
       manager.email,
       manager.name,
       user.name,
@@ -173,11 +171,16 @@ async function queueManagerNotification(
       leaveType
     )
 
-    console.log('📧 Email queued successfully with Job ID:', emailJobId)
-    return emailJobId
+    if (emailSent) {
+      console.log('✅ Manager notification sent successfully to:', manager.email)
+      return true
+    } else {
+      console.warn('❌ Failed to send manager notification to:', manager.email)
+      return false
+    }
 
   } catch (error) {
-    console.error('Error in queueManagerNotification:', error)
-    throw error
+    console.error('Error in sendManagerNotification:', error)
+    return false
   }
 }

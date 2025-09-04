@@ -88,40 +88,47 @@ const emailTemplates = {
 // Email sending functions
 export async function sendLeaveRequestEmail(managerEmail: string, managerName: string, employeeName: string, startDate: string, endDate: string, leaveType: string): Promise<boolean> {
   try {
-    console.log('📧 SendGrid: Sending leave request email to:', managerEmail)
+    console.log('🚀 ===== SENDGRID EMAIL DEBUG START =====')
+    console.log('📧 Target Manager Email:', managerEmail)
+    console.log('📧 Manager Name:', managerName)
+    console.log('📧 Employee Name:', employeeName)
+    console.log('📧 Leave Type:', leaveType)
+    console.log('📧 Start Date:', startDate)
+    console.log('📧 End Date:', endDate)
     
     // Check if SendGrid API key is configured
     if (!process.env.SENDGRID_API_KEY) {
-      console.error('❌ SENDGRID_API_KEY environment variable is not set')
+      console.error('❌ CRITICAL: SENDGRID_API_KEY environment variable is not set')
+      console.log('🔍 Available env vars:', Object.keys(process.env).filter(key => key.includes('SENDGRID')))
       return false
     }
     
-    console.log('📧 SendGrid: API key is configured')
+    console.log('✅ SendGrid API key is configured (length:', process.env.SENDGRID_API_KEY.length, ')')
     
     const { subject, html } = emailTemplates.leaveRequest(managerName, employeeName, startDate, endDate, leaveType)
-    console.log('📧 SendGrid: Email template generated:', { subject })
+    console.log('📧 Email Subject:', subject)
     
     const msg = {
       to: managerEmail,
-      from: 'noreply@adria-bt.com', // This will work without domain verification
+      from: 'noreply@adria-bt.com',
       subject,
       html
     }
     
-    console.log('📧 SendGrid: Attempting to send email...')
+    console.log('📧 Sending email via SendGrid API...')
     const result = await sgMail.send(msg)
     
-    console.log('📧 SendGrid: Email sent successfully:', result[0].statusCode)
-    console.log(`✅ Leave request email sent to ${managerEmail} via SendGrid`)
+    console.log('📧 SendGrid API Response:', JSON.stringify(result, null, 2))
+    console.log('✅ EMAIL SENT SUCCESSFULLY to', managerEmail)
+    console.log('🚀 ===== SENDGRID EMAIL DEBUG END =====')
     return true
   } catch (error: unknown) {
-    console.error('❌ SendGrid: Error sending leave request email:', error)
-    console.error('❌ SendGrid: Error details:', {
-      message: error instanceof Error ? error.message : 'Unknown error',
-      code: (error as any)?.code,
-      status: (error as any)?.status,
-      response: (error as any)?.response
-    })
+    console.error('❌ ===== SENDGRID EMAIL ERROR =====')
+    console.error('❌ Error sending email to:', managerEmail)
+    console.error('❌ Error type:', typeof error)
+    console.error('❌ Error message:', error instanceof Error ? error.message : 'Unknown error')
+    console.error('❌ Full error object:', error)
+    console.error('❌ ===== SENDGRID EMAIL ERROR END =====')
     return false
   }
 }
