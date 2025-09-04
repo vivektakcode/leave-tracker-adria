@@ -113,7 +113,13 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
         }
       }
 
-      await createUser(newUser)
+      // Clean up manager_id - send null instead of empty string for non-employees
+      const userDataToCreate = {
+        ...newUser,
+        manager_id: newUser.role === 'employee' ? newUser.manager_id : null
+      }
+      
+      await createUser(userDataToCreate)
       setSuccess('User created successfully!')
       setShowCreateUser(false)
       setNewUser({
@@ -156,14 +162,17 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
       const originalUser = users.find(u => u.id === editingUser.id)
       const managerChanged = originalUser?.manager_id !== editingUser.manager_id
 
-      await updateUser(editingUser.id, {
+      // Clean up manager_id - send null instead of empty string for non-employees
+      const userDataToUpdate = {
         name: editingUser.name,
         email: editingUser.email,
         role: editingUser.role,
         department: editingUser.department,
         country: editingUser.country,
-        manager_id: editingUser.manager_id
-      })
+        manager_id: editingUser.role === 'employee' ? editingUser.manager_id : null
+      }
+      
+      await updateUser(editingUser.id, userDataToUpdate)
 
       // Handle manager change - reassign pending leave requests
       if (managerChanged && editingUser.role === 'employee') {

@@ -217,7 +217,17 @@ export async function createUser(userData: Omit<User, 'id' | 'created_at'>): Pro
 
     if (error) {
       console.error('Error creating user:', error)
-      throw new Error('Failed to create user')
+      
+      // Provide more specific error messages based on the error type
+      if (error.code === '22P02') {
+        throw new Error(`Invalid data format: ${error.message}. Please check that all fields are properly formatted.`)
+      } else if (error.code === '23505') {
+        throw new Error('Email already exists. Please use a different email address.')
+      } else if (error.code === '23503') {
+        throw new Error('Invalid manager reference. Please select a valid manager.')
+      } else {
+        throw new Error(`Database error: ${error.message || 'Failed to create user'}`)
+      }
     }
 
     // Initialize leave balance for the new user
@@ -680,7 +690,17 @@ export async function updateUser(userId: string, updates: Partial<User>): Promis
 
     if (error) {
       console.error('Error updating user:', error)
-      return false
+      
+      // Provide more specific error messages
+      if (error.code === '22P02') {
+        throw new Error(`Invalid data format: ${error.message}. Please check that all fields are properly formatted.`)
+      } else if (error.code === '23505') {
+        throw new Error('Email already exists. Please use a different email address.')
+      } else if (error.code === '23503') {
+        throw new Error('Invalid manager reference. Please select a valid manager.')
+      } else {
+        throw new Error(`Database error: ${error.message || 'Failed to update user'}`)
+      }
     }
 
     return true
