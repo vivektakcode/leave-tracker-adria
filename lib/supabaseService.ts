@@ -31,6 +31,7 @@ export interface LeaveBalance {
 export interface LeaveRequest {
   id: string
   user_id: string
+  username: string
   leave_type: 'casual' | 'sick' | 'privilege'
   start_date: string
   end_date: string
@@ -369,7 +370,7 @@ export async function checkDuplicateLeaveRequest(
   }
 }
 
-export async function createLeaveRequest(request: Omit<LeaveRequest, 'id' | 'status' | 'requested_at'>): Promise<string> {
+export async function createLeaveRequest(request: Omit<LeaveRequest, 'id' | 'username' | 'status' | 'requested_at'>): Promise<string> {
   try {
     console.log('🔍 Creating leave request for user:', request.user_id)
     
@@ -382,9 +383,16 @@ export async function createLeaveRequest(request: Omit<LeaveRequest, 'id' | 'sta
     const managerData = await getUserManager(request.user_id)
     console.log('🔍 Manager lookup result:', managerData ? { name: managerData.name, email: managerData.email, role: managerData.role } : 'No manager found')
 
+    // Get user details to populate username
+    const userData = await getUserById(request.user_id)
+    if (!userData) {
+      throw new Error('User not found')
+    }
+
     const newRequest: LeaveRequest = {
       ...request,
       id: crypto.randomUUID(),
+      username: userData.name, // Add username field
       status: 'pending',
       requested_at: new Date().toISOString(),
       manager_name: managerData?.name || null,
