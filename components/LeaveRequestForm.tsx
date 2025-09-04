@@ -63,13 +63,20 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
   // Fetch leave balance when component mounts
   useEffect(() => {
     const fetchData = async () => {
+      console.log('⚡ Loading leave balance and manager info...')
+      const startTime = Date.now()
+      
       const [balance, manager] = await Promise.all([
         getLeaveBalance(employee.id),
         getUserManager(employee.id)
       ])
       
+      const endTime = Date.now()
+      console.log(`⚡ Data loaded in ${endTime - startTime}ms`)
+      
       if (balance) {
         setLeaveBalance(balance)
+        console.log('✅ Leave balance loaded:', balance)
       }
       
       if (manager) {

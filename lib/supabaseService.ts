@@ -88,22 +88,15 @@ export async function getUserByEmail(email: string): Promise<User | null> {
 
 export async function getUserManager(userId: string): Promise<User | null> {
   try {
-    console.log('🔍 Getting manager for user ID:', userId)
-    
     const { data: userData, error: userError } = await supabase
       .from('users')
       .select('manager_id')
       .eq('id', userId)
       .single()
 
-    console.log('🔍 User data query result:', { userData, userError })
-
     if (userError || !userData || !userData.manager_id) {
-      console.log('🔍 No manager_id found for user:', userId)
       return null
     }
-
-    console.log('🔍 Looking up manager with ID:', userData.manager_id)
     
     const { data: managerData, error: managerError } = await supabase
       .from('users')
@@ -111,14 +104,10 @@ export async function getUserManager(userId: string): Promise<User | null> {
       .eq('id', userData.manager_id)
       .single()
 
-    console.log('🔍 Manager lookup result:', { managerData, managerError })
-
     if (managerError || !managerData) {
-      console.log('🔍 Manager not found or error:', managerError)
       return null
     }
 
-    console.log('🔍 Manager found:', { name: managerData.name, email: managerData.email, role: managerData.role })
     return managerData as User
   } catch (error) {
     console.error('Error getting user manager:', error)
@@ -282,7 +271,7 @@ export async function getLeaveBalance(userId: string): Promise<LeaveBalance | nu
   try {
     const { data, error } = await supabase
       .from('leave_balances')
-      .select('*')
+      .select('casual_leave, sick_leave, privilege_leave')
       .eq('user_id', userId)
       .single()
 
@@ -595,26 +584,12 @@ export async function processLeaveRequest(
 
 export async function cancelLeaveRequest(requestId: string): Promise<boolean> {
   try {
-    const { data: request, error: fetchError } = await supabase
-      .from('leave_requests')
-      .select('*')
-      .eq('id', requestId)
-      .single()
-
-    if (fetchError || !request) {
-      console.error('Error fetching leave request:', fetchError)
-      return false
-    }
-
-    if (request.status !== 'pending') {
-      console.error('Cannot cancel non-pending request')
-      return false
-    }
-
+    // Direct delete with status check in one query
     const { error: deleteError } = await supabase
       .from('leave_requests')
       .delete()
       .eq('id', requestId)
+      .eq('status', 'pending') // Only delete pending requests
 
     if (deleteError) {
       console.error('Error cancelling leave request:', deleteError)
