@@ -64,10 +64,13 @@ export interface Holiday {
 // User functions
 export async function getUserByEmail(email: string): Promise<User | null> {
   try {
+    // Normalize email to lowercase for case-insensitive comparison
+    const normalizedEmail = email.toLowerCase().trim()
+    
     const { data, error } = await supabase
       .from('users')
       .select('*')
-      .eq('email', email)
+      .eq('email', normalizedEmail)
       .single()
 
     if (error) {
@@ -172,11 +175,14 @@ export async function getUsersByManager(managerId: string): Promise<User[]> {
 
 export async function createUser(userData: Omit<User, 'id' | 'created_at'>): Promise<string> {
   try {
+    // Normalize email to lowercase for case-insensitive storage and comparison
+    const normalizedEmail = userData.email.toLowerCase().trim()
+    
     // Check if email already exists
     const { data: existingUser, error: checkError } = await supabase
       .from('users')
       .select('email')
-      .eq('email', userData.email)
+      .eq('email', normalizedEmail)
       .limit(1)
 
     if (checkError) {
@@ -209,6 +215,7 @@ export async function createUser(userData: Omit<User, 'id' | 'created_at'>): Pro
       .from('users')
       .insert([{
         ...userData,
+        email: normalizedEmail, // Use normalized email
         id: crypto.randomUUID(),
         created_at: new Date().toISOString()
       }])
@@ -683,9 +690,15 @@ export async function getAllHolidayCalendars(): Promise<HolidayCalendar[]> {
 
 export async function updateUser(userId: string, updates: Partial<User>): Promise<boolean> {
   try {
+    // Normalize email if it's being updated
+    const normalizedUpdates = {
+      ...updates,
+      ...(updates.email && { email: updates.email.toLowerCase().trim() })
+    }
+    
     const { error } = await supabase
       .from('users')
-      .update(updates)
+      .update(normalizedUpdates)
       .eq('id', userId)
 
     if (error) {
