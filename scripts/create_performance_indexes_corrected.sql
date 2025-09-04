@@ -46,12 +46,21 @@ CREATE INDEX IF NOT EXISTS idx_leave_balances_user_id ON leave_balances(user_id)
 -- For leave balance updates
 CREATE INDEX IF NOT EXISTS idx_leave_balances_user_updated ON leave_balances(user_id, updated_at DESC);
 
+-- For leave type specific queries
+CREATE INDEX IF NOT EXISTS idx_leave_balances_casual ON leave_balances(user_id, casual_leave);
+CREATE INDEX IF NOT EXISTS idx_leave_balances_sick ON leave_balances(user_id, sick_leave);
+CREATE INDEX IF NOT EXISTS idx_leave_balances_privilege ON leave_balances(user_id, privilege_leave);
+
 -- 4. Holiday Calendars Table Indexes
 -- For holiday lookups by country and year
 CREATE INDEX IF NOT EXISTS idx_holiday_calendars_country_year ON holiday_calendars(country, year);
 
--- For holiday date lookups
-CREATE INDEX IF NOT EXISTS idx_holiday_calendars_date ON holiday_calendars(date);
+-- For created_by lookups
+CREATE INDEX IF NOT EXISTS idx_holiday_calendars_created_by ON holiday_calendars(created_by);
+
+-- For timestamp-based queries
+CREATE INDEX IF NOT EXISTS idx_holiday_calendars_created_at ON holiday_calendars(created_at);
+CREATE INDEX IF NOT EXISTS idx_holiday_calendars_updated_at ON holiday_calendars(updated_at);
 
 -- 5. Password Reset Tokens Table Indexes
 -- For token lookups
@@ -68,6 +77,16 @@ CREATE INDEX IF NOT EXISTS idx_leave_requests_manager_info ON leave_requests(man
 
 -- For processed requests
 CREATE INDEX IF NOT EXISTS idx_leave_requests_processed ON leave_requests(processed_at, processed_by);
+
+-- For half-day leave queries
+CREATE INDEX IF NOT EXISTS idx_leave_requests_half_day ON leave_requests(is_half_day);
+
+-- For auto-approval tracking
+CREATE INDEX IF NOT EXISTS idx_leave_requests_auto_approved ON leave_requests(auto_approved);
+
+-- For reminder tracking
+CREATE INDEX IF NOT EXISTS idx_leave_requests_reminder_count ON leave_requests(reminder_count);
+CREATE INDEX IF NOT EXISTS idx_leave_requests_last_reminder ON leave_requests(last_reminder_sent);
 
 -- 7. Composite Indexes for Complex Queries
 -- For HR dashboard: all users with their managers
