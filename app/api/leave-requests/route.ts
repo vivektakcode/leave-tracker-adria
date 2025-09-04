@@ -29,15 +29,14 @@ export async function POST(request: NextRequest) {
     
     console.log(`[${timestamp}] Request data:`, { user_id, leave_type, start_date, end_date, reason: reason ? 'PROVIDED' : 'MISSING' })
     
-    // Debug: Check if user exists and get their details
+    // Optimized: Get user details and validate in one call
     const { getUserById } = await import('../../../lib/supabaseService')
     const user = await getUserById(user_id)
-    if (user) {
-      console.log(`[${timestamp}] User found:`, { name: user.name, email: user.email, role: user.role, manager_id: user.manager_id })
-    } else {
+    if (!user) {
       console.log(`[${timestamp}] ❌ User not found for ID:`, user_id)
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
+    console.log(`[${timestamp}] User found:`, { name: user.name, email: user.email, role: user.role, manager_id: user.manager_id })
 
     // Validate required fields
     if (!user_id || !leave_type || !start_date || !end_date || !reason) {
@@ -155,7 +154,12 @@ async function sendManagerNotification(
       console.warn('❌ Manager not found for user:', userId)
       return false
     }
-    console.log('📧 Manager found for notification:', { name: manager.name, email: manager.email })
+    console.log('📧 Manager found for notification:', { name: manager.name, email: manager.email, id: manager.id })
+    
+    // Debug: Check if this is the correct manager email
+    if (manager.email === 'vivektakwork123@gmail.com') {
+      console.warn('⚠️ WARNING: Email is going to test address instead of actual manager!')
+    }
 
     // Send email notification using the correct function
     console.log('📧 Calling sendLeaveRequestEmail with:', { 

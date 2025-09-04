@@ -332,11 +332,15 @@ export async function checkDuplicateLeaveRequest(
   leaveType?: string
 ): Promise<boolean> {
   try {
+    // Optimized query: Only fetch requests that could potentially overlap
+    // Use date range to limit results instead of fetching all user requests
     const { data, error } = await supabase
       .from('leave_requests')
-      .select('*')
+      .select('id, start_date, end_date, leave_type, status')
       .eq('user_id', userId)
-      .in('status', ['pending', 'approved'])
+      .gte('end_date', startDate) // Only get requests that end on or after our start date
+      .lte('start_date', endDate) // Only get requests that start on or before our end date
+      .in('status', ['pending', 'approved']) // Only check active requests
 
     if (error) {
       console.error('Error checking duplicate leave request:', error)
@@ -351,14 +355,17 @@ export async function checkDuplicateLeaveRequest(
         const existingStart = new Date(existingRequest.start_date)
         const existingEnd = new Date(existingRequest.end_date)
         
+        // Check for exact duplicate first (most common case)
+        if (leaveType && existingRequest.leave_type === leaveType && 
+            startDate === existingRequest.start_date && endDate === existingRequest.end_date) {
+          console.log(`🚫 Exact duplicate leave request detected for user ${userId} on dates ${startDate} to ${endDate}`)
+          return true
+        }
+        
+        // Check for overlapping dates
         if (requestedStart <= existingEnd && requestedEnd >= existingStart) {
-          if (leaveType && existingRequest.leave_type === leaveType && 
-              startDate === existingRequest.start_date && endDate === existingRequest.end_date) {
-            console.log(`🚫 Exact duplicate leave request detected for user ${userId} on dates ${startDate} to ${endDate}`)
-            return true
-          }
-          
           console.log(`⚠️ Overlapping dates detected for user ${userId} on dates ${startDate} to ${endDate}`)
+          return true
         }
       }
     }
@@ -374,20 +381,22 @@ export async function createLeaveRequest(request: Omit<LeaveRequest, 'id' | 'use
   try {
     console.log('🔍 Creating leave request for user:', request.user_id)
     
-    const isDuplicate = await checkDuplicateLeaveRequest(request.user_id, request.start_date, request.end_date, request.leave_type)
+    // Optimized: Run duplicate check, user lookup, and manager lookup in parallel
+    const [isDuplicate, userData, managerData] = await Promise.all([
+      checkDuplicateLeaveRequest(request.user_id, request.start_date, request.end_date, request.leave_type),
+      getUserById(request.user_id),
+      getUserManager(request.user_id)
+    ])
+    
     if (isDuplicate) {
       throw new Error('You already have a leave request for these dates. Please check your existing requests.')
     }
 
-    console.log('🔍 Looking up manager for user:', request.user_id)
-    const managerData = await getUserManager(request.user_id)
-    console.log('🔍 Manager lookup result:', managerData ? { name: managerData.name, email: managerData.email, role: managerData.role } : 'No manager found')
-
-    // Get user details to populate username
-    const userData = await getUserById(request.user_id)
     if (!userData) {
       throw new Error('User not found')
     }
+    
+    console.log('🔍 Manager lookup result:', managerData ? { name: managerData.name, email: managerData.email, role: managerData.role } : 'No manager found')
 
     const newRequest: LeaveRequest = {
       ...request,
