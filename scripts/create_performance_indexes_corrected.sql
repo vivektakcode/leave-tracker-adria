@@ -1,5 +1,5 @@
 -- Performance Indexes for Leave Management System
--- These indexes will significantly improve query performance
+-- Corrected version with actual table names: users, leave_requests, leave_balances, holiday_calendars, password_reset_tokens
 
 -- 1. Leave Requests Table Indexes
 -- For fetching leave requests by user (employee panel)
@@ -53,11 +53,11 @@ CREATE INDEX IF NOT EXISTS idx_holiday_calendars_country_year ON holiday_calenda
 -- For holiday date lookups
 CREATE INDEX IF NOT EXISTS idx_holiday_calendars_date ON holiday_calendars(date);
 
--- 5. Password Reset Table Indexes (if exists)
+-- 5. Password Reset Tokens Table Indexes
 -- For token lookups
-CREATE INDEX IF NOT EXISTS idx_password_reset_token ON password_reset_tokens(token);
-CREATE INDEX IF NOT EXISTS idx_password_reset_user_id ON password_reset_tokens(user_id);
-CREATE INDEX IF NOT EXISTS idx_password_reset_expires ON password_reset_tokens(expires_at);
+CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_token ON password_reset_tokens(token);
+CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_user_id ON password_reset_tokens(user_id);
+CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_expires ON password_reset_tokens(expires_at);
 
 -- 6. Additional Performance Indexes
 -- For username lookups in leave requests
