@@ -271,12 +271,11 @@ export async function authenticateUser(email: string, password: string): Promise
 // Leave balance functions
 export async function getLeaveBalance(userId: string): Promise<LeaveBalance | null> {
   try {
-    // Use index on user_id for faster query
+    // Ultra-optimized query: minimal fields, indexed lookup, single result
     const { data, error } = await supabase
       .from('leave_balances')
       .select('casual_leave, sick_leave, privilege_leave')
       .eq('user_id', userId)
-      .limit(1)
       .single()
 
     if (error) {
@@ -430,13 +429,13 @@ export async function createLeaveRequest(request: Omit<LeaveRequest, 'id' | 'use
 
 export async function getUserLeaveRequests(userId: string): Promise<LeaveRequest[]> {
   try {
-    // Select only required fields and use index on user_id
+    // Ultra-optimized query: minimal fields, indexed lookup, limited results
     const { data, error } = await supabase
       .from('leave_requests')
       .select('id, leave_type, start_date, end_date, reason, status, requested_at, is_half_day')
       .eq('user_id', userId)
       .order('requested_at', { ascending: false })
-      .limit(50) // Limit to recent requests only
+      .limit(10) // Reduced limit for dashboard - only show recent requests
 
     if (error) {
       console.error('Error getting user leave requests:', error)
@@ -1009,6 +1008,41 @@ export function getTotalAllocatedLeave(): { casual: number; sick: number; privil
     casual: 6,
     sick: 6,
     privilege: 18
+  }
+}
+
+// Ultra-fast dashboard data loading - loads everything in parallel
+export async function getDashboardData(userId: string): Promise<{
+  leaveBalance: LeaveBalance | null;
+  leaveRequests: LeaveRequest[];
+  balanceExists: boolean;
+}> {
+  try {
+    console.log('⚡ Loading dashboard data in parallel...')
+    const startTime = Date.now()
+    
+    // Load all data in parallel for maximum speed
+    const [leaveBalance, leaveRequests, balanceExists] = await Promise.all([
+      getLeaveBalance(userId),
+      getUserLeaveRequests(userId),
+      ensureLeaveBalanceExists(userId)
+    ])
+    
+    const endTime = Date.now()
+    console.log(`⚡ Dashboard data loaded in ${endTime - startTime}ms`)
+    
+    return {
+      leaveBalance,
+      leaveRequests,
+      balanceExists
+    }
+  } catch (error) {
+    console.error('Error loading dashboard data:', error)
+    return {
+      leaveBalance: null,
+      leaveRequests: [],
+      balanceExists: false
+    }
   }
 } 
 

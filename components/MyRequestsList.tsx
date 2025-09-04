@@ -6,9 +6,10 @@ import { LeaveRequest, getUserLeaveRequests, cancelLeaveRequest } from '../lib/s
 interface MyRequestsListProps {
   employeeId: string
   compact?: boolean
+  preloadedRequests?: LeaveRequest[]
 }
 
-export default function MyRequestsList({ employeeId, compact = false }: MyRequestsListProps) {
+export default function MyRequestsList({ employeeId, compact = false, preloadedRequests }: MyRequestsListProps) {
   const [userRequests, setUserRequests] = useState<LeaveRequest[]>([])
   const [loading, setLoading] = useState(true)
   const [cancelling, setCancelling] = useState<string | null>(null)
@@ -64,8 +65,16 @@ export default function MyRequestsList({ employeeId, compact = false }: MyReques
   useEffect(() => {
     const fetchRequests = async () => {
       try {
-        const requests = await getUserLeaveRequests(employeeId)
-        setUserRequests(requests)
+        // Use preloaded data if available, otherwise fetch from API
+        if (preloadedRequests && preloadedRequests.length >= 0) {
+          console.log('⚡ Using preloaded requests data')
+          setUserRequests(preloadedRequests)
+          setLoading(false)
+        } else {
+          console.log('⚡ Fetching requests from API')
+          const requests = await getUserLeaveRequests(employeeId)
+          setUserRequests(requests)
+        }
       } catch (error) {
         console.error('Error fetching requests:', error)
       } finally {
@@ -74,7 +83,7 @@ export default function MyRequestsList({ employeeId, compact = false }: MyReques
     }
 
     fetchRequests()
-  }, [employeeId])
+  }, [employeeId, preloadedRequests])
 
   if (loading) {
     return (

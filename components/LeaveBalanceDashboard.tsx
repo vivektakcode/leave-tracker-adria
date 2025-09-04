@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { User, getLeaveBalance, getUserLeaveRequests, ensureLeaveBalanceExists, getTotalAllocatedLeave } from '../lib/supabaseService'
+import { User, LeaveRequest, getDashboardData, getTotalAllocatedLeave } from '../lib/supabaseService'
 import AdminPanel from './AdminPanel'
 import LeaveRequestForm from './LeaveRequestForm'
 import MyRequestsList from './MyRequestsList'
@@ -17,38 +17,44 @@ export default function LeaveBalanceDashboard({ employee }: LeaveBalanceDashboar
   const [showMyRequests, setShowMyRequests] = useState(false)
   const [leaveBalance, setLeaveBalance] = useState({ casual_leave: 0, sick_leave: 0, privilege_leave: 0 })
   const [usedDays, setUsedDays] = useState({ casual: 0, sick: 0, privilege: 0 })
+  const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([])
+  const [loading, setLoading] = useState(true)
   const { name, department, role } = employee
 
-  // Fetch leave balance and calculate used days when component mounts
+  // Ultra-fast dashboard data loading - everything in parallel
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Ensure leave balance exists for this user
-        await ensureLeaveBalanceExists(employee.id)
+        setLoading(true)
         
-        // Fetch leave balance
-        const balance = await getLeaveBalance(employee.id)
-        if (balance) {
-          setLeaveBalance(balance)
+        // Load all dashboard data in a single optimized call
+        const { leaveBalance, leaveRequests } = await getDashboardData(employee.id)
+        
+        if (leaveBalance) {
+          setLeaveBalance(leaveBalance)
+          setLeaveRequests(leaveRequests)
           
-          // Get total allocated leave
+          // Get total allocated leave (this is synchronous, no API call)
           const totalAllocated = getTotalAllocatedLeave()
           
           // Calculate used days based on remaining balance
           const calculatedUsedDays = {
-            casual: totalAllocated.casual - balance.casual_leave,
-            sick: totalAllocated.sick - balance.sick_leave,
-            privilege: totalAllocated.privilege - balance.privilege_leave
+            casual: totalAllocated.casual - leaveBalance.casual_leave,
+            sick: totalAllocated.sick - leaveBalance.sick_leave,
+            privilege: totalAllocated.privilege - leaveBalance.privilege_leave
           }
           
-          console.log('📊 Current Leave Balance:', balance)
+          console.log('📊 Current Leave Balance:', leaveBalance)
           console.log('📊 Total Allocated:', totalAllocated)
           console.log('📊 Calculated Used Days:', calculatedUsedDays)
+          console.log('📊 Leave Requests:', leaveRequests.length)
 
           setUsedDays(calculatedUsedDays)
         }
       } catch (error) {
         console.error('Error fetching data:', error)
+      } finally {
+        setLoading(false)
       }
     }
 
@@ -101,7 +107,7 @@ export default function LeaveBalanceDashboard({ employee }: LeaveBalanceDashboar
                 </button>
               </div>
             </div>
-            <MyRequestsList employeeId={employee.id} />
+            <MyRequestsList employeeId={employee.id} preloadedRequests={leaveRequests} />
           </div>
         </div>
       </div>
@@ -277,7 +283,7 @@ export default function LeaveBalanceDashboard({ employee }: LeaveBalanceDashboar
           <div className="mb-8">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">Recent Leave Requests</h2>
             <div className="bg-white rounded-lg shadow-md p-6">
-              <MyRequestsList employeeId={employee.id} compact={true} />
+              <MyRequestsList employeeId={employee.id} compact={true} preloadedRequests={leaveRequests} />
             </div>
           </div>
         </div>
