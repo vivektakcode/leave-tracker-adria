@@ -35,11 +35,12 @@ export async function POST(request: NextRequest) {
       }, { status: 500 })
     }
 
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('❌ Test email error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
     return NextResponse.json({ 
       error: 'Test email failed',
-      details: error.message 
+      details: errorMessage 
     }, { status: 500 })
   }
 }
