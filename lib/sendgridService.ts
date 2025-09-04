@@ -121,7 +121,10 @@ export async function sendLeaveRequestEmail(managerEmail: string, managerName: s
     
     const msg = {
       to: managerEmail,
-      from: 'noreply@adria-bt.com',
+      from: {
+        email: 'noreply@adria-bt.com',
+        name: 'Adria Leave Management'
+      },
       subject,
       html
     }
@@ -175,7 +178,10 @@ export async function sendLeaveReminderEmail(managerEmail: string, managerName: 
     
     const msg = {
       to: managerEmail,
-      from: 'noreply@adria-bt.com',
+      from: {
+        email: 'noreply@adria-bt.com',
+        name: 'Adria Leave Management'
+      },
       subject,
       html
     }
@@ -217,7 +223,10 @@ export async function sendPasswordResetEmail(userEmail: string, userName: string
     
     const msg = {
       to: userEmail,
-      from: 'noreply@adria-bt.com',
+      from: {
+        email: 'noreply@adria-bt.com',
+        name: 'Adria Leave Management'
+      },
       subject,
       html
     }
@@ -260,7 +269,10 @@ export async function sendManagerChangeNotification(userEmail: string, userName:
     
     const msg = {
       to: userEmail,
-      from: 'noreply@adria-bt.com',
+      from: {
+        email: 'noreply@adria-bt.com',
+        name: 'Adria Leave Management'
+      },
       subject,
       html
     }
@@ -308,7 +320,10 @@ export async function testSendGridConfiguration(): Promise<boolean> {
     
     const msg = {
       to: 'test@example.com',
-      from: 'noreply@adria-bt.com',
+      from: {
+        email: 'noreply@adria-bt.com',
+        name: 'Adria Leave Management'
+      },
       subject: 'SendGrid Test Email',
       html: '<p>This is a test email to verify SendGrid configuration.</p>'
     }
