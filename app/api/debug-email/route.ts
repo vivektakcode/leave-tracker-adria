@@ -86,20 +86,22 @@ export async function POST(request: NextRequest) {
 
     // Test 3: Check domain-specific issues
     const emailDomain = email.split('@')[1]
+    const recommendations: string[] = []
+    
+    if (emailDomain === 'adria-bt.com') {
+      recommendations.push('Custom domain detected - may need domain verification in Resend')
+    }
+
+    if (!['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com'].includes(emailDomain)) {
+      recommendations.push('Consider using a verified domain or Gmail for testing')
+    }
+
     const domainAnalysis = {
       email,
       domain: emailDomain,
       isCustomDomain: !['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com'].includes(emailDomain),
       isAdriaDomain: emailDomain === 'adria-bt.com',
-      recommendations: []
-    }
-
-    if (domainAnalysis.isAdriaDomain) {
-      domainAnalysis.recommendations.push('Custom domain detected - may need domain verification in Resend')
-    }
-
-    if (domainAnalysis.isCustomDomain) {
-      domainAnalysis.recommendations.push('Consider using a verified domain or Gmail for testing')
+      recommendations
     }
 
     return NextResponse.json({

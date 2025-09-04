@@ -112,7 +112,7 @@ export async function sendLeaveRequestEmail(managerEmail: string, managerName: s
     
     console.log('📧 Attempting to send email via Resend API...')
     const result = await resend.emails.send({
-      from: 'Leave Management <onboarding@resend.dev>',
+      from: 'Leave Management <noreply@adria-bt.com>',
       to: managerEmail,
       subject,
       html
@@ -145,7 +145,7 @@ export async function sendLeaveReminderEmail(managerEmail: string, managerName: 
     const { subject, html } = emailTemplates.leaveReminder(managerName, employeeName, startDate, endDate, daysPending)
     
     await resend.emails.send({
-      from: 'Leave Management <onboarding@resend.dev>',
+      from: 'Leave Management <noreply@adria-bt.com>',
       to: managerEmail,
       subject,
       html
@@ -166,7 +166,7 @@ export async function sendPasswordResetEmail(userEmail: string, userName: string
     const { subject, html } = emailTemplates.passwordReset(userName, resetToken)
     
     await resend.emails.send({
-      from: 'Leave Management <onboarding@resend.dev>',
+      from: 'Leave Management <noreply@adria-bt.com>',
       to: userEmail,
       subject,
       html
@@ -185,7 +185,7 @@ export async function sendManagerChangeNotification(userEmail: string, userName:
     const { subject, html } = emailTemplates.managerChange(userName, managerName, managerDepartment)
     
     await resend.emails.send({
-      from: 'Leave Management <onboarding@resend.dev>',
+      from: 'Leave Management <noreply@adria-bt.com>',
       to: userEmail,
       subject,
       html
@@ -204,7 +204,7 @@ export async function testEmailConfiguration(): Promise<boolean> {
   try {
     // Send a test email to verify configuration
     await resend.emails.send({
-      from: 'Leave Management <onboarding@resend.dev>',
+      from: 'Leave Management <noreply@adria-bt.com>',
       to: 'test@example.com',
       subject: 'Test Email Configuration',
       html: '<p>This is a test email to verify the configuration.</p>'
