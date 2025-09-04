@@ -234,7 +234,15 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
       }
 
       const result = await response.json()
-      setSuccess(`Leave request submitted successfully! Request ID: ${result.requestId}`)
+      
+      // Log email status to console
+      if (result.emailSent) {
+        console.log('✅ Email notification sent to manager successfully')
+        setSuccess(`Leave request submitted successfully! Request ID: ${result.id}. Manager has been notified.`)
+      } else {
+        console.warn('⚠️ Leave request created but email notification failed')
+        setSuccess(`Leave request submitted successfully! Request ID: ${result.id}. Note: Manager notification failed.`)
+      }
       
       // Reset form
       setLeaveType('casual')

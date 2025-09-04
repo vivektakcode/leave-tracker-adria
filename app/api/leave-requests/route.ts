@@ -78,7 +78,11 @@ export async function POST(request: NextRequest) {
     }
 
     console.log(`[${timestamp}] Request processing completed successfully`)
-    return NextResponse.json({ id: requestId }, { status: 201 })
+    return NextResponse.json({ 
+      id: requestId,
+      emailSent: emailResult || false,
+      message: emailResult ? 'Leave request created and manager notified' : 'Leave request created but email notification failed'
+    }, { status: 201 })
 
   } catch (error) {
     console.error(`[${timestamp}] ❌ Error creating leave request:`, error)
