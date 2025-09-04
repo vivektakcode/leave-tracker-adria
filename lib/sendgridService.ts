@@ -116,15 +116,12 @@ export async function sendLeaveRequestEmail(managerEmail: string, managerName: s
     
     const { subject, html } = emailTemplates.leaveRequest(managerName, employeeName, startDate, endDate, leaveType)
     console.log('📧 Email Subject:', subject)
-    console.log('📧 Email From Address: noreply@adria-bt.com')
+    console.log('📧 Email From Address:', process.env.SENDGRID_FROM_EMAIL || 'noreply@adria-bt.com')
     console.log('📧 Email To Address:', managerEmail)
     
     const msg = {
       to: managerEmail,
-      from: {
-        email: 'noreply@adria-bt.com',
-        name: 'Adria Leave Management'
-      },
+      from: process.env.SENDGRID_FROM_EMAIL || 'noreply@adria-bt.com',
       subject,
       html
     }
@@ -178,10 +175,7 @@ export async function sendLeaveReminderEmail(managerEmail: string, managerName: 
     
     const msg = {
       to: managerEmail,
-      from: {
-        email: 'noreply@adria-bt.com',
-        name: 'Adria Leave Management'
-      },
+      from: process.env.SENDGRID_FROM_EMAIL || 'noreply@adria-bt.com',
       subject,
       html
     }
@@ -223,10 +217,7 @@ export async function sendPasswordResetEmail(userEmail: string, userName: string
     
     const msg = {
       to: userEmail,
-      from: {
-        email: 'noreply@adria-bt.com',
-        name: 'Adria Leave Management'
-      },
+      from: process.env.SENDGRID_FROM_EMAIL || 'noreply@adria-bt.com',
       subject,
       html
     }
@@ -269,10 +260,7 @@ export async function sendManagerChangeNotification(userEmail: string, userName:
     
     const msg = {
       to: userEmail,
-      from: {
-        email: 'noreply@adria-bt.com',
-        name: 'Adria Leave Management'
-      },
+      from: process.env.SENDGRID_FROM_EMAIL || 'noreply@adria-bt.com',
       subject,
       html
     }
@@ -320,10 +308,7 @@ export async function testSendGridConfiguration(): Promise<boolean> {
     
     const msg = {
       to: 'test@example.com',
-      from: {
-        email: 'noreply@adria-bt.com',
-        name: 'Adria Leave Management'
-      },
+      from: process.env.SENDGRID_FROM_EMAIL || 'noreply@adria-bt.com',
       subject: 'SendGrid Test Email',
       html: '<p>This is a test email to verify SendGrid configuration.</p>'
     }
