@@ -87,26 +87,37 @@ export async function getUserByEmail(email: string): Promise<User | null> {
 
 export async function getUserManager(userId: string): Promise<User | null> {
   try {
+    console.log('🔍 Getting manager for user ID:', userId)
+    
     const { data: userData, error: userError } = await supabase
       .from('users')
       .select('manager_id')
       .eq('id', userId)
       .single()
 
+    console.log('🔍 User data query result:', { userData, userError })
+
     if (userError || !userData || !userData.manager_id) {
+      console.log('🔍 No manager_id found for user:', userId)
       return null
     }
 
+    console.log('🔍 Looking up manager with ID:', userData.manager_id)
+    
     const { data: managerData, error: managerError } = await supabase
       .from('users')
       .select('*')
       .eq('id', userData.manager_id)
       .single()
 
+    console.log('🔍 Manager lookup result:', { managerData, managerError })
+
     if (managerError || !managerData) {
+      console.log('🔍 Manager not found or error:', managerError)
       return null
     }
 
+    console.log('🔍 Manager found:', { name: managerData.name, email: managerData.email, role: managerData.role })
     return managerData as User
   } catch (error) {
     console.error('Error getting user manager:', error)
@@ -360,12 +371,16 @@ export async function checkDuplicateLeaveRequest(
 
 export async function createLeaveRequest(request: Omit<LeaveRequest, 'id' | 'status' | 'requested_at'>): Promise<string> {
   try {
+    console.log('🔍 Creating leave request for user:', request.user_id)
+    
     const isDuplicate = await checkDuplicateLeaveRequest(request.user_id, request.start_date, request.end_date, request.leave_type)
     if (isDuplicate) {
       throw new Error('You already have a leave request for these dates. Please check your existing requests.')
     }
 
+    console.log('🔍 Looking up manager for user:', request.user_id)
     const managerData = await getUserManager(request.user_id)
+    console.log('🔍 Manager lookup result:', managerData ? { name: managerData.name, email: managerData.email, role: managerData.role } : 'No manager found')
 
     const newRequest: LeaveRequest = {
       ...request,

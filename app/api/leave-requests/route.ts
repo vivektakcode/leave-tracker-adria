@@ -28,6 +28,16 @@ export async function POST(request: NextRequest) {
     const { user_id, leave_type, start_date, end_date, reason } = body
     
     console.log(`[${timestamp}] Request data:`, { user_id, leave_type, start_date, end_date, reason: reason ? 'PROVIDED' : 'MISSING' })
+    
+    // Debug: Check if user exists and get their details
+    const { getUserById } = await import('../../../lib/supabaseService')
+    const user = await getUserById(user_id)
+    if (user) {
+      console.log(`[${timestamp}] User found:`, { name: user.name, email: user.email, role: user.role, manager_id: user.manager_id })
+    } else {
+      console.log(`[${timestamp}] ❌ User not found for ID:`, user_id)
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
 
     // Validate required fields
     if (!user_id || !leave_type || !start_date || !end_date || !reason) {
