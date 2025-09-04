@@ -45,10 +45,14 @@ export default function MyRequestsList({ employeeId, compact = false }: MyReques
 
     setCancelling(requestId)
     try {
-      await cancelLeaveRequest(requestId)
-      // Refresh the requests list
-      const requests = await getUserLeaveRequests(employeeId)
-      setUserRequests(requests)
+      const success = await cancelLeaveRequest(requestId)
+      if (success) {
+        // Optimistically update the UI instead of refetching all data
+        setUserRequests(prev => prev.filter(req => req.id !== requestId))
+        console.log('✔ Leave request cancelled')
+      } else {
+        alert('Failed to cancel request. Please try again.')
+      }
     } catch (error) {
       console.error('Error cancelling request:', error)
       alert('Failed to cancel request. Please try again.')

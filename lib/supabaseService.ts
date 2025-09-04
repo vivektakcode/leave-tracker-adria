@@ -88,6 +88,7 @@ export async function getUserByEmail(email: string): Promise<User | null> {
 
 export async function getUserManager(userId: string): Promise<User | null> {
   try {
+    // First get the user to find their manager_id
     const { data: userData, error: userError } = await supabase
       .from('users')
       .select('manager_id')
@@ -97,10 +98,11 @@ export async function getUserManager(userId: string): Promise<User | null> {
     if (userError || !userData || !userData.manager_id) {
       return null
     }
-    
+
+    // Then get the manager details
     const { data: managerData, error: managerError } = await supabase
       .from('users')
-      .select('*')
+      .select('id, name, email, department, role, country, created_at')
       .eq('id', userData.manager_id)
       .single()
 
@@ -269,10 +271,12 @@ export async function authenticateUser(email: string, password: string): Promise
 // Leave balance functions
 export async function getLeaveBalance(userId: string): Promise<LeaveBalance | null> {
   try {
+    // Use index on user_id for faster query
     const { data, error } = await supabase
       .from('leave_balances')
       .select('casual_leave, sick_leave, privilege_leave')
       .eq('user_id', userId)
+      .limit(1)
       .single()
 
     if (error) {
@@ -426,11 +430,13 @@ export async function createLeaveRequest(request: Omit<LeaveRequest, 'id' | 'use
 
 export async function getUserLeaveRequests(userId: string): Promise<LeaveRequest[]> {
   try {
+    // Select only required fields and use index on user_id
     const { data, error } = await supabase
       .from('leave_requests')
-      .select('*')
+      .select('id, leave_type, start_date, end_date, reason, status, requested_at, is_half_day')
       .eq('user_id', userId)
       .order('requested_at', { ascending: false })
+      .limit(50) // Limit to recent requests only
 
     if (error) {
       console.error('Error getting user leave requests:', error)

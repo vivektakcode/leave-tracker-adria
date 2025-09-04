@@ -60,11 +60,30 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
     }
   }
 
-  // Fetch leave balance when component mounts
+  // Fetch leave balance when component mounts (with caching)
   useEffect(() => {
     const fetchData = async () => {
       console.log('⚡ Loading leave balance and manager info...')
       const startTime = Date.now()
+      
+      // Check if we already have cached data
+      const cacheKey = `leave_data_${employee.id}`
+      const cachedData = sessionStorage.getItem(cacheKey)
+      
+      if (cachedData) {
+        try {
+          const { balance, manager, timestamp } = JSON.parse(cachedData)
+          // Use cached data if it's less than 5 minutes old
+          if (Date.now() - timestamp < 5 * 60 * 1000) {
+            console.log('⚡ Using cached data')
+            setLeaveBalance(balance)
+            setManagerInfo(manager)
+            return
+          }
+        } catch (e) {
+          // Invalid cache, continue with fresh fetch
+        }
+      }
       
       const [balance, manager] = await Promise.all([
         getLeaveBalance(employee.id),
@@ -82,6 +101,13 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
       if (manager) {
         setManagerInfo({ name: manager.name, department: manager.department })
         console.log('✅ Manager found for employee:', manager.name, manager.department)
+        
+        // Cache the data for 5 minutes
+        sessionStorage.setItem(cacheKey, JSON.stringify({
+          balance,
+          manager: { name: manager.name, department: manager.department },
+          timestamp: Date.now()
+        }))
       } else {
         console.warn('⚠️ No manager found for employee:', employee.name, employee.email)
         setError('No manager assigned. Please contact HR to assign a manager before submitting leave requests.')
