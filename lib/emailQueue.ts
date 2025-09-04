@@ -14,7 +14,7 @@ interface EmailJob {
 class EmailQueue {
   private queue: EmailJob[] = []
   private processing = false
-  private maxConcurrent = 3 // Reduced for free tier
+  private maxConcurrent = 5 // Increased for better performance
   private currentProcessing = 0
 
   // Add email to queue
@@ -113,7 +113,7 @@ class EmailQueue {
       }
 
       if (success) {
-        console.log(`✅ Email sent successfully: ${job.type} (ID: ${job.id})`)
+        console.log(`✅ Email sent successfully: ${job.type} (ID: ${job.id}) to ${job.data.managerEmail || job.data.userEmail}`)
       } else {
         throw new Error(`Failed to send ${job.type} email`)
       }

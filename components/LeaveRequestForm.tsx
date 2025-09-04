@@ -236,16 +236,33 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
       const result = await response.json()
       
       // Log email status to console
-      if (result.emailSent === 'pending') {
-        console.log('📧 Email notification is being sent in the background')
-        setSuccess(`Leave request submitted successfully! Request ID: ${result.id}. Manager will be notified shortly.`)
-      } else if (result.emailSent === true) {
-        console.log('✅ Email notification sent to manager successfully')
-        setSuccess(`Leave request submitted successfully! Request ID: ${result.id}. Manager has been notified.`)
-      } else {
-        console.warn('⚠️ Leave request created but email notification failed')
-        setSuccess(`Leave request submitted successfully! Request ID: ${result.id}. Note: Manager notification failed.`)
-      }
+              if (result.emailSent === 'pending') {
+          console.log('📧 Email notification is being sent in the background')
+          setSuccess(`Leave request submitted successfully! Request ID: ${result.id}. Manager will be notified shortly.`)
+          
+          // Check email status after a delay
+          setTimeout(async () => {
+            try {
+              const statusResponse = await fetch('/api/email-status')
+              const statusData = await statusResponse.json()
+              console.log('📧 Email queue status:', statusData.emailQueue)
+              
+              if (statusData.emailQueue.pending === 0 && statusData.emailQueue.processing === 0) {
+                console.log('✅ All emails have been processed')
+                setSuccess(`Leave request submitted successfully! Request ID: ${result.id}. ✅ Manager has been notified via email.`)
+              }
+            } catch (error) {
+              console.error('Error checking email status:', error)
+            }
+          }, 3000) // Check after 3 seconds
+          
+        } else if (result.emailSent === true) {
+          console.log('✅ Email notification sent to manager successfully')
+          setSuccess(`Leave request submitted successfully! Request ID: ${result.id}. ✅ Manager has been notified.`)
+        } else {
+          console.warn('⚠️ Leave request created but email notification failed')
+          setSuccess(`Leave request submitted successfully! Request ID: ${result.id}. ⚠️ Note: Manager notification failed.`)
+        }
       
       // Reset form
       setLeaveType('casual')
