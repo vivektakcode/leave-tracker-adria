@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { User, createLeaveRequest, getLeaveBalance, getUserManager } from '../lib/supabaseService'
+import { User, getLeaveBalance, getUserManager } from '../lib/supabaseService'
 import { isDateDisabled, getMinEndDate, getNextBusinessDay } from '../utils/dateUtils'
 import BusinessDatePicker from './BusinessDatePicker'
 
@@ -202,17 +202,29 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
     setLoading(true)
 
     try {
-      // Create leave request
-      const requestId = await createLeaveRequest({
-        user_id: employee.id,
-        leave_type: leaveType,
-        start_date: startDate,
-        end_date: endDate,
-        reason: reason.trim(),
-        is_half_day: isHalfDay
+      // Create leave request via API
+      const response = await fetch('/api/leave-requests', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_id: employee.id,
+          leave_type: leaveType,
+          start_date: startDate,
+          end_date: endDate,
+          reason: reason.trim(),
+          is_half_day: isHalfDay
+        })
       })
 
-      setSuccess(`Leave request submitted successfully! Request ID: ${requestId}`)
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to submit request')
+      }
+
+      const result = await response.json()
+      setSuccess(`Leave request submitted successfully! Request ID: ${result.requestId}`)
       
       // Reset form
       setLeaveType('casual')

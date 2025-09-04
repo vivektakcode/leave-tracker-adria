@@ -41,8 +41,8 @@ export interface LeaveRequest {
   processed_at?: string
   processed_by?: string
   comments?: string
-  manager_name?: string
-  manager_department?: string
+  manager_name?: string | null
+  manager_department?: string | null
 }
 
 export interface HolidayCalendar {
@@ -372,8 +372,8 @@ export async function createLeaveRequest(request: Omit<LeaveRequest, 'id' | 'sta
       id: crypto.randomUUID(),
       status: 'pending',
       requested_at: new Date().toISOString(),
-      manager_name: managerData?.name,
-      manager_department: managerData?.department
+      manager_name: managerData?.name || null,
+      manager_department: managerData?.department || null
     }
     
     const { error } = await supabase
@@ -382,7 +382,17 @@ export async function createLeaveRequest(request: Omit<LeaveRequest, 'id' | 'sta
 
     if (error) {
       console.error('Error creating leave request:', error)
-      throw new Error('Failed to create leave request')
+      
+      // Provide more specific error messages
+      if (error.code === '22P02') {
+        throw new Error(`Invalid data format: ${error.message}. Please check that all fields are properly formatted.`)
+      } else if (error.code === '23505') {
+        throw new Error('Duplicate leave request detected. Please check your existing requests.')
+      } else if (error.code === '23503') {
+        throw new Error('Invalid user or manager reference. Please contact support.')
+      } else {
+        throw new Error(`Database error: ${error.message || 'Failed to create leave request'}`)
+      }
     }
 
     console.log('✅ Leave request saved to Supabase:', newRequest.id)
