@@ -97,10 +97,10 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
     setSuccess('')
 
     try {
-      // Validate manager assignment for all roles except HR
-      if (newUser.role !== 'hr') {
+      // Validate manager assignment - only employees need managers
+      if (newUser.role === 'employee') {
         if (!newUser.manager_id) {
-          setError('All users must have a manager assigned')
+          setError('All employees must have a manager assigned')
           setLoading(false)
           return
         }
@@ -142,8 +142,8 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
     setSuccess('')
 
     try {
-      // Validate manager assignment for all roles except HR
-      if (editingUser.role !== 'hr' && editingUser.manager_id) {
+      // Validate manager assignment - only employees need managers
+      if (editingUser.role === 'employee' && editingUser.manager_id) {
         const selectedManager = users.find(u => u.id === editingUser.manager_id)
         if (selectedManager && selectedManager.role !== 'manager' && selectedManager.role !== 'hr') {
           setError('Selected manager must have manager or HR role')
@@ -794,8 +794,8 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
                     </select>
                   </div>
                   
-                  {/* Manager Assignment - show for all roles except HR */}
-                  {newUser.role !== 'hr' && (
+                  {/* Manager Assignment - only show for employees */}
+                  {newUser.role === 'employee' && (
                     <div>
                       <label className="block text-sm font-medium text-gray-700">Manager *</label>
                       <select
@@ -814,7 +814,7 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
                           ))}
                       </select>
                       <p className="text-xs text-gray-500 mt-1">
-                        All users must have a manager or HR user to approve their leave requests
+                        All employees must have a manager or HR user to approve their leave requests
                       </p>
                     </div>
                   )}
@@ -1131,17 +1131,16 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
                     </select>
                   </div>
                   
-                  {/* Manager Assignment - show for all roles except HR */}
-                  {editingUser.role !== 'hr' && (
+                  {/* Manager Assignment - only show for employees */}
+                  {editingUser.role === 'employee' && (
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Manager *</label>
+                      <label className="block text-sm font-medium text-gray-700">Manager</label>
                       <select
-                        required
                         value={editingUser.manager_id || ''}
                         onChange={(e) => setEditingUser({...editingUser, manager_id: e.target.value})}
                         className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
                       >
-                        <option value="">Select a manager</option>
+                        <option value="">No Manager</option>
                         {users
                           .filter(user => user.role === 'manager' || user.role === 'hr')
                           .filter(user => user.id !== editingUser.id) // Can't be their own manager
@@ -1152,7 +1151,7 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
                           ))}
                       </select>
                       <p className="text-xs text-gray-500 mt-1">
-                        All users must have a manager or HR user to approve their leave requests
+                        Assign a manager or HR user to approve this employee's leave requests
                       </p>
                     </div>
                   )}
