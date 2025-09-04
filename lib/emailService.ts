@@ -128,13 +128,13 @@ export async function sendLeaveRequestEmail(managerEmail: string, managerName: s
       console.error('❌ Resend API response does not indicate success:', result)
       return false
     }
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('❌ Error sending leave request email:', error)
     console.error('❌ Error details:', {
-      message: error.message,
-      code: error.code,
-      status: error.status,
-      response: error.response
+      message: error instanceof Error ? error.message : 'Unknown error',
+      code: (error as any)?.code,
+      status: (error as any)?.status,
+      response: (error as any)?.response
     })
     return false
   }
