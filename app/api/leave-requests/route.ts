@@ -121,16 +121,32 @@ async function sendManagerNotification(
   reason: string
 ): Promise<boolean> {
   try {
+    console.log('📧 ===== MANAGER NOTIFICATION PROCESS START =====')
+    console.log('📧 Request ID:', requestId)
+    console.log('📧 User ID:', userId)
+    console.log('📧 Leave Type:', leaveType)
+    console.log('📧 Start Date:', startDate)
+    console.log('📧 End Date:', endDate)
+    console.log('📧 Reason:', reason)
+    
     // Get user and manager details in parallel
     const [user, manager] = await Promise.all([
       getUserById(userId),
       getUserManager(userId)
     ])
     
+    console.log('📧 User found:', !!user, user ? { name: user.name, email: user.email } : 'N/A')
+    console.log('📧 Manager found:', !!manager, manager ? { name: manager.name, email: manager.email } : 'N/A')
+    
     if (!user || !manager) {
       console.warn('❌ User or manager not found for notification:', { userId, user: !!user, manager: !!manager })
+      console.log('📧 ===== MANAGER NOTIFICATION PROCESS END (FAILED) =====')
       return false
     }
+
+    console.log('📧 Sending email to manager:', manager.email)
+    console.log('📧 Manager name:', manager.name)
+    console.log('📧 Employee name:', user.name)
 
     // Send email notification directly
     const emailSent = await sendLeaveRequestEmail(
@@ -142,10 +158,14 @@ async function sendManagerNotification(
       leaveType
     )
 
+    console.log('📧 Email send result:', emailSent)
+    console.log('📧 ===== MANAGER NOTIFICATION PROCESS END =====')
     return emailSent
 
   } catch (error) {
+    console.error('❌ ===== MANAGER NOTIFICATION ERROR =====')
     console.error('Error in sendManagerNotification:', error)
+    console.error('❌ ===== MANAGER NOTIFICATION ERROR END =====')
     return false
   }
 }

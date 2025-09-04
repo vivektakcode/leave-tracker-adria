@@ -95,6 +95,15 @@ export async function sendLeaveRequestEmail(managerEmail: string, managerName: s
     console.log('📧 Leave Type:', leaveType)
     console.log('📧 Start Date:', startDate)
     console.log('📧 End Date:', endDate)
+    console.log('📧 Timestamp:', new Date().toISOString())
+    
+    // Validate email address format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(managerEmail)) {
+      console.error('❌ Invalid email address format:', managerEmail)
+      return false
+    }
+    console.log('✅ Email address format is valid')
     
     // Check if SendGrid API key is configured
     if (!process.env.SENDGRID_API_KEY) {
@@ -107,6 +116,8 @@ export async function sendLeaveRequestEmail(managerEmail: string, managerName: s
     
     const { subject, html } = emailTemplates.leaveRequest(managerName, employeeName, startDate, endDate, leaveType)
     console.log('📧 Email Subject:', subject)
+    console.log('📧 Email From Address: noreply@adria-bt.com')
+    console.log('📧 Email To Address:', managerEmail)
     
     const msg = {
       to: managerEmail,
@@ -120,6 +131,7 @@ export async function sendLeaveRequestEmail(managerEmail: string, managerName: s
     
     console.log('📧 SendGrid API Response:', JSON.stringify(result, null, 2))
     console.log('✅ EMAIL SENT SUCCESSFULLY to', managerEmail)
+    console.log('📧 Email delivery confirmed by SendGrid API')
     console.log('🚀 ===== SENDGRID EMAIL DEBUG END =====')
     return true
   } catch (error: unknown) {
@@ -128,6 +140,14 @@ export async function sendLeaveRequestEmail(managerEmail: string, managerName: s
     console.error('❌ Error type:', typeof error)
     console.error('❌ Error message:', error instanceof Error ? error.message : 'Unknown error')
     console.error('❌ Full error object:', error)
+    
+    // Log specific SendGrid error details if available
+    if (error && typeof error === 'object' && 'response' in error) {
+      const sgError = error as any
+      console.error('❌ SendGrid Response Status:', sgError.response?.status)
+      console.error('❌ SendGrid Response Body:', sgError.response?.body)
+    }
+    
     console.error('❌ ===== SENDGRID EMAIL ERROR END =====')
     return false
   }
@@ -135,7 +155,23 @@ export async function sendLeaveRequestEmail(managerEmail: string, managerName: s
 
 export async function sendLeaveReminderEmail(managerEmail: string, managerName: string, employeeName: string, startDate: string, endDate: string, daysPending: number): Promise<boolean> {
   try {
+    console.log('🚀 ===== SENDGRID REMINDER EMAIL DEBUG START =====')
+    console.log('📧 Target Manager Email:', managerEmail)
+    console.log('📧 Manager Name:', managerName)
+    console.log('📧 Employee Name:', employeeName)
+    console.log('📧 Days Pending:', daysPending)
+    console.log('📧 Start Date:', startDate)
+    console.log('📧 End Date:', endDate)
+    
+    // Validate email address format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(managerEmail)) {
+      console.error('❌ Invalid email address format:', managerEmail)
+      return false
+    }
+    
     const { subject, html } = emailTemplates.leaveReminder(managerName, employeeName, startDate, endDate, daysPending)
+    console.log('📧 Email Subject:', subject)
     
     const msg = {
       to: managerEmail,
@@ -144,18 +180,40 @@ export async function sendLeaveReminderEmail(managerEmail: string, managerName: 
       html
     }
     
-    await sgMail.send(msg)
-    console.log(`✅ Leave reminder email sent to ${managerEmail} via SendGrid`)
+    console.log('📧 Sending reminder email via SendGrid API...')
+    const result = await sgMail.send(msg)
+    
+    console.log('📧 SendGrid API Response:', JSON.stringify(result, null, 2))
+    console.log('✅ REMINDER EMAIL SENT SUCCESSFULLY to', managerEmail)
+    console.log('🚀 ===== SENDGRID REMINDER EMAIL DEBUG END =====')
     return true
-  } catch (error) {
-    console.error('❌ SendGrid: Error sending leave reminder email:', error)
+  } catch (error: unknown) {
+    console.error('❌ ===== SENDGRID REMINDER EMAIL ERROR =====')
+    console.error('❌ Error sending reminder email to:', managerEmail)
+    console.error('❌ Error type:', typeof error)
+    console.error('❌ Error message:', error instanceof Error ? error.message : 'Unknown error')
+    console.error('❌ Full error object:', error)
+    console.error('❌ ===== SENDGRID REMINDER EMAIL ERROR END =====')
     return false
   }
 }
 
 export async function sendPasswordResetEmail(userEmail: string, userName: string, resetToken: string): Promise<boolean> {
   try {
+    console.log('🚀 ===== SENDGRID PASSWORD RESET EMAIL DEBUG START =====')
+    console.log('📧 Target User Email:', userEmail)
+    console.log('📧 User Name:', userName)
+    console.log('📧 Reset Token (first 10 chars):', resetToken.substring(0, 10) + '...')
+    
+    // Validate email address format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(userEmail)) {
+      console.error('❌ Invalid email address format:', userEmail)
+      return false
+    }
+    
     const { subject, html } = emailTemplates.passwordReset(userName, resetToken)
+    console.log('📧 Email Subject:', subject)
     
     const msg = {
       to: userEmail,
@@ -164,18 +222,41 @@ export async function sendPasswordResetEmail(userEmail: string, userName: string
       html
     }
     
-    await sgMail.send(msg)
-    console.log(`✅ Password reset email sent to ${userEmail} via SendGrid`)
+    console.log('📧 Sending password reset email via SendGrid API...')
+    const result = await sgMail.send(msg)
+    
+    console.log('📧 SendGrid API Response:', JSON.stringify(result, null, 2))
+    console.log('✅ PASSWORD RESET EMAIL SENT SUCCESSFULLY to', userEmail)
+    console.log('🚀 ===== SENDGRID PASSWORD RESET EMAIL DEBUG END =====')
     return true
-  } catch (error) {
-    console.error('❌ SendGrid: Error sending password reset email:', error)
+  } catch (error: unknown) {
+    console.error('❌ ===== SENDGRID PASSWORD RESET EMAIL ERROR =====')
+    console.error('❌ Error sending password reset email to:', userEmail)
+    console.error('❌ Error type:', typeof error)
+    console.error('❌ Error message:', error instanceof Error ? error.message : 'Unknown error')
+    console.error('❌ Full error object:', error)
+    console.error('❌ ===== SENDGRID PASSWORD RESET EMAIL ERROR END =====')
     return false
   }
 }
 
 export async function sendManagerChangeNotification(userEmail: string, userName: string, managerName: string, managerDepartment: string): Promise<boolean> {
   try {
+    console.log('🚀 ===== SENDGRID MANAGER CHANGE EMAIL DEBUG START =====')
+    console.log('📧 Target User Email:', userEmail)
+    console.log('📧 User Name:', userName)
+    console.log('📧 New Manager Name:', managerName)
+    console.log('📧 Manager Department:', managerDepartment)
+    
+    // Validate email address format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(userEmail)) {
+      console.error('❌ Invalid email address format:', userEmail)
+      return false
+    }
+    
     const { subject, html } = emailTemplates.managerChange(userName, managerName, managerDepartment)
+    console.log('📧 Email Subject:', subject)
     
     const msg = {
       to: userEmail,
@@ -184,18 +265,47 @@ export async function sendManagerChangeNotification(userEmail: string, userName:
       html
     }
     
-    await sgMail.send(msg)
-    console.log(`✅ Manager change notification sent to ${userEmail} via SendGrid`)
+    console.log('📧 Sending manager change notification via SendGrid API...')
+    const result = await sgMail.send(msg)
+    
+    console.log('📧 SendGrid API Response:', JSON.stringify(result, null, 2))
+    console.log('✅ MANAGER CHANGE EMAIL SENT SUCCESSFULLY to', userEmail)
+    console.log('🚀 ===== SENDGRID MANAGER CHANGE EMAIL DEBUG END =====')
     return true
-  } catch (error) {
-    console.error('❌ SendGrid: Error sending manager change notification:', error)
+  } catch (error: unknown) {
+    console.error('❌ ===== SENDGRID MANAGER CHANGE EMAIL ERROR =====')
+    console.error('❌ Error sending manager change email to:', userEmail)
+    console.error('❌ Error type:', typeof error)
+    console.error('❌ Error message:', error instanceof Error ? error.message : 'Unknown error')
+    console.error('❌ Full error object:', error)
+    console.error('❌ ===== SENDGRID MANAGER CHANGE EMAIL ERROR END =====')
     return false
   }
+}
+
+// Email delivery tracking and verification
+export async function trackEmailDelivery(
+  emailType: string,
+  recipientEmail: string,
+  recipientName: string,
+  additionalData: any = {}
+): Promise<void> {
+  const timestamp = new Date().toISOString()
+  console.log('📊 ===== EMAIL DELIVERY TRACKING =====')
+  console.log('📊 Email Type:', emailType)
+  console.log('📊 Recipient Email:', recipientEmail)
+  console.log('📊 Recipient Name:', recipientName)
+  console.log('📊 Timestamp:', timestamp)
+  console.log('📊 Additional Data:', JSON.stringify(additionalData, null, 2))
+  console.log('📊 ===== EMAIL DELIVERY TRACKING END =====')
 }
 
 // Test email configuration
 export async function testSendGridConfiguration(): Promise<boolean> {
   try {
+    console.log('🧪 ===== SENDGRID CONFIGURATION TEST START =====')
+    console.log('🧪 Testing SendGrid API configuration...')
+    
     const msg = {
       to: 'test@example.com',
       from: 'noreply@adria-bt.com',
@@ -203,11 +313,19 @@ export async function testSendGridConfiguration(): Promise<boolean> {
       html: '<p>This is a test email to verify SendGrid configuration.</p>'
     }
     
-    await sgMail.send(msg)
+    console.log('🧪 Test email details:', JSON.stringify(msg, null, 2))
+    const result = await sgMail.send(msg)
+    
+    console.log('🧪 SendGrid test response:', JSON.stringify(result, null, 2))
     console.log('✅ SendGrid configuration is valid')
+    console.log('🧪 ===== SENDGRID CONFIGURATION TEST END =====')
     return true
-  } catch (error) {
+  } catch (error: unknown) {
+    console.error('❌ ===== SENDGRID CONFIGURATION TEST ERROR =====')
     console.error('❌ SendGrid configuration error:', error)
+    console.error('❌ Error type:', typeof error)
+    console.error('❌ Error message:', error instanceof Error ? error.message : 'Unknown error')
+    console.error('❌ ===== SENDGRID CONFIGURATION TEST ERROR END =====')
     return false
   }
 }
