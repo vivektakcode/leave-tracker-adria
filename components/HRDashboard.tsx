@@ -113,10 +113,10 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
         }
       }
 
-      // Clean up manager_id - send null instead of empty string for non-employees
+      // Clean up manager_id - send undefined instead of empty string for non-employees
       const userDataToCreate = {
         ...newUser,
-        manager_id: newUser.role === 'employee' ? newUser.manager_id : null
+        manager_id: newUser.role === 'employee' ? newUser.manager_id : undefined
       }
       
       await createUser(userDataToCreate)
@@ -162,14 +162,14 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
       const originalUser = users.find(u => u.id === editingUser.id)
       const managerChanged = originalUser?.manager_id !== editingUser.manager_id
 
-      // Clean up manager_id - send null instead of empty string for non-employees
+      // Clean up manager_id - send undefined instead of empty string for non-employees
       const userDataToUpdate = {
         name: editingUser.name,
         email: editingUser.email,
         role: editingUser.role,
         department: editingUser.department,
         country: editingUser.country,
-        manager_id: editingUser.role === 'employee' ? editingUser.manager_id : null
+        manager_id: editingUser.role === 'employee' ? editingUser.manager_id : undefined
       }
       
       await updateUser(editingUser.id, userDataToUpdate)
