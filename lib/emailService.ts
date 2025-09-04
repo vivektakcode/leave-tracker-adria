@@ -90,15 +90,26 @@ const emailTemplates = {
 // Email sending functions
 export async function sendLeaveRequestEmail(managerEmail: string, managerName: string, employeeName: string, startDate: string, endDate: string, leaveType: string): Promise<boolean> {
   try {
-    const { subject, html } = emailTemplates.leaveRequest(managerName, employeeName, startDate, endDate, leaveType)
+    console.log('📧 sendLeaveRequestEmail called with:', { managerEmail, managerName, employeeName, startDate, endDate, leaveType })
     
-    await resend.emails.send({
+    // Check if Resend API key is configured
+    if (!process.env.RESEND_API_KEY) {
+      console.error('❌ RESEND_API_KEY environment variable is not set')
+      return false
+    }
+    console.log('📧 RESEND_API_KEY is configured')
+    
+    const { subject, html } = emailTemplates.leaveRequest(managerName, employeeName, startDate, endDate, leaveType)
+    console.log('📧 Email template generated:', { subject })
+    
+    const result = await resend.emails.send({
       from: 'Leave Management <onboarding@resend.dev>',
       to: managerEmail,
       subject,
       html
     })
     
+    console.log('📧 Resend API response:', result)
     console.log(`✅ Leave request email sent to ${managerEmail}`)
     return true
   } catch (error) {

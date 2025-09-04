@@ -64,7 +64,9 @@ export async function POST(request: NextRequest) {
     // Send email notification to manager
     console.log(`[${timestamp}] Starting email notification process`)
     try {
+      console.log(`[${timestamp}] Calling sendManagerNotification with:`, { requestId, user_id, leave_type, start_date, end_date })
       const emailResult = await sendManagerNotification(requestId, user_id, leave_type, start_date, end_date, reason)
+      console.log(`[${timestamp}] sendManagerNotification result:`, emailResult)
       if (emailResult) {
         console.log(`[${timestamp}] ✅ Manager notification sent successfully`);
       } else {
@@ -132,21 +134,34 @@ async function sendManagerNotification(
   reason: string
 ): Promise<boolean> {
   try {
+    console.log('📧 sendManagerNotification called with:', { requestId, userId, leaveType, startDate, endDate })
+    
     // Get user details
     const user = await getUserById(userId)
     if (!user) {
-      console.warn('User not found for notification:', userId)
+      console.warn('❌ User not found for notification:', userId)
       return false
     }
+    console.log('📧 User found for notification:', { name: user.name, email: user.email })
 
     // Get manager details
     const manager = await getUserManager(userId)
     if (!manager) {
-      console.warn('Manager not found for user:', userId)
+      console.warn('❌ Manager not found for user:', userId)
       return false
     }
+    console.log('📧 Manager found for notification:', { name: manager.name, email: manager.email })
 
     // Send email notification using the correct function
+    console.log('📧 Calling sendLeaveRequestEmail with:', { 
+      managerEmail: manager.email, 
+      managerName: manager.name, 
+      employeeName: user.name, 
+      startDate, 
+      endDate, 
+      leaveType 
+    })
+    
     const emailSent = await sendLeaveRequestEmail(
       manager.email,
       manager.name,
@@ -156,11 +171,13 @@ async function sendManagerNotification(
       leaveType
     )
 
+    console.log('📧 sendLeaveRequestEmail result:', emailSent)
+
     if (emailSent) {
-      console.log('Manager notification sent successfully to:', manager.email)
+      console.log('✅ Manager notification sent successfully to:', manager.email)
       return true
     } else {
-      console.warn('Failed to send manager notification to:', manager.email)
+      console.warn('❌ Failed to send manager notification to:', manager.email)
       return false
     }
   } catch (error) {
