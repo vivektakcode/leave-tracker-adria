@@ -168,10 +168,10 @@ export default function AdminPanel({ currentUser, onBack }: AdminPanelProps) {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>
                           <h4 className="font-medium text-gray-900">
-                            {request.user_id}
+                            {request.users?.name || 'Unknown User'}
                           </h4>
                           <p className="text-sm text-gray-500">
-                            User ID
+                            {request.users?.email || 'No email'}
                           </p>
                         </div>
                       </td>

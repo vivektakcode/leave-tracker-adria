@@ -485,7 +485,7 @@ export async function getAllLeaveRequests(): Promise<LeaveRequest[]> {
   }
 }
 
-export async function getLeaveRequestsByManager(managerId: string): Promise<LeaveRequest[]> {
+export async function getLeaveRequestsByManager(managerId: string): Promise<any[]> {
   try {
     const managedUsers = await getUsersByManager(managerId)
     const managedUserIds = managedUsers.map(user => user.id)
@@ -496,7 +496,14 @@ export async function getLeaveRequestsByManager(managerId: string): Promise<Leav
 
     const { data, error } = await supabase
       .from('leave_requests')
-      .select('*')
+      .select(`
+        *,
+        users!leave_requests_user_id_fkey (
+          name,
+          email,
+          department
+        )
+      `)
       .in('user_id', managedUserIds)
       .order('requested_at', { ascending: false })
 
@@ -505,7 +512,7 @@ export async function getLeaveRequestsByManager(managerId: string): Promise<Leav
       return []
     }
 
-    return data as LeaveRequest[] || []
+    return data || []
   } catch (error) {
     console.error('Error getting leave requests by manager:', error)
     return []
