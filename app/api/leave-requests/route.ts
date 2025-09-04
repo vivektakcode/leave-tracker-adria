@@ -6,7 +6,7 @@ import {
   getUserById,
   getUserManager
 } from '../../../lib/supabaseService'
-import { sendLeaveRequestEmail } from '../../../lib/emailService'
+import { sendLeaveRequestEmail } from '../../../lib/sendgridService'
 
 export async function GET() {
   try {

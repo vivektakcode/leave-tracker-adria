@@ -31,7 +31,6 @@ export interface LeaveBalance {
 export interface LeaveRequest {
   id: string
   user_id: string
-  username: string
   leave_type: 'casual' | 'sick' | 'privilege'
   start_date: string
   end_date: string
@@ -42,6 +41,10 @@ export interface LeaveRequest {
   processed_at?: string
   processed_by?: string
   comments?: string
+  last_reminder_sent?: string
+  reminder_count?: number
+  // Derived fields (from view)
+  username?: string
   manager_name?: string | null
   manager_department?: string | null
 }
@@ -393,11 +396,8 @@ export async function createLeaveRequest(request: Omit<LeaveRequest, 'id' | 'use
     const newRequest: LeaveRequest = {
       ...request,
       id: crypto.randomUUID(),
-      username: userData.name, // Add username field
       status: 'pending',
-      requested_at: new Date().toISOString(),
-      manager_name: managerData?.name || null,
-      manager_department: managerData?.department || null
+      requested_at: new Date().toISOString()
     }
     
     const { error } = await supabase
@@ -472,7 +472,7 @@ export async function getPendingLeaveRequests(): Promise<LeaveRequest[]> {
 export async function getAllLeaveRequests(): Promise<LeaveRequest[]> {
   try {
     const { data, error } = await supabase
-      .from('leave_requests')
+      .from('leave_requests_with_details')
       .select('*')
       .order('requested_at', { ascending: false })
 

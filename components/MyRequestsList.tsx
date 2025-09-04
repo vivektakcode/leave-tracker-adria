@@ -173,7 +173,7 @@ export default function MyRequestsList({ employeeId, compact = false, preloadedR
                   </svg>
                   <span>
                     Pending with: <span className="font-medium text-blue-600">
-                      {request.manager_name || 'Manager'}
+                      {request.manager_name || 'No Manager Assigned'}
                     </span>
                   </span>
                 </div>
