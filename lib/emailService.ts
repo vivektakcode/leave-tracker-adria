@@ -95,13 +95,22 @@ export async function sendLeaveRequestEmail(managerEmail: string, managerName: s
     // Check if Resend API key is configured
     if (!process.env.RESEND_API_KEY) {
       console.error('❌ RESEND_API_KEY environment variable is not set')
+      console.error('❌ Available env vars:', Object.keys(process.env).filter(key => key.includes('RESEND')))
       return false
     }
-    console.log('📧 RESEND_API_KEY is configured')
+    
+    // Check if API key looks valid (should start with 're_')
+    if (!process.env.RESEND_API_KEY.startsWith('re_')) {
+      console.error('❌ RESEND_API_KEY does not look valid (should start with "re_"):', process.env.RESEND_API_KEY.substring(0, 10) + '...')
+      return false
+    }
+    
+    console.log('📧 RESEND_API_KEY is configured and looks valid')
     
     const { subject, html } = emailTemplates.leaveRequest(managerName, employeeName, startDate, endDate, leaveType)
     console.log('📧 Email template generated:', { subject })
     
+    console.log('📧 Attempting to send email via Resend API...')
     const result = await resend.emails.send({
       from: 'Leave Management <onboarding@resend.dev>',
       to: managerEmail,
@@ -109,11 +118,24 @@ export async function sendLeaveRequestEmail(managerEmail: string, managerName: s
       html
     })
     
-    console.log('📧 Resend API response:', result)
-    console.log(`✅ Leave request email sent to ${managerEmail}`)
-    return true
+    console.log('📧 Resend API response:', JSON.stringify(result, null, 2))
+    
+    // Check if the response indicates success
+    if (result && result.data && result.data.id) {
+      console.log(`✅ Leave request email sent successfully to ${managerEmail}. Email ID: ${result.data.id}`)
+      return true
+    } else {
+      console.error('❌ Resend API response does not indicate success:', result)
+      return false
+    }
   } catch (error) {
     console.error('❌ Error sending leave request email:', error)
+    console.error('❌ Error details:', {
+      message: error.message,
+      code: error.code,
+      status: error.status,
+      response: error.response
+    })
     return false
   }
 }
