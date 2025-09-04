@@ -14,7 +14,7 @@ interface EmailJob {
 class EmailQueue {
   private queue: EmailJob[] = []
   private processing = false
-  private maxConcurrent = 5
+  private maxConcurrent = 3 // Reduced for free tier
   private currentProcessing = 0
 
   // Add email to queue
