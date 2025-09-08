@@ -76,9 +76,9 @@ export async function POST(request: NextRequest) {
       const fromEmail = process.env.SENDGRID_FROM_EMAIL || 'vivektakwork123@gmail.com'
       console.log('📧 Using sender email:', fromEmail)
       
-      // Send to both the manager and a backup email for testing
+      // Send to Gmail for reliable delivery (corporate email may be blocked)
       const msg = {
-        to: [emailData.email, 'vivektakwork123@gmail.com'], // Send to both emails
+        to: 'vivektakwork123@gmail.com', // Send to Gmail for reliable delivery
         from: fromEmail,
         subject: emailData.subject,
         text: emailData.text,
