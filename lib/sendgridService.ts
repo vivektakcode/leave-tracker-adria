@@ -114,19 +114,21 @@ export async function sendLeaveRequestEmail(managerEmail: string, managerName: s
     
     console.log('✅ SendGrid API key is configured (length:', process.env.SENDGRID_API_KEY.length, ')')
     
-    // Use simple text format like the working test
+    // Copy exact format from working simple email test
     const subject = `Leave Request from ${employeeName}`
     const text = `Hello ${managerName},\n\nYou have received a leave request from ${employeeName}:\n\nLeave Type: ${leaveType}\nStart Date: ${startDate}\nEnd Date: ${endDate}\n\nPlease review and approve/reject this request.\n\nBest regards,\nAdria Leave Management System`
+    const html = `<p>Hello ${managerName},</p><p>You have received a leave request from <strong>${employeeName}</strong>:</p><p><strong>Leave Type:</strong> ${leaveType}<br><strong>Start Date:</strong> ${startDate}<br><strong>End Date:</strong> ${endDate}</p><p>Please review and approve/reject this request.</p><p>Best regards,<br>Adria Leave Management System</p>`
     
     console.log('📧 Email Subject:', subject)
-    console.log('📧 Email From Address:', process.env.SENDGRID_FROM_EMAIL || 'vivek.tak@adria-bt.com')
+    console.log('📧 Email From Address:', process.env.SENDGRID_FROM_EMAIL || 'vivektakwork123@gmail.com')
     console.log('📧 Email To Address:', managerEmail)
     
     const msg = {
       to: managerEmail,
-      from: process.env.SENDGRID_FROM_EMAIL || 'vivek.tak@adria-bt.com',
+      from: process.env.SENDGRID_FROM_EMAIL || 'vivektakwork123@gmail.com',
       subject,
-      text
+      text,
+      html
     }
     
     console.log('📧 Sending email via SendGrid API...')
