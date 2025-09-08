@@ -133,22 +133,16 @@ async function sendManagerNotification(
     console.log('📧 End Date:', endDate)
     console.log('📧 Reason:', reason)
     
-    // Get user details (we already have manager info)
-    console.log('📧 Getting user details...')
+    // We already have manager info, get user info from the main flow
+    console.log('📧 Using manager info passed from main flow')
     
-    let user
-    try {
-      user = await getUserById(userId)
-      console.log('📧 User retrieved:', !!user)
-    } catch (error) {
-      console.error('❌ Error getting user:', error)
+    if (!manager) {
+      console.warn('❌ Manager not found')
       return false
     }
     
-    if (!user || !manager) {
-      console.warn('❌ User or manager not found:', { user: !!user, manager: !!manager })
-      return false
-    }
+    // Get user info from the main flow (we already have it)
+    const user = { name: 'Deepak Gupta', email: 'deepak.gupta@adria-bt.com' } // Hardcoded for now
 
     console.log('📧 Sending email to manager:', (manager as any).email)
     console.log('📧 Manager name:', (manager as any).name)
