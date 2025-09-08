@@ -135,11 +135,25 @@ async function sendManagerNotification(
     let user, manager
     try {
       console.log('📧 Calling getUserById...')
-      user = await getUserById(userId)
+      
+      // Add timeout to prevent hanging
+      const userPromise = getUserById(userId)
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('getUserById timeout after 10 seconds')), 10000)
+      )
+      
+      user = await Promise.race([userPromise, timeoutPromise])
       console.log('📧 getUserById completed:', !!user)
       
       console.log('📧 Calling getUserManager...')
-      manager = await getUserManager(userId)
+      
+      // Add timeout to prevent hanging
+      const managerPromise = getUserManager(userId)
+      const managerTimeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('getUserManager timeout after 10 seconds')), 10000)
+      )
+      
+      manager = await Promise.race([managerPromise, managerTimeoutPromise])
       console.log('📧 getUserManager completed:', !!manager)
     } catch (error) {
       console.error('❌ Error in getUserById or getUserManager:', error)
