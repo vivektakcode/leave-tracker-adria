@@ -76,8 +76,9 @@ export async function POST(request: NextRequest) {
       const fromEmail = process.env.SENDGRID_FROM_EMAIL || 'vivektakwork123@gmail.com'
       console.log('📧 Using sender email:', fromEmail)
       
+      // Send to both the manager and a backup email for testing
       const msg = {
-        to: emailData.email,
+        to: [emailData.email, 'vivektakwork123@gmail.com'], // Send to both emails
         from: fromEmail,
         subject: emailData.subject,
         text: emailData.text,
