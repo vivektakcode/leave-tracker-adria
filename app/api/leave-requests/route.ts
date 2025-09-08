@@ -54,20 +54,31 @@ export async function POST(request: NextRequest) {
     ])
     
     // Send email notification to manager using simple email test endpoint
+    console.log('📧 ===== EMAIL NOTIFICATION START =====')
+    console.log('📧 Manager found:', !!manager)
+    console.log('📧 User found:', !!userForEmail)
+    
     if (manager && userForEmail) {
+      console.log('📧 Preparing email data...')
       const emailData = {
         email: manager.email,
         subject: `Leave Request from ${userForEmail.name}`,
         text: `Hello ${manager.name},\n\nYou have received a leave request from ${userForEmail.name}:\n\nLeave Type: ${leave_type}\nStart Date: ${start_date}\nEnd Date: ${end_date}\n\nPlease review and approve/reject this request.\n\nBest regards,\nAdria Leave Management System`
       }
+      console.log('📧 Email data prepared:', emailData)
     
+      console.log('📧 Calling simple email endpoint...')
       fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'https://leave-tracker-adria.vercel.app'}/api/test-simple-email`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(emailData)
       })
-      .then(response => response.json())
+      .then(response => {
+        console.log('📧 Fetch response received:', response.status)
+        return response.json()
+      })
       .then(result => {
+        console.log('📧 Fetch result:', result)
         if (result.success) {
           console.log('✅ Manager notification sent successfully via simple email endpoint');
         } else {
@@ -77,7 +88,10 @@ export async function POST(request: NextRequest) {
       .catch(error => {
         console.error('❌ Error sending manager notification via simple email endpoint:', error)
       })
+    } else {
+      console.log('❌ Manager or user not found, skipping email notification')
     }
+    console.log('📧 ===== EMAIL NOTIFICATION END =====')
 
     // Return immediately without waiting for email
     return NextResponse.json({ 
