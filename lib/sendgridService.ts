@@ -121,7 +121,7 @@ export async function sendLeaveRequestEmail(managerEmail: string, managerName: s
     
     const msg = {
       to: managerEmail,
-      from: process.env.SENDGRID_FROM_EMAIL || 'noreply@adria-bt.com',
+      from: process.env.SENDGRID_FROM_EMAIL || 'vivek.tak@adria-bt.com',
       subject,
       html
     }
@@ -175,7 +175,7 @@ export async function sendLeaveReminderEmail(managerEmail: string, managerName: 
     
     const msg = {
       to: managerEmail,
-      from: process.env.SENDGRID_FROM_EMAIL || 'noreply@adria-bt.com',
+      from: process.env.SENDGRID_FROM_EMAIL || 'vivek.tak@adria-bt.com',
       subject,
       html
     }
@@ -217,7 +217,7 @@ export async function sendPasswordResetEmail(userEmail: string, userName: string
     
     const msg = {
       to: userEmail,
-      from: process.env.SENDGRID_FROM_EMAIL || 'noreply@adria-bt.com',
+      from: process.env.SENDGRID_FROM_EMAIL || 'vivek.tak@adria-bt.com',
       subject,
       html
     }
@@ -260,7 +260,7 @@ export async function sendManagerChangeNotification(userEmail: string, userName:
     
     const msg = {
       to: userEmail,
-      from: process.env.SENDGRID_FROM_EMAIL || 'noreply@adria-bt.com',
+      from: process.env.SENDGRID_FROM_EMAIL || 'vivek.tak@adria-bt.com',
       subject,
       html
     }
@@ -308,7 +308,7 @@ export async function testSendGridConfiguration(): Promise<boolean> {
     
     const msg = {
       to: 'test@example.com',
-      from: process.env.SENDGRID_FROM_EMAIL || 'noreply@adria-bt.com',
+      from: process.env.SENDGRID_FROM_EMAIL || 'vivek.tak@adria-bt.com',
       subject: 'SendGrid Test Email',
       html: '<p>This is a test email to verify SendGrid configuration.</p>'
     }
