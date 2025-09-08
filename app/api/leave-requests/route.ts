@@ -154,8 +154,8 @@ async function sendManagerNotification(
       return false
     }
     
-    console.log('📧 User found:', !!user, user ? { name: user.name, email: user.email } : 'N/A')
-    console.log('📧 Manager passed:', !!manager, manager ? { name: manager.name, email: manager.email } : 'N/A')
+    console.log('📧 User found:', !!user, user ? { name: (user as any).name, email: (user as any).email } : 'N/A')
+    console.log('📧 Manager passed:', !!manager, manager ? { name: (manager as any).name, email: (manager as any).email } : 'N/A')
     
     if (!user || !manager) {
       console.warn('❌ User or manager not found for notification:', { userId, user: !!user, manager: !!manager })
