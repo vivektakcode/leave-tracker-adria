@@ -48,13 +48,13 @@ export async function POST(request: NextRequest) {
     })
 
     // Get manager and user info for email notification
-    const [manager, user] = await Promise.all([
+    const [manager, userForEmail] = await Promise.all([
       getUserManager(user_id),
       getUserById(user_id)
     ])
     
     // Send email notification to manager (non-blocking)
-    sendManagerNotification(requestId, user_id, leave_type, start_date, end_date, reason, manager, user)
+    sendManagerNotification(requestId, user_id, leave_type, start_date, end_date, reason, manager, userForEmail)
       .then((emailResult) => {
         if (emailResult) {
           console.log('✅ Manager notification sent successfully');
