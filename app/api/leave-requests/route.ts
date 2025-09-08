@@ -133,33 +133,20 @@ async function sendManagerNotification(
     console.log('📧 End Date:', endDate)
     console.log('📧 Reason:', reason)
     
-    // Get user details (manager is already passed as parameter)
-    console.log('📧 About to call getUserById...')
+    // Get user details (we already have manager info)
+    console.log('📧 Getting user details...')
     
     let user
     try {
-      console.log('📧 Calling getUserById...')
-      
-      // Add timeout to prevent hanging
-      const userPromise = getUserById(userId)
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('getUserById timeout after 10 seconds')), 10000)
-      )
-      
-      user = await Promise.race([userPromise, timeoutPromise])
-      console.log('📧 getUserById completed:', !!user)
+      user = await getUserById(userId)
+      console.log('📧 User retrieved:', !!user)
     } catch (error) {
-      console.error('❌ Error in getUserById:', error)
-      console.log('📧 ===== MANAGER NOTIFICATION PROCESS END (ERROR) =====')
+      console.error('❌ Error getting user:', error)
       return false
     }
     
-    console.log('📧 User found:', !!user, user ? { name: (user as any).name, email: (user as any).email } : 'N/A')
-    console.log('📧 Manager passed:', !!manager, manager ? { name: (manager as any).name, email: (manager as any).email } : 'N/A')
-    
     if (!user || !manager) {
-      console.warn('❌ User or manager not found for notification:', { userId, user: !!user, manager: !!manager })
-      console.log('📧 ===== MANAGER NOTIFICATION PROCESS END (FAILED) =====')
+      console.warn('❌ User or manager not found:', { user: !!user, manager: !!manager })
       return false
     }
 
