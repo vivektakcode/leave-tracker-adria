@@ -53,18 +53,29 @@ export async function POST(request: NextRequest) {
       getUserById(user_id)
     ])
     
-    // Send email notification to manager (non-blocking)
-    sendManagerNotification(requestId, user_id, leave_type, start_date, end_date, reason, manager, userForEmail)
-      .then((emailResult) => {
-        if (emailResult) {
-          console.log('✅ Manager notification sent successfully');
-        } else {
-          console.log('❌ Manager notification failed to send');
-        }
-      })
-      .catch((error) => {
-        console.error('❌ Error sending manager notification:', error)
-      })
+    // Send email notification to manager using simple email test endpoint
+    const emailData = {
+      email: manager.email,
+      subject: `Leave Request from ${userForEmail.name}`,
+      text: `Hello ${manager.name},\n\nYou have received a leave request from ${userForEmail.name}:\n\nLeave Type: ${leave_type}\nStart Date: ${start_date}\nEnd Date: ${end_date}\n\nPlease review and approve/reject this request.\n\nBest regards,\nAdria Leave Management System`
+    }
+    
+    fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'https://leave-tracker-adria.vercel.app'}/api/test-simple-email`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(emailData)
+    })
+    .then(response => response.json())
+    .then(result => {
+      if (result.success) {
+        console.log('✅ Manager notification sent successfully via simple email endpoint');
+      } else {
+        console.log('❌ Manager notification failed to send via simple email endpoint');
+      }
+    })
+    .catch(error => {
+      console.error('❌ Error sending manager notification via simple email endpoint:', error)
+    })
 
     // Return immediately without waiting for email
     return NextResponse.json({ 

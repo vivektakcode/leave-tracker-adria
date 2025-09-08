@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
   
   try {
     body = await request.json()
-    const { email } = body
+    const { email, subject, text } = body
     
     console.log('🧪 Testing simple email to:', email)
     console.log('🧪 From email:', process.env.SENDGRID_FROM_EMAIL || 'vivektakwork123@gmail.com')
@@ -17,9 +17,9 @@ export async function POST(request: NextRequest) {
     const msg = {
       to: email,
       from: process.env.SENDGRID_FROM_EMAIL || 'vivektakwork123@gmail.com',
-      subject: 'Simple Test Email',
-      text: 'This is a simple test email to verify SendGrid is working.',
-      html: '<p>This is a simple test email to verify SendGrid is working.</p>'
+      subject: subject || 'Simple Test Email',
+      text: text || 'This is a simple test email to verify SendGrid is working.',
+      html: text ? `<p>${text.replace(/\n/g, '<br>')}</p>` : '<p>This is a simple test email to verify SendGrid is working.</p>'
     }
     
     console.log('🧪 Sending simple email...')
