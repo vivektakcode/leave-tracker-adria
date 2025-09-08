@@ -127,7 +127,14 @@ export async function sendLeaveRequestEmail(managerEmail: string, managerName: s
     }
     
     console.log('📧 Sending email via SendGrid API...')
-    const result = await sgMail.send(msg)
+    
+    // Add timeout to SendGrid call
+    const sendPromise = sgMail.send(msg)
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('SendGrid timeout after 10 seconds')), 10000)
+    )
+    
+    const result = await Promise.race([sendPromise, timeoutPromise])
     
     console.log('📧 SendGrid API Response:', JSON.stringify(result, null, 2))
     console.log('✅ EMAIL SENT SUCCESSFULLY to', managerEmail)
