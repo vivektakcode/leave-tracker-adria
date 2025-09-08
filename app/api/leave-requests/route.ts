@@ -47,11 +47,14 @@ export async function POST(request: NextRequest) {
       reason
     })
 
-    // Get manager info for email notification
-    const manager = await getUserManager(user_id)
+    // Get manager and user info for email notification
+    const [manager, user] = await Promise.all([
+      getUserManager(user_id),
+      getUserById(user_id)
+    ])
     
     // Send email notification to manager (non-blocking)
-    sendManagerNotification(requestId, user_id, leave_type, start_date, end_date, reason, manager)
+    sendManagerNotification(requestId, user_id, leave_type, start_date, end_date, reason, manager, user)
       .then((emailResult) => {
         if (emailResult) {
           console.log('✅ Manager notification sent successfully');
@@ -122,7 +125,8 @@ async function sendManagerNotification(
   startDate: string,
   endDate: string,
   reason: string,
-  manager: any
+  manager: any,
+  user: any
 ): Promise<boolean> {
   try {
     console.log('📧 ===== MANAGER NOTIFICATION PROCESS START =====')
@@ -133,16 +137,13 @@ async function sendManagerNotification(
     console.log('📧 End Date:', endDate)
     console.log('📧 Reason:', reason)
     
-    // We already have manager info, get user info from the main flow
-    console.log('📧 Using manager info passed from main flow')
+    // Both manager and user info are passed from main flow
+    console.log('📧 Using manager and user info passed from main flow')
     
-    if (!manager) {
-      console.warn('❌ Manager not found')
+    if (!manager || !user) {
+      console.warn('❌ Manager or user not found:', { manager: !!manager, user: !!user })
       return false
     }
-    
-    // Get user info from the main flow (we already have it)
-    const user = { name: 'Deepak Gupta', email: 'deepak.gupta@adria-bt.com' } // Hardcoded for now
 
     console.log('📧 Sending email to manager:', (manager as any).email)
     console.log('📧 Manager name:', (manager as any).name)
