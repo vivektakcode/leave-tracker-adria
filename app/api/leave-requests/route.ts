@@ -47,8 +47,11 @@ export async function POST(request: NextRequest) {
       reason
     })
 
+    // Get manager info for email notification
+    const manager = await getUserManager(user_id)
+    
     // Send email notification to manager (non-blocking)
-    sendManagerNotification(requestId, user_id, leave_type, start_date, end_date, reason)
+    sendManagerNotification(requestId, user_id, leave_type, start_date, end_date, reason, manager)
       .then((emailResult) => {
         if (emailResult) {
           console.log('✅ Manager notification sent successfully');
@@ -118,7 +121,8 @@ async function sendManagerNotification(
   leaveType: string,
   startDate: string,
   endDate: string,
-  reason: string
+  reason: string,
+  manager: any
 ): Promise<boolean> {
   try {
     console.log('📧 ===== MANAGER NOTIFICATION PROCESS START =====')
@@ -129,10 +133,10 @@ async function sendManagerNotification(
     console.log('📧 End Date:', endDate)
     console.log('📧 Reason:', reason)
     
-    // Get user and manager details in parallel
-    console.log('📧 About to call getUserById and getUserManager...')
+    // Get user details (manager is already passed as parameter)
+    console.log('📧 About to call getUserById...')
     
-    let user, manager
+    let user
     try {
       console.log('📧 Calling getUserById...')
       
@@ -144,25 +148,14 @@ async function sendManagerNotification(
       
       user = await Promise.race([userPromise, timeoutPromise])
       console.log('📧 getUserById completed:', !!user)
-      
-      console.log('📧 Calling getUserManager...')
-      
-      // Add timeout to prevent hanging
-      const managerPromise = getUserManager(userId)
-      const managerTimeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('getUserManager timeout after 10 seconds')), 10000)
-      )
-      
-      manager = await Promise.race([managerPromise, managerTimeoutPromise])
-      console.log('📧 getUserManager completed:', !!manager)
     } catch (error) {
-      console.error('❌ Error in getUserById or getUserManager:', error)
+      console.error('❌ Error in getUserById:', error)
       console.log('📧 ===== MANAGER NOTIFICATION PROCESS END (ERROR) =====')
       return false
     }
     
     console.log('📧 User found:', !!user, user ? { name: user.name, email: user.email } : 'N/A')
-    console.log('📧 Manager found:', !!manager, manager ? { name: manager.name, email: manager.email } : 'N/A')
+    console.log('📧 Manager passed:', !!manager, manager ? { name: manager.name, email: manager.email } : 'N/A')
     
     if (!user || !manager) {
       console.warn('❌ User or manager not found for notification:', { userId, user: !!user, manager: !!manager })
