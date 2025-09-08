@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
       
       const msg = {
         to: emailData.email,
-        from: process.env.SENDGRID_FROM_EMAIL || 'vivektakwork123@gmail.com',
+        from: 'vivektakwork123@gmail.com', // Use the verified sender that works
         subject: emailData.subject,
         text: emailData.text,
         html: `<p>${emailData.text.replace(/\n/g, '<br>')}</p>`
@@ -85,6 +85,9 @@ export async function POST(request: NextRequest) {
         const result = await sgMail.send(msg)
         console.log('📧 SendGrid result:', result)
         console.log('✅ Manager notification sent successfully!')
+        console.log('📧 Email sent to:', emailData.email)
+        console.log('📧 Subject:', emailData.subject)
+        console.log('📧 Message ID:', result[0]?.headers?.['x-message-id'] || 'N/A')
       } catch (error) {
         console.error('❌ Error sending email:', error)
       }
