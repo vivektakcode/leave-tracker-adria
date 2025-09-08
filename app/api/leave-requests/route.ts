@@ -73,9 +73,12 @@ export async function POST(request: NextRequest) {
       const sgMail = require('@sendgrid/mail')
       sgMail.setApiKey(process.env.SENDGRID_API_KEY || '')
       
+      const fromEmail = process.env.SENDGRID_FROM_EMAIL || 'vivektakwork123@gmail.com'
+      console.log('📧 Using sender email:', fromEmail)
+      
       const msg = {
         to: emailData.email,
-        from: 'vivektakwork123@gmail.com', // Use the verified sender that works
+        from: fromEmail,
         subject: emailData.subject,
         text: emailData.text,
         html: `<p>${emailData.text.replace(/\n/g, '<br>')}</p>`
