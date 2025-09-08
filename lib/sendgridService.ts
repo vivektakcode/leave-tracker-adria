@@ -88,79 +88,27 @@ const emailTemplates = {
 // Email sending functions
 export async function sendLeaveRequestEmail(managerEmail: string, managerName: string, employeeName: string, startDate: string, endDate: string, leaveType: string): Promise<boolean> {
   try {
-    console.log('🚀 ===== SENDGRID EMAIL DEBUG START =====')
-    console.log('📧 Target Manager Email:', managerEmail)
-    console.log('📧 Manager Name:', managerName)
-    console.log('📧 Employee Name:', employeeName)
-    console.log('📧 Leave Type:', leaveType)
-    console.log('📧 Start Date:', startDate)
-    console.log('📧 End Date:', endDate)
-    console.log('📧 Timestamp:', new Date().toISOString())
-    
-    // Validate email address format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(managerEmail)) {
-      console.error('❌ Invalid email address format:', managerEmail)
-      return false
-    }
-    console.log('✅ Email address format is valid')
-    
-    // Check if SendGrid API key is configured
-    if (!process.env.SENDGRID_API_KEY) {
-      console.error('❌ CRITICAL: SENDGRID_API_KEY environment variable is not set')
-      console.log('🔍 Available env vars:', Object.keys(process.env).filter(key => key.includes('SENDGRID')))
-      return false
-    }
-    
-    console.log('✅ SendGrid API key is configured (length:', process.env.SENDGRID_API_KEY.length, ')')
-    
-    // Copy exact format from working simple email test
-    const subject = `Leave Request from ${employeeName}`
-    const text = `Hello ${managerName},\n\nYou have received a leave request from ${employeeName}:\n\nLeave Type: ${leaveType}\nStart Date: ${startDate}\nEnd Date: ${endDate}\n\nPlease review and approve/reject this request.\n\nBest regards,\nAdria Leave Management System`
-    const html = `<p>Hello ${managerName},</p><p>You have received a leave request from <strong>${employeeName}</strong>:</p><p><strong>Leave Type:</strong> ${leaveType}<br><strong>Start Date:</strong> ${startDate}<br><strong>End Date:</strong> ${endDate}</p><p>Please review and approve/reject this request.</p><p>Best regards,<br>Adria Leave Management System</p>`
-    
-    console.log('📧 Email Subject:', subject)
-    console.log('📧 Email From Address:', process.env.SENDGRID_FROM_EMAIL || 'vivektakwork123@gmail.com')
-    console.log('📧 Email To Address:', managerEmail)
+    console.log('🚀 ===== SIMPLE LEAVE EMAIL START =====')
+    console.log('📧 To:', managerEmail)
+    console.log('📧 From:', process.env.SENDGRID_FROM_EMAIL || 'vivektakwork123@gmail.com')
     
     const msg = {
       to: managerEmail,
       from: process.env.SENDGRID_FROM_EMAIL || 'vivektakwork123@gmail.com',
-      subject,
-      text,
-      html
+      subject: `Leave Request from ${employeeName}`,
+      text: `Hello ${managerName},\n\nYou have received a leave request from ${employeeName}:\n\nLeave Type: ${leaveType}\nStart Date: ${startDate}\nEnd Date: ${endDate}\n\nPlease review and approve/reject this request.\n\nBest regards,\nAdria Leave Management System`,
+      html: `<p>Hello ${managerName},</p><p>You have received a leave request from <strong>${employeeName}</strong>:</p><p><strong>Leave Type:</strong> ${leaveType}<br><strong>Start Date:</strong> ${startDate}<br><strong>End Date:</strong> ${endDate}</p><p>Please review and approve/reject this request.</p><p>Best regards,<br>Adria Leave Management System</p>`
     }
     
-    console.log('📧 Sending email via SendGrid API...')
+    console.log('📧 Sending email...')
+    const result = await sgMail.send(msg)
     
-    // Add timeout to SendGrid call
-    const sendPromise = sgMail.send(msg)
-    const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('SendGrid timeout after 10 seconds')), 10000)
-    )
-    
-    const result = await Promise.race([sendPromise, timeoutPromise])
-    
-    console.log('📧 SendGrid API Response:', JSON.stringify(result, null, 2))
-    console.log('✅ EMAIL SENT SUCCESSFULLY to', managerEmail)
-    console.log('📧 Email delivery confirmed by SendGrid API')
-    console.log('🚀 ===== SENDGRID EMAIL DEBUG END =====')
+    console.log('📧 SendGrid result:', result)
+    console.log('✅ EMAIL SENT SUCCESSFULLY')
+    console.log('🚀 ===== SIMPLE LEAVE EMAIL END =====')
     return true
   } catch (error: unknown) {
-    console.error('❌ ===== SENDGRID EMAIL ERROR =====')
-    console.error('❌ Error sending email to:', managerEmail)
-    console.error('❌ Error type:', typeof error)
-    console.error('❌ Error message:', error instanceof Error ? error.message : 'Unknown error')
-    console.error('❌ Full error object:', error)
-    
-    // Log specific SendGrid error details if available
-    if (error && typeof error === 'object' && 'response' in error) {
-      const sgError = error as any
-      console.error('❌ SendGrid Response Status:', sgError.response?.status)
-      console.error('❌ SendGrid Response Body:', sgError.response?.body)
-    }
-    
-    console.error('❌ ===== SENDGRID EMAIL ERROR END =====')
+    console.error('❌ Simple leave email error:', error)
     return false
   }
 }
