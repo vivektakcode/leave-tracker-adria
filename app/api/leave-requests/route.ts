@@ -67,27 +67,27 @@ export async function POST(request: NextRequest) {
       }
       console.log('📧 Email data prepared:', emailData)
     
-      console.log('📧 Calling simple email endpoint...')
-      fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'https://leave-tracker-adria.vercel.app'}/api/test-simple-email`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(emailData)
-      })
-      .then(response => {
-        console.log('📧 Fetch response received:', response.status)
-        return response.json()
-      })
-      .then(result => {
-        console.log('📧 Fetch result:', result)
-        if (result.success) {
-          console.log('✅ Manager notification sent successfully via simple email endpoint');
-        } else {
-          console.log('❌ Manager notification failed to send via simple email endpoint');
-        }
-      })
-      .catch(error => {
-        console.error('❌ Error sending manager notification via simple email endpoint:', error)
-      })
+      console.log('📧 Sending email directly...')
+      
+      // Send email directly using SendGrid
+      const sgMail = require('@sendgrid/mail')
+      sgMail.setApiKey(process.env.SENDGRID_API_KEY || '')
+      
+      const msg = {
+        to: emailData.email,
+        from: process.env.SENDGRID_FROM_EMAIL || 'vivektakwork123@gmail.com',
+        subject: emailData.subject,
+        text: emailData.text,
+        html: `<p>${emailData.text.replace(/\n/g, '<br>')}</p>`
+      }
+      
+      try {
+        const result = await sgMail.send(msg)
+        console.log('📧 SendGrid result:', result)
+        console.log('✅ Manager notification sent successfully!')
+      } catch (error) {
+        console.error('❌ Error sending email:', error)
+      }
     } else {
       console.log('❌ Manager or user not found, skipping email notification')
     }
