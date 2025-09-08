@@ -130,6 +130,7 @@ async function sendManagerNotification(
     console.log('📧 Reason:', reason)
     
     // Get user and manager details in parallel
+    console.log('📧 About to call getUserById and getUserManager...')
     const [user, manager] = await Promise.all([
       getUserById(userId),
       getUserManager(userId)
