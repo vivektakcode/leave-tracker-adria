@@ -131,10 +131,21 @@ async function sendManagerNotification(
     
     // Get user and manager details in parallel
     console.log('📧 About to call getUserById and getUserManager...')
-    const [user, manager] = await Promise.all([
-      getUserById(userId),
-      getUserManager(userId)
-    ])
+    
+    let user, manager
+    try {
+      console.log('📧 Calling getUserById...')
+      user = await getUserById(userId)
+      console.log('📧 getUserById completed:', !!user)
+      
+      console.log('📧 Calling getUserManager...')
+      manager = await getUserManager(userId)
+      console.log('📧 getUserManager completed:', !!manager)
+    } catch (error) {
+      console.error('❌ Error in getUserById or getUserManager:', error)
+      console.log('📧 ===== MANAGER NOTIFICATION PROCESS END (ERROR) =====')
+      return false
+    }
     
     console.log('📧 User found:', !!user, user ? { name: user.name, email: user.email } : 'N/A')
     console.log('📧 Manager found:', !!manager, manager ? { name: manager.name, email: manager.email } : 'N/A')
