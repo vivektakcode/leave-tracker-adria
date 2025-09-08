@@ -429,10 +429,10 @@ export async function createLeaveRequest(request: Omit<LeaveRequest, 'id' | 'use
 
 export async function getUserLeaveRequests(userId: string): Promise<LeaveRequest[]> {
   try {
-    // Ultra-optimized query: minimal fields, indexed lookup, limited results
+    // Use the view that includes derived manager information
     const { data, error } = await supabase
-      .from('leave_requests')
-      .select('id, leave_type, start_date, end_date, reason, status, requested_at, is_half_day')
+      .from('leave_requests_with_details')
+      .select('id, leave_type, start_date, end_date, reason, status, requested_at, is_half_day, manager_name, manager_department')
       .eq('user_id', userId)
       .order('requested_at', { ascending: false })
       .limit(10) // Reduced limit for dashboard - only show recent requests
@@ -452,7 +452,7 @@ export async function getUserLeaveRequests(userId: string): Promise<LeaveRequest
 export async function getPendingLeaveRequests(): Promise<LeaveRequest[]> {
   try {
     const { data, error } = await supabase
-      .from('leave_requests')
+      .from('leave_requests_with_details')
       .select('*')
       .eq('status', 'pending')
       .order('requested_at', { ascending: false })
