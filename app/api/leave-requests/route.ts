@@ -163,15 +163,15 @@ async function sendManagerNotification(
       return false
     }
 
-    console.log('📧 Sending email to manager:', manager.email)
-    console.log('📧 Manager name:', manager.name)
-    console.log('📧 Employee name:', user.name)
+    console.log('📧 Sending email to manager:', (manager as any).email)
+    console.log('📧 Manager name:', (manager as any).name)
+    console.log('📧 Employee name:', (user as any).name)
 
     // Send email notification directly
     const emailSent = await sendLeaveRequestEmail(
-      manager.email,
-      manager.name,
-      user.name,
+      (manager as any).email,
+      (manager as any).name,
+      (user as any).name,
       startDate,
       endDate,
       leaveType
