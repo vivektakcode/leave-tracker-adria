@@ -554,7 +554,7 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
 
             {/* Manager Information - Compact */}
             {managerInfo && (
-              <div className="flex items-center justify-between py-2 px-3 bg-gray-50 rounded-lg">
+              <div className="flex items-center py-2 px-3 bg-gray-50 rounded-lg">
                 <div className="flex items-center space-x-2">
                   <svg className="h-4 w-4 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
@@ -562,7 +562,6 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
                   <span className="text-sm text-gray-600">Manager:</span>
                   <span className="text-sm font-medium text-gray-900">{managerInfo.name}</span>
                 </div>
-                <span className="text-xs text-gray-500">{managerInfo.department}</span>
               </div>
             )}
 
