@@ -460,7 +460,7 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
             <div className="flex items-center space-x-4">
               <div className="h-20 w-20 flex items-center justify-center">
                 <img 
-                  src="/Adria_logo.png" 
+                  src="/Adria_logo.svg" 
                   alt="Adria Logo" 
                   className="h-full w-full object-contain"
                 />
