@@ -150,6 +150,16 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
     }
   }, [startDate, endDate, isHalfDay])
 
+  // Auto-dismiss success messages after 5 seconds
+  useEffect(() => {
+    if (success) {
+      const timer = setTimeout(() => {
+        setSuccess('')
+      }, 5000)
+      return () => clearTimeout(timer)
+    }
+  }, [success])
+
   // Get available leave balance for selected type
   const getAvailableBalance = () => {
     switch (leaveType) {

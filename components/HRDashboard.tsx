@@ -72,6 +72,16 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
     loadData()
   }, [])
 
+  // Auto-dismiss success messages after 5 seconds
+  useEffect(() => {
+    if (success) {
+      const timer = setTimeout(() => {
+        setSuccess('')
+      }, 5000)
+      return () => clearTimeout(timer)
+    }
+  }, [success])
+
   const loadData = async () => {
     setLoading(true)
     try {

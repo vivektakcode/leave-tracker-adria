@@ -24,6 +24,16 @@ export default function ResetPasswordForm() {
     verifyToken()
   }, [token])
 
+  // Auto-dismiss success messages after 5 seconds
+  useEffect(() => {
+    if (success) {
+      const timer = setTimeout(() => {
+        setSuccess('')
+      }, 5000)
+      return () => clearTimeout(timer)
+    }
+  }, [success])
+
   const verifyToken = async () => {
     try {
       const response = await fetch(`/api/verify-reset-token?token=${token}`)

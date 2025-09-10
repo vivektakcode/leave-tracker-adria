@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 interface ForgotPasswordFormProps {
   onBack: () => void
@@ -11,6 +11,16 @@ export default function ForgotPasswordForm({ onBack }: ForgotPasswordFormProps) 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+
+  // Auto-dismiss success messages after 5 seconds
+  useEffect(() => {
+    if (success) {
+      const timer = setTimeout(() => {
+        setSuccess('')
+      }, 5000)
+      return () => clearTimeout(timer)
+    }
+  }, [success])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
