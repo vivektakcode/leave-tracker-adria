@@ -107,11 +107,38 @@ export async function POST(request: NextRequest) {
       message: 'Leave request created successfully! Manager will be notified shortly.'
     }, { status: 201 })
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('❌ Error creating leave request:', error)
+    
+    // Provide specific error messages based on the error type
+    let errorMessage = 'Failed to create leave request'
+    let statusCode = 500
+    
+    if (error.message) {
+      if (error.message.includes('already have a leave request')) {
+        errorMessage = 'You already have a leave request for these dates. Please check your existing requests or choose different dates.'
+        statusCode = 409
+      } else if (error.message.includes('User not found')) {
+        errorMessage = 'User account not found. Please contact support.'
+        statusCode = 404
+      } else if (error.message.includes('Invalid data format')) {
+        errorMessage = 'Invalid data format. Please check all fields and try again.'
+        statusCode = 400
+      } else if (error.message.includes('Database error')) {
+        errorMessage = 'Database error occurred. Please try again or contact support.'
+        statusCode = 500
+      } else if (error.message.includes('Duplicate')) {
+        errorMessage = 'Duplicate leave request detected. Please check your existing requests.'
+        statusCode = 409
+      } else {
+        errorMessage = error.message
+        statusCode = 400
+      }
+    }
+    
     return NextResponse.json(
-      { error: 'Failed to create leave request' },
-      { status: 500 }
+      { error: errorMessage },
+      { status: statusCode }
     )
   }
 }

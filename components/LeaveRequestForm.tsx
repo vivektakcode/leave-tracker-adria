@@ -23,6 +23,8 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
   const [success, setSuccess] = useState('')
   const [leaveBalance, setLeaveBalance] = useState({ casual_leave: 0, sick_leave: 0, privilege_leave: 0 })
   const [managerInfo, setManagerInfo] = useState<{ name: string; department: string } | null>(null)
+  const [showBalancePopup, setShowBalancePopup] = useState(false)
+  const [validationErrors, setValidationErrors] = useState<string[]>([])
 
 
 
@@ -170,40 +172,65 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
     }
   }
 
-  // Check if request is valid
-  const isRequestValid = () => {
-    const startDateObj = new Date(startDate + 'T00:00:00') // Set to start of day
-    const endDateObj = new Date(endDate + 'T00:00:00') // Set to start of day
+  // Comprehensive validation with specific error messages
+  const validateRequest = () => {
+    const errors: string[] = []
+    const startDateObj = new Date(startDate + 'T00:00:00')
+    const endDateObj = new Date(endDate + 'T00:00:00')
     
-    // Check each validation step individually
-    if (!startDate || !endDate || !reason.trim()) {
+    // Check required fields
+    if (!startDate) {
+      errors.push('Start date is required')
+    }
+    if (!endDate) {
+      errors.push('End date is required')
+    }
+    if (!reason.trim()) {
+      errors.push('Reason for leave is required')
+    }
+    
+    // If we don't have basic required fields, return early
+    if (errors.length > 0) {
+      setValidationErrors(errors)
       return false
     }
     
+    // Check date validity
     if (startDateObj > endDateObj) {
-      return false
+      errors.push('End date cannot be before start date')
     }
     
-    if (numberOfDays > getAvailableBalance()) {
-      return false
+    // Check for weekends or holidays
+    if (isDateDisabled(startDate)) {
+      errors.push('Start date falls on a weekend or holiday')
+    }
+    if (isDateDisabled(endDate)) {
+      errors.push('End date falls on a weekend or holiday')
     }
     
-    // Check if any dates are weekends or holidays
-    if (isDateDisabled(startDate) || isDateDisabled(endDate)) {
-      return false
+    // Check leave balance
+    const availableBalance = getAvailableBalance()
+    if (numberOfDays > availableBalance) {
+      errors.push(`Insufficient ${leaveType} leave balance. Available: ${availableBalance} days, Requested: ${numberOfDays} days`)
     }
     
-    // For sick leave > 2 days, medical document is required
+    // Check medical document requirement
     if (leaveType === 'sick' && numberOfDays > 2 && !medicalDocument) {
-      return false
+      errors.push('Medical document is required for sick leave requests over 2 days')
     }
     
-    // Allow previous dates - removed the date restriction
-    // if (startDateObj < currentDateStart) {
-    //   return false
-    // }
+    // Check for manager assignment
+    if (!managerInfo || !managerInfo.name) {
+      errors.push('No manager assigned. Please contact HR to assign a manager')
+    }
     
-    return true
+    setValidationErrors(errors)
+    return errors.length === 0
+  }
+
+  // Check if request is valid (for backward compatibility)
+  const isRequestValid = () => {
+    return validateRequest()
   }
 
   // Check for potential conflicts with existing leave requests
@@ -224,15 +251,17 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
     e.preventDefault()
     setError('')
     setSuccess('')
+    setValidationErrors([])
 
-    if (!isRequestValid()) {
-      setError('Please check your input. Make sure dates are valid and you have sufficient leave balance.')
-      return
-    }
-
-    // Check if employee has a manager assigned
-    if (!managerInfo || !managerInfo.name) {
-      setError('No manager assigned. Please contact HR to assign a manager before submitting leave requests.')
+    // Validate the request and get specific error messages
+    if (!validateRequest()) {
+      // Check if the main issue is insufficient balance
+      const hasBalanceError = validationErrors.some(error => error.includes('Insufficient'))
+      if (hasBalanceError) {
+        setShowBalancePopup(true)
+      } else {
+        setError(validationErrors.join('. ') + '.')
+      }
       return
     }
 
@@ -384,6 +413,20 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
                   </button>
                 ))}
               </div>
+              
+              {/* Balance Warning */}
+              {numberOfDays > 0 && numberOfDays > getAvailableBalance() && (
+                <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <div className="flex items-center space-x-2 text-sm text-red-700">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                    </svg>
+                    <span>
+                      <strong>Warning:</strong> You're requesting {numberOfDays} days but only have {getAvailableBalance()} days of {leaveType} leave available.
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Date Selection */}
@@ -604,6 +647,68 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
           </form>
         </div>
 
+        {/* Insufficient Balance Popup Modal */}
+        {showBalancePopup && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+              <div className="flex items-center mb-4">
+                <div className="flex-shrink-0">
+                  <svg className="h-8 w-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <h3 className="text-lg font-medium text-gray-900">
+                    Insufficient Leave Balance
+                  </h3>
+                </div>
+              </div>
+              
+              <div className="mb-4">
+                <p className="text-sm text-gray-600 mb-3">
+                  You don't have enough {leaveType} leave balance for this request.
+                </p>
+                
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm font-medium text-gray-700">Available Balance:</span>
+                    <span className="text-sm font-bold text-gray-900">{getAvailableBalance()} days</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium text-gray-700">Requested Days:</span>
+                    <span className="text-sm font-bold text-red-600">{numberOfDays} days</span>
+                  </div>
+                  <div className="mt-2 pt-2 border-t border-gray-200">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium text-gray-700">Shortfall:</span>
+                      <span className="text-sm font-bold text-red-600">{numberOfDays - getAvailableBalance()} days</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end space-x-3">
+                <button
+                  type="button"
+                  onClick={() => setShowBalancePopup(false)}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
+                >
+                  Close
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowBalancePopup(false)
+                    // Optionally redirect to leave balance page or show balance info
+                  }}
+                  className="px-4 py-2 text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                >
+                  View Leave Balance
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
       </div>
     </div>
