@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { LeaveRequest, getUserLeaveRequests, cancelLeaveRequest } from '../lib/supabaseService'
+import { getWorkingDaysBetween } from '../utils/dateUtils'
 
 interface MyRequestsListProps {
   employeeId: string
@@ -15,7 +16,7 @@ export default function MyRequestsList({ employeeId, compact = false, preloadedR
   const [cancelling, setCancelling] = useState<string | null>(null)
   const [showAllRequests, setShowAllRequests] = useState(false)
 
-  // Function to calculate days requested
+  // Function to calculate days requested (excluding weekends)
   const calculateDaysRequested = (request: LeaveRequest): string => {
     const start = new Date(request.start_date)
     const end = new Date(request.end_date)
@@ -25,18 +26,16 @@ export default function MyRequestsList({ employeeId, compact = false, preloadedR
       return request.is_half_day ? '0.5 day' : '1 day'
     }
     
-    // For different dates, calculate the difference
-    const diffTime = Math.abs(end.getTime() - start.getTime())
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-    const totalDays = diffDays + 1 // Include both start and end dates
+    // For different dates, calculate working days (excluding weekends)
+    const workingDays = getWorkingDaysBetween(request.start_date, request.end_date)
     
     // If half day, reduce by 0.5
     if (request.is_half_day) {
-      const finalDays = Math.max(0.5, totalDays - 0.5)
+      const finalDays = Math.max(0.5, workingDays - 0.5)
       return `${finalDays} day${finalDays === 1 ? '' : 's'}`
     }
     
-    return `${totalDays} day${totalDays === 1 ? '' : 's'}`
+    return `${workingDays} day${workingDays === 1 ? '' : 's'}`
   }
 
   // Function to handle cancel request

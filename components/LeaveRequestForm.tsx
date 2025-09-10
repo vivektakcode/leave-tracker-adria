@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { User, getLeaveBalance, getUserManager } from '../lib/supabaseService'
-import { isDateDisabled, getMinEndDate, getNextBusinessDay } from '../utils/dateUtils'
+import { isDateDisabled, getMinEndDate, getNextBusinessDay, getWorkingDaysBetween } from '../utils/dateUtils'
 import BusinessDatePicker from './BusinessDatePicker'
 
 interface LeaveRequestFormProps {
@@ -138,13 +138,11 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
         return
       }
       
-      // For different dates, calculate the difference
-      const diffTime = Math.abs(end.getTime() - start.getTime())
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-      const calculatedDays = diffDays + 1 // Include both start and end dates
+      // For different dates, calculate working days (excluding weekends)
+      const workingDays = getWorkingDaysBetween(startDate, endDate)
       
       // If it's a half day, reduce by 0.5
-      const finalDays = isHalfDay ? Math.max(0.5, calculatedDays - 0.5) : calculatedDays
+      const finalDays = isHalfDay ? Math.max(0.5, workingDays - 0.5) : workingDays
       console.log('Different days detected, calculated days:', finalDays)
       setNumberOfDays(finalDays)
     } else {

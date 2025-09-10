@@ -18,6 +18,7 @@ import {
 } from '../lib/supabaseService'
 import WeekendAwareDatePicker from './WeekendAwareDatePicker'
 import { useAuth } from '../contexts/JsonAuthContext'
+import { getWorkingDaysBetween } from '../utils/dateUtils'
 
 interface HRDashboardProps {
   currentUser: User
@@ -408,7 +409,7 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
     }
   }
 
-  // Calculate number of days between start and end date
+  // Calculate number of days between start and end date (excluding weekends)
   const calculateNumberOfDays = (startDate: string, endDate: string, isHalfDay?: boolean) => {
     if (!startDate || !endDate) return 0
     
@@ -420,13 +421,11 @@ export default function HRDashboard({ currentUser }: HRDashboardProps) {
       return isHalfDay ? 0.5 : 1
     }
     
-    // For different dates, calculate the difference
-    const diffTime = Math.abs(end.getTime() - start.getTime())
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-    const calculatedDays = diffDays + 1 // Include both start and end dates
+    // For different dates, calculate working days (excluding weekends)
+    const workingDays = getWorkingDaysBetween(startDate, endDate)
     
     // If it's a half day, reduce by 0.5
-    return isHalfDay ? Math.max(0.5, calculatedDays - 0.5) : calculatedDays
+    return isHalfDay ? Math.max(0.5, workingDays - 0.5) : workingDays
   }
 
   // Get filtered holiday calendars

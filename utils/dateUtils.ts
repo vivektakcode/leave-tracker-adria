@@ -174,6 +174,32 @@ export const getBusinessDaysBetween = (startDate: string, endDate: string): numb
 }
 
 /**
+ * Calculate the number of working days between two dates (excluding only weekends)
+ * @param startDate - Start date in YYYY-MM-DD format
+ * @param endDate - End date in YYYY-MM-DD format
+ * @returns Number of working days (excluding weekends only)
+ */
+export const getWorkingDaysBetween = (startDate: string, endDate: string): number => {
+  const start = new Date(startDate)
+  const end = new Date(endDate)
+  
+  if (start > end) return 0
+  
+  let workingDays = 0
+  let current = new Date(start)
+  
+  while (current <= end) {
+    // Only exclude weekends, not holidays
+    if (!isWeekend(current.toISOString().split('T')[0])) {
+      workingDays++
+    }
+    current.setDate(current.getDate() + 1)
+  }
+  
+  return workingDays
+}
+
+/**
  * Get the minimum end date for leave requests (must be after start date and not disabled)
  * @param startDate - Start date in YYYY-MM-DD format
  * @returns Minimum valid end date

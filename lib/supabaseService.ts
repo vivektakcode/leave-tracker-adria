@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { getWorkingDaysBetween } from '../utils/dateUtils'
 
 // Initialize Supabase client
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
@@ -898,14 +899,14 @@ export function calculateDays(startDate: string, endDate: string, isHalfDay: boo
     return isHalfDay ? 0.5 : 1
   }
   
-  const diffTime = Math.abs(end.getTime() - start.getTime())
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+  // For different dates, calculate working days (excluding weekends)
+  const workingDays = getWorkingDaysBetween(startDate, endDate)
   
   if (isHalfDay) {
-    return Math.max(0.5, diffDays - 0.5)
+    return Math.max(0.5, workingDays - 0.5)
   }
   
-  return diffDays + 1
+  return workingDays
 }
 
 // Initialize database function with sample data
