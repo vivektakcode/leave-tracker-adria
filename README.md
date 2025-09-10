@@ -322,3 +322,4 @@ For support or questions:
 ---
 
 **Built with ❤️ for simple, effective leave management with Vercel KV** # Force rebuild Mon Sep  1 13:03:24 IST 2025
+# Reverted to working state - Thu Sep 11 01:37:00 IST 2025
