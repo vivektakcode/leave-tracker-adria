@@ -13,6 +13,7 @@ export default function MyRequestsList({ employeeId, compact = false, preloadedR
   const [userRequests, setUserRequests] = useState<LeaveRequest[]>([])
   const [loading, setLoading] = useState(true)
   const [cancelling, setCancelling] = useState<string | null>(null)
+  const [showAllRequests, setShowAllRequests] = useState(false)
 
   // Function to calculate days requested
   const calculateDaysRequested = (request: LeaveRequest): string => {
@@ -108,8 +109,8 @@ export default function MyRequestsList({ employeeId, compact = false, preloadedR
     )
   }
 
-  // Show all requests in both compact and full modes
-  const displayRequests = userRequests
+  // Limit to 3 most recent requests in compact mode unless showAllRequests is true
+  const displayRequests = compact && !showAllRequests ? userRequests.slice(0, 3) : userRequests
 
   return (
     <div className={compact ? "space-y-2" : "bg-white rounded-lg shadow-md p-4"}>
@@ -274,6 +275,27 @@ export default function MyRequestsList({ employeeId, compact = false, preloadedR
         </div>
       )}
       
+      {compact && userRequests.length > 3 && !showAllRequests && (
+        <div className="text-center pt-2">
+          <button 
+            onClick={() => setShowAllRequests(true)}
+            className="text-orange-600 hover:text-orange-700 text-sm font-medium hover:underline"
+          >
+            View all {userRequests.length} requests →
+          </button>
+        </div>
+      )}
+      
+      {compact && showAllRequests && userRequests.length > 3 && (
+        <div className="text-center pt-2">
+          <button 
+            onClick={() => setShowAllRequests(false)}
+            className="text-orange-600 hover:text-orange-700 text-sm font-medium hover:underline"
+          >
+            Show less ←
+          </button>
+        </div>
+      )}
     </div>
   )
 } 
