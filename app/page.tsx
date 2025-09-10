@@ -2,14 +2,12 @@
 
 import { useState } from 'react'
 import { useAuth } from '../contexts/JsonAuthContext'
-import SignupForm from '../components/SignupForm'
 import LoginForm from '../components/LoginForm'
 import LeaveBalanceDashboard from '../components/LeaveBalanceDashboard'
 import HRDashboard from '../components/HRDashboard'
 
 export default function Home() {
   const { currentUser } = useAuth()
-  const [showSignup, setShowSignup] = useState(false)
   const [showLogin, setShowLogin] = useState(false)
 
   if (currentUser) {
@@ -44,7 +42,7 @@ export default function Home() {
 
           {/* Main Content Area */}
           <div className="max-w-2xl mx-auto">
-            {!showSignup && !showLogin ? (
+            {!showLogin ? (
               <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 lg:p-8 shadow-xl border border-white/20">
                 <div className="text-center">
                   <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-4">
@@ -60,22 +58,6 @@ export default function Home() {
                       className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
                     >
                       Sign In to Your Account
-                    </button>
-                    
-                    <div className="relative">
-                      <div className="absolute inset-0 flex items-center">
-                        <div className="w-full border-t border-gray-300" />
-                      </div>
-                      <div className="relative flex justify-center text-sm">
-                        <span className="px-4 bg-white/80 text-gray-500 font-medium">or</span>
-                      </div>
-                    </div>
-                    
-                    <button
-                      onClick={() => setShowSignup(true)}
-                      className="w-full bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-                    >
-                      Create New Account
                     </button>
                   </div>
 
@@ -107,23 +89,16 @@ export default function Home() {
               <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 lg:p-8 shadow-xl border border-white/20">
                 <div className="text-center">
                   <button
-                    onClick={() => {
-                      setShowLogin(false)
-                      setShowSignup(false)
-                    }}
+                    onClick={() => setShowLogin(false)}
                     className="text-orange-600 hover:text-orange-700 text-sm font-medium mb-4 inline-flex items-center group"
                   >
                     <svg className="h-4 w-4 mr-2 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                     </svg>
-                    Back to options
+                    Back to home
                   </button>
                   
-                  {showLogin ? (
-                    <LoginForm />
-                  ) : (
-                    <SignupForm onSignupSuccess={() => setShowLogin(true)} />
-                  )}
+                  <LoginForm />
                 </div>
               </div>
             )}
