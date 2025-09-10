@@ -121,75 +121,69 @@ export default function MyRequestsList({ employeeId, compact = false, preloadedR
       )}
       
       {compact ? (
-        // Compact view - keep as cards for dashboard
-        <div className="space-y-2">
-          {displayRequests.map((request) => (
-            <div key={request.id} className="border border-gray-200 rounded-lg p-3 hover:shadow-sm transition-all duration-200 bg-gray-50">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center space-x-2">
-                  <span className={`px-2 py-1 rounded-full text-xs font-semibold uppercase tracking-wide ${
-                    request.status === 'pending' ? 'bg-yellow-100 text-yellow-800 border border-yellow-200' :
-                    request.status === 'approved' ? 'bg-green-100 text-green-800 border border-green-200' :
-                    'bg-red-100 text-red-800 border border-red-200'
-                  }`}>
-                    {request.status}
-                  </span>
-                  <span className={`px-2 py-1 rounded-full text-xs font-semibold uppercase tracking-wide ${
-                    request.leave_type === 'casual' ? 'bg-orange-100 text-orange-800 border border-orange-200' :
-                    request.leave_type === 'sick' ? 'bg-blue-100 text-blue-800 border border-blue-200' :
-                    'bg-purple-100 text-purple-800 border border-purple-200'
-                  }`}>
-                    {request.leave_type}
-                  </span>
-                  <span className="px-2 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-800 border border-gray-200">
-                    {calculateDaysRequested(request)}
-                  </span>
-                </div>
-                <span className="text-xs text-gray-500">
-                  {new Date(request.requested_at).toLocaleDateString('en-US', { 
-                    month: 'short', 
-                    day: 'numeric' 
-                  })}
-                </span>
-              </div>
-              
-              <div className="mb-2">
-                <p className="text-sm text-gray-700 leading-relaxed">{request.reason}</p>
-                <p className="text-xs text-gray-500 mt-1">
-                  {new Date(request.start_date).toLocaleDateString('en-US', { 
-                    month: 'short', 
-                    day: 'numeric' 
-                  })} - {new Date(request.end_date).toLocaleDateString('en-US', { 
-                    month: 'short', 
-                    day: 'numeric' 
-                  })}
-                </p>
-              </div>
-
-              {/* Cancel button for pending requests */}
-              {request.status === 'pending' && (
-                <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-                  <div className="flex items-center space-x-2 text-xs text-gray-600">
-                    <svg className="h-3 w-3 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-                    </svg>
-                    <span>
-                      Pending with: <span className="font-medium text-blue-600">
-                        {request.manager_name || 'No Manager Assigned'}
-                      </span>
+        // Compact view - use table format but limit to 3 rows
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dates</th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Days</th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reason</th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {displayRequests.map((request) => (
+                <tr key={request.id} className="hover:bg-gray-50">
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                      request.leave_type === 'casual' ? 'bg-orange-100 text-orange-800' :
+                      request.leave_type === 'sick' ? 'bg-blue-100 text-blue-800' :
+                      'bg-purple-100 text-purple-800'
+                    }`}>
+                      {request.leave_type}
                     </span>
-                  </div>
-                  <button
-                    onClick={() => handleCancelRequest(request.id)}
-                    disabled={cancelling === request.id}
-                    className="px-3 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 border border-red-200 rounded-md transition-colors duration-200 disabled:opacity-50"
-                  >
-                    {cancelling === request.id ? 'Cancelling...' : 'Cancel'}
-                  </button>
-                </div>
-              )}
-            </div>
-          ))}
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                    <div>{new Date(request.start_date).toLocaleDateString()}</div>
+                    <div className="text-gray-500 text-xs">to {new Date(request.end_date).toLocaleDateString()}</div>
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                    <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded-full">
+                      {calculateDaysRequested(request)}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-900 max-w-xs">
+                    <div className="truncate" title={request.reason}>
+                      {request.reason}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    <span className={`px-2 py-1 rounded-full text-xs font-semibold uppercase tracking-wide ${
+                      request.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                      request.status === 'approved' ? 'bg-green-100 text-green-800' :
+                      'bg-red-100 text-red-800'
+                    }`}>
+                      {request.status}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">
+                    {request.status === 'pending' && (
+                      <button
+                        onClick={() => handleCancelRequest(request.id)}
+                        disabled={cancelling === request.id}
+                        className="text-red-600 hover:text-red-900 bg-red-100 hover:bg-red-200 px-2 py-1 rounded text-xs disabled:opacity-50"
+                      >
+                        {cancelling === request.id ? 'Cancelling...' : 'Cancel'}
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       ) : (
         // Full view - use table format
