@@ -141,8 +141,8 @@ export default function MyRequestsList({ employeeId, compact = false, preloadedR
                   <td className="px-4 py-3 whitespace-nowrap">
                     <span className={`px-2 py-1 text-xs font-medium rounded-full ${
                       request.leave_type === 'casual' ? 'bg-orange-100 text-orange-800' :
-                      request.leave_type === 'sick' ? 'bg-blue-100 text-blue-800' :
-                      'bg-purple-100 text-purple-800'
+                      request.leave_type === 'sick' ? 'bg-orange-100 text-orange-800' :
+                      'bg-orange-100 text-orange-800'
                     }`}>
                       {request.leave_type}
                     </span>
@@ -208,8 +208,8 @@ export default function MyRequestsList({ employeeId, compact = false, preloadedR
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 py-1 text-xs font-medium rounded-full ${
                       request.leave_type === 'casual' ? 'bg-orange-100 text-orange-800' :
-                      request.leave_type === 'sick' ? 'bg-blue-100 text-blue-800' :
-                      'bg-purple-100 text-purple-800'
+                      request.leave_type === 'sick' ? 'bg-orange-100 text-orange-800' :
+                      'bg-orange-100 text-orange-800'
                     }`}>
                       {request.leave_type}
                     </span>

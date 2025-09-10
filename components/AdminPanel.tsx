@@ -82,7 +82,7 @@ export default function AdminPanel({ currentUser, onBack }: AdminPanelProps) {
   const getLeaveTypeColor = (type: string) => {
     switch (type) {
       case 'casual': return 'bg-orange-100 text-orange-800'
-      case 'sick': return 'bg-gray-100 text-gray-800'
+      case 'sick': return 'bg-orange-100 text-orange-800'
       case 'privilege': return 'bg-orange-100 text-orange-800'
       default: return 'bg-gray-100 text-gray-800'
     }

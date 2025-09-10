@@ -194,7 +194,7 @@ export default function LeaveBalanceDashboard({ employee }: LeaveBalanceDashboar
               <div className="mt-4">
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div 
-                    className="bg-gray-500 h-2 rounded-full transition-all duration-300"
+                    className="bg-orange-500 h-2 rounded-full transition-all duration-300"
                     style={{ width: `${getTotalAllocatedLeave().sick > 0 ? (usedDays.sick / getTotalAllocatedLeave().sick) * 100 : 0}%` }}
                   ></div>
                 </div>

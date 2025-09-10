@@ -69,7 +69,7 @@ export default function LeaveRequestsList({ requests, onApprove, onReject }: Lea
                   <div className="text-sm font-medium text-gray-900">{request.userEmail}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
+                  <span className="px-2 py-1 text-xs font-medium bg-orange-100 text-orange-800 rounded-full">
                     {request.type.charAt(0).toUpperCase() + request.type.slice(1)}
                   </span>
                 </td>
