@@ -219,7 +219,7 @@ export default function AdminPanel({ currentUser, onBack }: AdminPanelProps) {
               <div className="mt-3">
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Process Leave Request</h3>
                 <p className="text-sm text-gray-600 mb-4">
-                  <strong>User {selectedRequest.user_id}</strong> is requesting {selectedRequest.leave_type} leave
+                  <strong>{selectedRequest.username || `User ${selectedRequest.user_id}`}</strong> is requesting {selectedRequest.leave_type} leave
                 </p>
                 
                 <div className="mb-4">

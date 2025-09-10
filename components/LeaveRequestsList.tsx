@@ -4,6 +4,7 @@ interface LeaveRequest {
   id: string
   userId: string
   userEmail: string
+  userName?: string
   type: 'casual' | 'sick' | 'privilege'
   startDate: string
   endDate: string
@@ -66,7 +67,7 @@ export default function LeaveRequestsList({ requests, onApprove, onReject }: Lea
             {requests.map((request) => (
               <tr key={request.id} className="hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm font-medium text-gray-900">{request.userEmail}</div>
+                  <div className="text-sm font-medium text-gray-900">{request.userName || request.userEmail}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className="px-2 py-1 text-xs font-medium bg-orange-100 text-orange-800 rounded-full">
