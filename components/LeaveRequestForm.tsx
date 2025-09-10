@@ -361,10 +361,10 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
   }
 
   return (
-    <div className="min-h-screen relative py-8">
+    <div className="min-h-screen relative py-4">
       <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-6">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Request Leave</h1>
@@ -387,8 +387,8 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
         )}
 
         {/* Form */}
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="bg-white rounded-lg shadow-md p-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             {/* Leave Type Selection */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-3">
@@ -435,15 +435,28 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
                 Date Selection *
               </label>
 
-              {/* Holiday Calendar Info */}
-              <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                <div className="flex items-center space-x-2 text-sm text-blue-700">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <span>
-                    <strong>Tip:</strong> Holidays are shown in light red and are automatically excluded from working day calculations.
-                  </span>
+              {/* Holiday Calendar Info - Hover Button */}
+              <div className="mb-4 flex justify-end">
+                <div className="relative group">
+                  <button
+                    type="button"
+                    className="flex items-center space-x-1 text-sm text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-3 py-2 rounded-lg border border-blue-200 transition-colors"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>Holiday Info</span>
+                  </button>
+                  
+                  {/* Hover Tooltip */}
+                  <div className="absolute right-0 top-full mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-lg p-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
+                    <div className="text-sm text-gray-700">
+                      <p className="font-medium text-blue-700 mb-2">Holiday Calendar Information</p>
+                      <p>Holidays are shown in light red and are automatically excluded from working day calculations. This helps you plan your leave more effectively.</p>
+                    </div>
+                    {/* Arrow */}
+                    <div className="absolute -top-2 right-4 w-4 h-4 bg-white border-l border-t border-gray-200 transform rotate-45"></div>
+                  </div>
                 </div>
               </div>
 
@@ -485,69 +498,93 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
               </label>
             </div>
 
-            {/* Information about duplicate prevention and holiday calendar */}
-            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-              <div className="flex items-start space-x-3">
-                <div className="flex-shrink-0">
-                  <svg className="h-5 w-5 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
+            {/* Leave Request Rules - Hover Button */}
+            <div className="flex justify-center mb-4">
+              <div className="relative group">
+                <button
+                  type="button"
+                  className="flex items-center space-x-2 text-sm text-orange-600 hover:text-orange-800 bg-orange-50 hover:bg-orange-100 px-4 py-2 rounded-lg border border-orange-200 transition-colors"
+                >
+                  <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M18 10a8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a0 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                   </svg>
-                </div>
-                <div className="text-sm text-orange-700">
-                  <p className="font-medium">Leave Request Rules:</p>
-                  <ul className="mt-1 space-y-1 text-xs">
-                    <li>• You can apply for leave on any date (including past dates)</li>
-                    <li>• Duplicate leave requests for the same dates are not allowed</li>
-                    <li>• Half-day leaves count as 0.5 days</li>
-                    <li>• Make sure you have sufficient leave balance</li>
-                    <li>• Check your existing requests to avoid conflicts</li>
-                    <li>• Use the Holiday Calendar to see holidays in red and plan your leave better</li>
-                    <li>• Holidays are automatically excluded from working day calculations</li>
-                  </ul>
+                  <span>Leave Request Rules</span>
+                </button>
+                
+                {/* Hover Tooltip */}
+                <div className="absolute left-1/2 transform -translate-x-1/2 top-full mt-2 w-96 bg-white border border-gray-200 rounded-lg shadow-lg p-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
+                  <div className="text-sm text-gray-700">
+                    <p className="font-medium text-orange-700 mb-3">Leave Request Rules</p>
+                    <ul className="space-y-2 text-xs">
+                      <li className="flex items-start">
+                        <span className="text-orange-500 mr-2">•</span>
+                        <span>You can apply for leave on any date (including past dates)</span>
+                      </li>
+                      <li className="flex items-start">
+                        <span className="text-orange-500 mr-2">•</span>
+                        <span>Duplicate leave requests for the same dates are not allowed</span>
+                      </li>
+                      <li className="flex items-start">
+                        <span className="text-orange-500 mr-2">•</span>
+                        <span>Half-day leaves count as 0.5 days</span>
+                      </li>
+                      <li className="flex items-start">
+                        <span className="text-orange-500 mr-2">•</span>
+                        <span>Make sure you have sufficient leave balance</span>
+                      </li>
+                      <li className="flex items-start">
+                        <span className="text-orange-500 mr-2">•</span>
+                        <span>Check your existing requests to avoid conflicts</span>
+                      </li>
+                      <li className="flex items-start">
+                        <span className="text-orange-500 mr-2">•</span>
+                        <span>Use the Holiday Calendar to see holidays in red and plan your leave better</span>
+                      </li>
+                      <li className="flex items-start">
+                        <span className="text-orange-500 mr-2">•</span>
+                        <span>Holidays are automatically excluded from working day calculations</span>
+                      </li>
+                    </ul>
+                  </div>
+                  {/* Arrow */}
+                  <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 w-4 h-4 bg-white border-l border-t border-gray-200 rotate-45"></div>
                 </div>
               </div>
             </div>
 
-            {/* Manager Information */}
+            {/* Manager Information - Compact */}
             {managerInfo && (
-              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                <div className="flex items-start space-x-3">
-                  <div className="flex-shrink-0">
-                    <svg className="h-5 w-5 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                  <div className="text-sm text-gray-700">
-                    <p className="font-medium text-gray-900">Leave Request Recipient:</p>
-                    <div className="mt-2 p-3 bg-white border border-gray-100 rounded-md">
-                      <p className="font-semibold text-gray-900">{managerInfo.name}</p>
-                      <p className="text-xs text-gray-600 font-medium">{managerInfo.department}</p>
-                    </div>
-                    <p className="text-xs text-gray-500 mt-2">Your request will be reviewed by this manager</p>
-                  </div>
+              <div className="flex items-center justify-between py-2 px-3 bg-gray-50 rounded-lg">
+                <div className="flex items-center space-x-2">
+                  <svg className="h-4 w-4 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                  </svg>
+                  <span className="text-sm text-gray-600">Manager:</span>
+                  <span className="text-sm font-medium text-gray-900">{managerInfo.name}</span>
                 </div>
+                <span className="text-xs text-gray-500">{managerInfo.department}</span>
               </div>
             )}
 
-            {/* Number of Days Display */}
+            {/* Number of Days Display - Compact */}
             {numberOfDays > 0 && (
-              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-                <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between py-2 px-3 bg-orange-50 rounded-lg">
+                <div className="flex items-center space-x-2">
                   <span className="text-sm font-medium text-orange-800">
                     {isHalfDay ? 'Leave Duration:' : 'Number of Days:'}
                   </span>
-                  <span className="text-lg font-bold text-orange-600">
+                  <span className="text-sm font-bold text-orange-600">
                     {numberOfDays} {isHalfDay && numberOfDays === 0.5 ? 'half day' : numberOfDays === 1 ? 'day' : 'days'}
                   </span>
                 </div>
-                <div className="mt-2 text-xs text-orange-600">
+                <div className="text-xs">
                   {numberOfDays > getAvailableBalance() ? (
                     <span className="text-red-600">
-                      ⚠️ Insufficient leave balance. You need {numberOfDays - getAvailableBalance()} more days.
+                      ⚠️ Need {numberOfDays - getAvailableBalance()} more days
                     </span>
                   ) : (
                     <span className="text-green-600">
-                      ✅ Sufficient leave balance available
+                      ✅ Sufficient balance
                     </span>
                   )}
                 </div>
