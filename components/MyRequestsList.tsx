@@ -108,8 +108,8 @@ export default function MyRequestsList({ employeeId, compact = false, preloadedR
     )
   }
 
-  // Limit to 3 most recent requests in compact mode
-  const displayRequests = compact ? userRequests.slice(0, 3) : userRequests
+  // Show all requests in both compact and full modes
+  const displayRequests = userRequests
 
   return (
     <div className={compact ? "space-y-2" : "bg-white rounded-lg shadow-md p-4"}>
@@ -274,16 +274,6 @@ export default function MyRequestsList({ employeeId, compact = false, preloadedR
         </div>
       )}
       
-      {compact && userRequests.length > 3 && (
-        <div className="text-center pt-2">
-          <button 
-            onClick={() => window.location.href = '#my-requests'}
-            className="text-orange-600 hover:text-orange-700 text-sm font-medium hover:underline"
-          >
-            View all {userRequests.length} requests →
-          </button>
-        </div>
-      )}
     </div>
   )
 } 
