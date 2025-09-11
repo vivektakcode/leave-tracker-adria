@@ -202,7 +202,9 @@ export default function MyRequestsList({ employeeId, compact = false, preloadedR
                         </button>
                       </div>
                     ) : (
-                      <span className="text-gray-400 text-xs">No actions</span>
+                      <div className="flex justify-center">
+                        <span className="text-gray-400 text-xs">No actions</span>
+                      </div>
                     )}
                   </td>
                 </tr>
@@ -305,7 +307,9 @@ export default function MyRequestsList({ employeeId, compact = false, preloadedR
                         </button>
                       </div>
                     ) : (
-                      <span className="text-gray-400 text-xs">No actions</span>
+                      <div className="flex justify-center">
+                        <span className="text-gray-400 text-xs">No actions</span>
+                      </div>
                     )}
                   </td>
                 </tr>
