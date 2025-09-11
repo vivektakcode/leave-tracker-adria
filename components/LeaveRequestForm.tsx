@@ -191,8 +191,7 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
     
     // If we don't have basic required fields, return early
     if (errors.length > 0) {
-      setValidationErrors(errors)
-      return false
+      return { isValid: false, errors }
     }
     
     // Check date validity
@@ -224,13 +223,12 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
       errors.push('No manager assigned. Please contact HR to assign a manager')
     }
     
-    setValidationErrors(errors)
-    return errors.length === 0
+    return { isValid: errors.length === 0, errors }
   }
 
   // Check if request is valid (for backward compatibility)
   const isRequestValid = () => {
-    return validateRequest()
+    return validateRequest().isValid
   }
 
   // Check for potential conflicts with existing leave requests
@@ -254,13 +252,15 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
     setValidationErrors([])
 
     // Validate the request and get specific error messages
-    if (!validateRequest()) {
+    const validation = validateRequest()
+    if (!validation.isValid) {
+      setValidationErrors(validation.errors)
       // Check if the main issue is insufficient balance
-      const hasBalanceError = validationErrors.some(error => error.includes('Insufficient'))
+      const hasBalanceError = validation.errors.some(error => error.includes('Insufficient'))
       if (hasBalanceError) {
         setShowBalancePopup(true)
       } else {
-        setError(validationErrors.join('. ') + '.')
+        setError(validation.errors.join('. ') + '.')
       }
       return
     }
