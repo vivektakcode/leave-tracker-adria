@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { LeaveRequest, getUserLeaveRequests, cancelLeaveRequest } from '../lib/supabaseService'
 import { getWorkingDaysBetween } from '../utils/dateUtils'
+import ModifyLeaveRequestModal from './ModifyLeaveRequestModal'
 
 interface MyRequestsListProps {
   employeeId: string
@@ -15,6 +16,8 @@ export default function MyRequestsList({ employeeId, compact = false, preloadedR
   const [loading, setLoading] = useState(true)
   const [cancelling, setCancelling] = useState<string | null>(null)
   const [showAllRequests, setShowAllRequests] = useState(false)
+  const [showModifyModal, setShowModifyModal] = useState(false)
+  const [selectedRequest, setSelectedRequest] = useState<LeaveRequest | null>(null)
 
   // Function to calculate days requested (excluding weekends)
   const calculateDaysRequested = (request: LeaveRequest): string => {
@@ -60,6 +63,12 @@ export default function MyRequestsList({ employeeId, compact = false, preloadedR
     } finally {
       setCancelling(null)
     }
+  }
+
+  // Function to handle modify request
+  const handleModifyRequest = (request: LeaveRequest) => {
+    setSelectedRequest(request)
+    setShowModifyModal(true)
   }
 
   useEffect(() => {
@@ -171,13 +180,21 @@ export default function MyRequestsList({ employeeId, compact = false, preloadedR
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">
                     {request.status === 'pending' && (
-                      <button
-                        onClick={() => handleCancelRequest(request.id)}
-                        disabled={cancelling === request.id}
-                        className="text-red-600 hover:text-red-900 bg-red-100 hover:bg-red-200 px-2 py-1 rounded text-xs disabled:opacity-50"
-                      >
-                        {cancelling === request.id ? 'Cancelling...' : 'Cancel'}
-                      </button>
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => handleModifyRequest(request)}
+                          className="text-blue-600 hover:text-blue-900 bg-blue-100 hover:bg-blue-200 px-2 py-1 rounded text-xs"
+                        >
+                          Modify
+                        </button>
+                        <button
+                          onClick={() => handleCancelRequest(request.id)}
+                          disabled={cancelling === request.id}
+                          className="text-red-600 hover:text-red-900 bg-red-100 hover:bg-red-200 px-2 py-1 rounded text-xs disabled:opacity-50"
+                        >
+                          {cancelling === request.id ? 'Cancelling...' : 'Cancel'}
+                        </button>
+                      </div>
                     )}
                   </td>
                 </tr>
@@ -258,13 +275,21 @@ export default function MyRequestsList({ employeeId, compact = false, preloadedR
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     {request.status === 'pending' && (
-                      <button
-                        onClick={() => handleCancelRequest(request.id)}
-                        disabled={cancelling === request.id}
-                        className="text-red-600 hover:text-red-900 bg-red-100 hover:bg-red-200 px-2 py-1 rounded text-xs disabled:opacity-50"
-                      >
-                        {cancelling === request.id ? 'Cancelling...' : 'Cancel'}
-                      </button>
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => handleModifyRequest(request)}
+                          className="text-blue-600 hover:text-blue-900 bg-blue-100 hover:bg-blue-200 px-2 py-1 rounded text-xs"
+                        >
+                          Modify
+                        </button>
+                        <button
+                          onClick={() => handleCancelRequest(request.id)}
+                          disabled={cancelling === request.id}
+                          className="text-red-600 hover:text-red-900 bg-red-100 hover:bg-red-200 px-2 py-1 rounded text-xs disabled:opacity-50"
+                        >
+                          {cancelling === request.id ? 'Cancelling...' : 'Cancel'}
+                        </button>
+                      </div>
                     )}
                   </td>
                 </tr>
@@ -294,6 +319,23 @@ export default function MyRequestsList({ employeeId, compact = false, preloadedR
             Show less ←
           </button>
         </div>
+      )}
+
+      {/* Modify Leave Request Modal */}
+      {showModifyModal && selectedRequest && (
+        <ModifyLeaveRequestModal
+          request={selectedRequest}
+          onClose={() => {
+            setShowModifyModal(false)
+            setSelectedRequest(null)
+          }}
+          onSuccess={() => {
+            setShowModifyModal(false)
+            setSelectedRequest(null)
+            // Refresh the requests list
+            window.location.reload()
+          }}
+        />
       )}
     </div>
   )

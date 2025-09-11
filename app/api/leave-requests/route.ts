@@ -4,7 +4,8 @@ import {
   getAllLeaveRequests, 
   processLeaveRequest,
   getUserById,
-  getUserManager
+  getUserManager,
+  updateLeaveRequest
 } from '../../../lib/supabaseService'
 import { sendLeaveRequestEmail } from '../../../lib/sendgridService'
 
@@ -229,5 +230,44 @@ async function sendManagerNotification(
     console.error('Error in sendManagerNotification:', error)
     console.error('❌ ===== MANAGER NOTIFICATION ERROR END =====')
     return false
+  }
+}
+
+export async function PATCH(request: NextRequest) {
+  try {
+    const body = await request.json()
+    const { requestId, leave_type, start_date, end_date, reason, is_half_day } = body
+    
+    if (!requestId || !leave_type || !start_date || !end_date || !reason) {
+      return NextResponse.json(
+        { error: 'Missing required fields' },
+        { status: 400 }
+      )
+    }
+
+    const success = await updateLeaveRequest(requestId, {
+      leave_type,
+      start_date,
+      end_date,
+      reason,
+      is_half_day: is_half_day || false
+    })
+
+    if (success) {
+      console.log('✅ Leave request updated:', requestId)
+      return NextResponse.json({ success: true })
+    } else {
+      return NextResponse.json(
+        { error: 'Failed to update leave request' },
+        { status: 400 }
+      )
+    }
+
+  } catch (error: any) {
+    console.error('Error updating leave request:', error)
+    return NextResponse.json(
+      { error: error.message || 'Failed to update leave request' },
+      { status: 500 }
+    )
   }
 }

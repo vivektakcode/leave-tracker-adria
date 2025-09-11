@@ -610,6 +610,49 @@ export async function cancelLeaveRequest(requestId: string): Promise<boolean> {
   }
 }
 
+export async function updateLeaveRequest(requestId: string, updateData: Partial<LeaveRequest>): Promise<boolean> {
+  try {
+    console.log('🔍 Updating leave request:', requestId)
+    
+    const { data: existingRequest, error: fetchError } = await supabase
+      .from('leave_requests')
+      .select('id, status, user_id')
+      .eq('id', requestId)
+      .single()
+
+    if (fetchError || !existingRequest) {
+      throw new Error('Leave request not found')
+    }
+
+    if (existingRequest.status !== 'pending') {
+      throw new Error('Only pending leave requests can be modified')
+    }
+
+    const { error } = await supabase
+      .from('leave_requests')
+      .update({
+        leave_type: updateData.leave_type,
+        start_date: updateData.start_date,
+        end_date: updateData.end_date,
+        reason: updateData.reason,
+        is_half_day: updateData.is_half_day,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', requestId)
+
+    if (error) {
+      console.error('Error updating leave request:', error)
+      throw new Error(`Database error: ${error.message || 'Failed to update leave request'}`)
+    }
+
+    console.log('✅ Leave request updated successfully:', requestId)
+    return true
+  } catch (error) {
+    console.error('Error updating leave request:', error)
+    throw new Error('Failed to update leave request')
+  }
+}
+
 // Holiday Calendar functions
 export async function getHolidayCalendar(country: string, year: number): Promise<HolidayCalendar | null> {
   try {
