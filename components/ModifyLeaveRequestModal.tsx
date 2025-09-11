@@ -273,6 +273,7 @@ export default function ModifyLeaveRequestModal({ request, onClose, onSuccess }:
             </button>
           </div>
         </form>
+        </div>
       </div>
     </div>
   )
