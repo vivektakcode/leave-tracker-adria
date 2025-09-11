@@ -598,7 +598,7 @@ export default function LeaveRequestForm({ employee, onBack }: LeaveRequestFormP
               <textarea
                 id="reason"
                 required
-                value={reason}
+                value={reason || ''}
                 onChange={(e) => setReason(e.target.value)}
                 rows={4}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
