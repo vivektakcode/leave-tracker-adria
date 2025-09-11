@@ -135,18 +135,18 @@ export default function MyRequestsList({ employeeId, compact = false, preloadedR
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dates</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Days</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reason</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dates</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Days</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reason</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {displayRequests.map((request) => (
                 <tr key={request.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 whitespace-nowrap">
+                  <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 py-1 text-xs font-medium rounded-full ${
                       request.leave_type === 'casual' ? 'bg-orange-100 text-orange-800' :
                       request.leave_type === 'sick' ? 'bg-orange-100 text-orange-800' :
@@ -155,21 +155,21 @@ export default function MyRequestsList({ employeeId, compact = false, preloadedR
                       {request.leave_type}
                     </span>
                   </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     <div>{new Date(request.start_date).toLocaleDateString()}</div>
                     <div className="text-gray-500 text-xs">to {new Date(request.end_date).toLocaleDateString()}</div>
                   </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded-full">
                       {calculateDaysRequested(request)}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-900 max-w-xs">
+                  <td className="px-6 py-4 text-sm text-gray-900 max-w-xs">
                     <div className="truncate" title={request.reason}>
                       {request.reason}
                     </div>
                   </td>
-                  <td className="px-4 py-3 whitespace-nowrap">
+                  <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 py-1 rounded-full text-xs font-semibold uppercase tracking-wide ${
                       request.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
                       request.status === 'approved' ? 'bg-green-100 text-green-800' :
@@ -178,7 +178,7 @@ export default function MyRequestsList({ employeeId, compact = false, preloadedR
                       {request.status}
                     </span>
                   </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     {request.status === 'pending' ? (
                       <div className="flex items-center justify-center space-x-2">
                         <button
