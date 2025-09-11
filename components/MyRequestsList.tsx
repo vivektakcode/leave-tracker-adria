@@ -179,22 +179,30 @@ export default function MyRequestsList({ employeeId, compact = false, preloadedR
                     </span>
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">
-                    {request.status === 'pending' && (
-                      <div className="flex space-x-2">
+                    {request.status === 'pending' ? (
+                      <div className="flex items-center justify-center space-x-2">
                         <button
                           onClick={() => handleModifyRequest(request)}
-                          className="text-blue-600 hover:text-blue-900 bg-blue-100 hover:bg-blue-200 px-2 py-1 rounded text-xs"
+                          className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-100 hover:bg-blue-200 rounded-md transition-colors duration-200"
                         >
+                          <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
                           Modify
                         </button>
                         <button
                           onClick={() => handleCancelRequest(request.id)}
                           disabled={cancelling === request.id}
-                          className="text-red-600 hover:text-red-900 bg-red-100 hover:bg-red-200 px-2 py-1 rounded text-xs disabled:opacity-50"
+                          className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-red-700 bg-red-100 hover:bg-red-200 rounded-md transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
+                          <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
                           {cancelling === request.id ? 'Cancelling...' : 'Cancel'}
                         </button>
                       </div>
+                    ) : (
+                      <span className="text-gray-400 text-xs">No actions</span>
                     )}
                   </td>
                 </tr>
@@ -274,22 +282,30 @@ export default function MyRequestsList({ employeeId, compact = false, preloadedR
                     {new Date(request.requested_at).toLocaleDateString()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    {request.status === 'pending' && (
-                      <div className="flex space-x-2">
+                    {request.status === 'pending' ? (
+                      <div className="flex items-center justify-center space-x-2">
                         <button
                           onClick={() => handleModifyRequest(request)}
-                          className="text-blue-600 hover:text-blue-900 bg-blue-100 hover:bg-blue-200 px-2 py-1 rounded text-xs"
+                          className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-100 hover:bg-blue-200 rounded-md transition-colors duration-200"
                         >
+                          <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
                           Modify
                         </button>
                         <button
                           onClick={() => handleCancelRequest(request.id)}
                           disabled={cancelling === request.id}
-                          className="text-red-600 hover:text-red-900 bg-red-100 hover:bg-red-200 px-2 py-1 rounded text-xs disabled:opacity-50"
+                          className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-red-700 bg-red-100 hover:bg-red-200 rounded-md transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
+                          <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
                           {cancelling === request.id ? 'Cancelling...' : 'Cancel'}
                         </button>
                       </div>
+                    ) : (
+                      <span className="text-gray-400 text-xs">No actions</span>
                     )}
                   </td>
                 </tr>
