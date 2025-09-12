@@ -21,12 +21,52 @@ export default function LeaveBalanceDashboard({ employee }: LeaveBalanceDashboar
   const [loading, setLoading] = useState(true)
   const { name, department, role } = employee
 
-  // Ultra-fast dashboard data loading - everything in parallel
+  // Ultra-fast dashboard data loading with caching
   useEffect(() => {
     const fetchData = async () => {
       try {
-        setLoading(true)
+        // Check cache first for instant loading
+        const cacheKey = `dashboard_${employee.id}`
+        const cachedData = sessionStorage.getItem(cacheKey)
         
+        if (cachedData) {
+          try {
+            const { leaveBalance, leaveRequests, timestamp } = JSON.parse(cachedData)
+            // Use cached data if it's less than 2 minutes old
+            if (Date.now() - timestamp < 2 * 60 * 1000) {
+              console.log('⚡ Using cached dashboard data')
+              setLeaveBalance(leaveBalance)
+              setLeaveRequests(leaveRequests)
+              
+              // Calculate used days immediately
+              const totalAllocated = getTotalAllocatedLeave()
+              const calculatedUsedDays = {
+                casual: totalAllocated.casual - leaveBalance.casual_leave,
+                sick: totalAllocated.sick - leaveBalance.sick_leave,
+                privilege: totalAllocated.privilege - leaveBalance.privilege_leave
+              }
+              setUsedDays(calculatedUsedDays)
+              setLoading(false)
+              
+              // Still fetch fresh data in background
+              fetchFreshData(cacheKey)
+              return
+            }
+          } catch (e) {
+            // Invalid cache, continue with fresh fetch
+          }
+        }
+        
+        setLoading(true)
+        await fetchFreshData(cacheKey)
+      } catch (error) {
+        console.error('Error fetching data:', error)
+        setLoading(false)
+      }
+    }
+
+    const fetchFreshData = async (cacheKey: string) => {
+      try {
         // Load all dashboard data in a single optimized call
         const { leaveBalance, leaveRequests } = await getDashboardData(employee.id)
         
@@ -44,15 +84,17 @@ export default function LeaveBalanceDashboard({ employee }: LeaveBalanceDashboar
             privilege: totalAllocated.privilege - leaveBalance.privilege_leave
           }
           
-          console.log('📊 Current Leave Balance:', leaveBalance)
-          console.log('📊 Total Allocated:', totalAllocated)
-          console.log('📊 Calculated Used Days:', calculatedUsedDays)
-          console.log('📊 Leave Requests:', leaveRequests.length)
-
           setUsedDays(calculatedUsedDays)
+          
+          // Cache the data for 2 minutes
+          sessionStorage.setItem(cacheKey, JSON.stringify({
+            leaveBalance,
+            leaveRequests,
+            timestamp: Date.now()
+          }))
         }
       } catch (error) {
-        console.error('Error fetching data:', error)
+        console.error('Error fetching fresh data:', error)
       } finally {
         setLoading(false)
       }
@@ -129,6 +171,30 @@ export default function LeaveBalanceDashboard({ employee }: LeaveBalanceDashboar
 
           {/* Leave Balance Cards */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            {loading ? (
+              // Loading skeletons
+              <>
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="card-professional shadow-elevated animate-pulse">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="h-5 bg-gray-200 rounded w-24 mb-2"></div>
+                        <div className="h-4 bg-gray-200 rounded w-32"></div>
+                      </div>
+                      <div className="text-right">
+                        <div className="h-8 bg-gray-200 rounded w-12 mb-1"></div>
+                        <div className="h-4 bg-gray-200 rounded w-16"></div>
+                      </div>
+                    </div>
+                    <div className="mt-4">
+                      <div className="w-full bg-gray-200 rounded-full h-2"></div>
+                      <div className="h-3 bg-gray-200 rounded w-20 mt-1"></div>
+                    </div>
+                  </div>
+                ))}
+              </>
+            ) : (
+              <>
             {/* Total Days */}
             <div className="card-professional shadow-elevated border-l-4 border-orange-400 hover:border-orange-500 transition-all duration-300">
               <div className="flex items-center justify-between">
@@ -228,6 +294,8 @@ export default function LeaveBalanceDashboard({ employee }: LeaveBalanceDashboar
                 </p>
               </div>
             </div>
+              </>
+            )}
           </div>
 
           {/* Debug Section - Remove this in production */}
@@ -283,7 +351,29 @@ export default function LeaveBalanceDashboard({ employee }: LeaveBalanceDashboar
           <div className="mb-8">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">Recent Leave Requests</h2>
             <div className="bg-white rounded-lg shadow-md p-6">
-              <MyRequestsList employeeId={employee.id} compact={true} preloadedRequests={leaveRequests} leaveBalance={leaveBalance} />
+              {loading ? (
+                // Loading skeleton for requests
+                <div className="animate-pulse">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="h-6 bg-gray-200 rounded w-32"></div>
+                    <div className="h-4 bg-gray-200 rounded w-16"></div>
+                  </div>
+                  <div className="space-y-3">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="flex items-center space-x-4 p-3 border rounded-lg">
+                        <div className="h-4 bg-gray-200 rounded w-16"></div>
+                        <div className="h-4 bg-gray-200 rounded w-24"></div>
+                        <div className="h-4 bg-gray-200 rounded w-12"></div>
+                        <div className="h-4 bg-gray-200 rounded w-20"></div>
+                        <div className="h-4 bg-gray-200 rounded w-16"></div>
+                        <div className="h-4 bg-gray-200 rounded w-20"></div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <MyRequestsList employeeId={employee.id} compact={true} preloadedRequests={leaveRequests} leaveBalance={leaveBalance} />
+              )}
             </div>
           </div>
         </div>

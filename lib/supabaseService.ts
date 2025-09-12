@@ -1055,7 +1055,7 @@ export function getTotalAllocatedLeave(): { casual: number; sick: number; privil
   }
 }
 
-// Ultra-fast dashboard data loading - loads everything in parallel
+// Ultra-fast dashboard data loading with optimized queries
 export async function getDashboardData(userId: string): Promise<{
   leaveBalance: LeaveBalance | null;
   leaveRequests: LeaveRequest[];
@@ -1065,12 +1065,14 @@ export async function getDashboardData(userId: string): Promise<{
     console.log('⚡ Loading dashboard data in parallel...')
     const startTime = Date.now()
     
-    // Load all data in parallel for maximum speed
-    const [leaveBalance, leaveRequests, balanceExists] = await Promise.all([
+    // Optimized: Load leave balance and requests in parallel, skip balance check if balance exists
+    const [leaveBalance, leaveRequests] = await Promise.all([
       getLeaveBalance(userId),
-      getUserLeaveRequests(userId),
-      ensureLeaveBalanceExists(userId)
+      getUserLeaveRequests(userId)
     ])
+    
+    // Only check balance existence if no balance found (avoid unnecessary query)
+    const balanceExists = leaveBalance ? true : await ensureLeaveBalanceExists(userId)
     
     const endTime = Date.now()
     console.log(`⚡ Dashboard data loaded in ${endTime - startTime}ms`)
