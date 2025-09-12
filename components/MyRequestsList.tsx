@@ -9,9 +9,10 @@ interface MyRequestsListProps {
   employeeId: string
   compact?: boolean
   preloadedRequests?: LeaveRequest[]
+  leaveBalance?: { casual_leave: number; sick_leave: number; privilege_leave: number }
 }
 
-export default function MyRequestsList({ employeeId, compact = false, preloadedRequests }: MyRequestsListProps) {
+export default function MyRequestsList({ employeeId, compact = false, preloadedRequests, leaveBalance }: MyRequestsListProps) {
   const [userRequests, setUserRequests] = useState<LeaveRequest[]>([])
   const [loading, setLoading] = useState(true)
   const [cancelling, setCancelling] = useState<string | null>(null)
@@ -345,6 +346,7 @@ export default function MyRequestsList({ employeeId, compact = false, preloadedR
       {showModifyModal && selectedRequest && (
         <ModifyLeaveRequestModal
           request={selectedRequest}
+          leaveBalance={leaveBalance}
           onClose={() => {
             setShowModifyModal(false)
             setSelectedRequest(null)

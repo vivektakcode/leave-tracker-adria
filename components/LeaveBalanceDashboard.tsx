@@ -107,7 +107,7 @@ export default function LeaveBalanceDashboard({ employee }: LeaveBalanceDashboar
                 </button>
               </div>
             </div>
-            <MyRequestsList employeeId={employee.id} preloadedRequests={leaveRequests} />
+            <MyRequestsList employeeId={employee.id} preloadedRequests={leaveRequests} leaveBalance={leaveBalance} />
           </div>
         </div>
       </div>
@@ -283,7 +283,7 @@ export default function LeaveBalanceDashboard({ employee }: LeaveBalanceDashboar
           <div className="mb-8">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">Recent Leave Requests</h2>
             <div className="bg-white rounded-lg shadow-md p-6">
-              <MyRequestsList employeeId={employee.id} compact={true} preloadedRequests={leaveRequests} />
+              <MyRequestsList employeeId={employee.id} compact={true} preloadedRequests={leaveRequests} leaveBalance={leaveBalance} />
             </div>
           </div>
         </div>

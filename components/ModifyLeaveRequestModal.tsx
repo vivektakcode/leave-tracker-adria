@@ -7,11 +7,12 @@ import BusinessDatePicker from './BusinessDatePicker'
 
 interface ModifyLeaveRequestModalProps {
   request: LeaveRequest
+  leaveBalance?: { casual_leave: number; sick_leave: number; privilege_leave: number }
   onClose: () => void
   onSuccess: () => void
 }
 
-export default function ModifyLeaveRequestModal({ request, onClose, onSuccess }: ModifyLeaveRequestModalProps) {
+export default function ModifyLeaveRequestModal({ request, leaveBalance, onClose, onSuccess }: ModifyLeaveRequestModalProps) {
   const [leaveType, setLeaveType] = useState<'casual' | 'sick' | 'privilege'>(request.leave_type as 'casual' | 'sick' | 'privilege')
   const [startDate, setStartDate] = useState(request.start_date)
   const [endDate, setEndDate] = useState(request.end_date)
@@ -20,26 +21,29 @@ export default function ModifyLeaveRequestModal({ request, onClose, onSuccess }:
   const [numberOfDays, setNumberOfDays] = useState(0)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [leaveBalance, setLeaveBalance] = useState({ casual_leave: 0, sick_leave: 0, privilege_leave: 0 })
-  const [balanceLoaded, setBalanceLoaded] = useState(false)
+  // Use provided leave balance or fallback to fetching if not provided
+  const [localLeaveBalance, setLocalLeaveBalance] = useState(leaveBalance || { casual_leave: 0, sick_leave: 0, privilege_leave: 0 })
+  const [balanceLoaded, setBalanceLoaded] = useState(!!leaveBalance)
 
-  // Fetch leave balance
+  // Only fetch if leaveBalance prop is not provided
   useEffect(() => {
-    const fetchLeaveBalance = async () => {
-      try {
-        const balance = await getLeaveBalance(request.user_id)
-        if (balance) {
-          setLeaveBalance(balance)
-          setBalanceLoaded(true)
-        } else {
-          setBalanceLoaded(true)
+    if (!leaveBalance) {
+      const fetchLeaveBalance = async () => {
+        try {
+          const balance = await getLeaveBalance(request.user_id)
+          if (balance) {
+            setLocalLeaveBalance(balance)
+            setBalanceLoaded(true)
+          } else {
+            setBalanceLoaded(true)
+          }
+        } catch (error) {
+          console.error('Error fetching leave balance:', error)
         }
-      } catch (error) {
-        console.error('Error fetching leave balance:', error)
       }
+      fetchLeaveBalance()
     }
-    fetchLeaveBalance()
-  }, [request.user_id])
+  }, [request.user_id, leaveBalance])
 
   // Calculate number of days when dates change
   useEffect(() => {
@@ -63,9 +67,9 @@ export default function ModifyLeaveRequestModal({ request, onClose, onSuccess }:
 
   const getAvailableBalance = () => {
     switch (leaveType) {
-      case 'casual': return leaveBalance.casual_leave
-      case 'sick': return leaveBalance.sick_leave
-      case 'privilege': return leaveBalance.privilege_leave
+      case 'casual': return localLeaveBalance.casual_leave
+      case 'sick': return localLeaveBalance.sick_leave
+      case 'privilege': return localLeaveBalance.privilege_leave
       default: return 0
     }
   }
@@ -156,7 +160,7 @@ export default function ModifyLeaveRequestModal({ request, onClose, onSuccess }:
                     {!balanceLoaded ? (
                       <span className="text-gray-400">Loading...</span>
                     ) : (
-                      `${leaveBalance[`${type}_leave` as keyof typeof leaveBalance]} days available`
+                      `${localLeaveBalance[`${type}_leave` as keyof typeof localLeaveBalance]} days available`
                     )}
                   </div>
                 </button>
