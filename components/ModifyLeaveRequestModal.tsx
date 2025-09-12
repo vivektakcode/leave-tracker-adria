@@ -21,17 +21,25 @@ export default function ModifyLeaveRequestModal({ request, onClose, onSuccess }:
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [leaveBalance, setLeaveBalance] = useState({ casual_leave: 0, sick_leave: 0, privilege_leave: 0 })
+  const [balanceLoaded, setBalanceLoaded] = useState(false)
 
   // Fetch leave balance
   useEffect(() => {
     const fetchLeaveBalance = async () => {
       try {
+        console.log('🔍 Fetching leave balance for user:', request.user_id)
         const balance = await getLeaveBalance(request.user_id)
+        console.log('📊 Leave balance received:', balance)
         if (balance) {
           setLeaveBalance(balance)
+          setBalanceLoaded(true)
+          console.log('✅ Leave balance set in state:', balance)
+        } else {
+          console.warn('⚠️ No leave balance found for user:', request.user_id)
+          setBalanceLoaded(true)
         }
       } catch (error) {
-        console.error('Error fetching leave balance:', error)
+        console.error('❌ Error fetching leave balance:', error)
       }
     }
     fetchLeaveBalance()
@@ -149,7 +157,11 @@ export default function ModifyLeaveRequestModal({ request, onClose, onSuccess }:
                 >
                   <div className="text-sm font-semibold capitalize mb-1">{type}</div>
                   <div className="text-xs text-gray-600">
-                    {leaveBalance[`${type}_leave` as keyof typeof leaveBalance]} days available
+                    {!balanceLoaded ? (
+                      <span className="text-gray-400">Loading...</span>
+                    ) : (
+                      `${leaveBalance[`${type}_leave` as keyof typeof leaveBalance]} days available`
+                    )}
                   </div>
                 </button>
               ))}
