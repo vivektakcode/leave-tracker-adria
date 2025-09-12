@@ -27,19 +27,15 @@ export default function ModifyLeaveRequestModal({ request, onClose, onSuccess }:
   useEffect(() => {
     const fetchLeaveBalance = async () => {
       try {
-        console.log('🔍 Fetching leave balance for user:', request.user_id)
         const balance = await getLeaveBalance(request.user_id)
-        console.log('📊 Leave balance received:', balance)
         if (balance) {
           setLeaveBalance(balance)
           setBalanceLoaded(true)
-          console.log('✅ Leave balance set in state:', balance)
         } else {
-          console.warn('⚠️ No leave balance found for user:', request.user_id)
           setBalanceLoaded(true)
         }
       } catch (error) {
-        console.error('❌ Error fetching leave balance:', error)
+        console.error('Error fetching leave balance:', error)
       }
     }
     fetchLeaveBalance()

@@ -433,7 +433,7 @@ export async function getUserLeaveRequests(userId: string): Promise<LeaveRequest
     // Use the view that includes derived manager information
     const { data, error } = await supabase
       .from('leave_requests_with_details')
-      .select('id, leave_type, start_date, end_date, reason, status, requested_at, is_half_day, manager_name, manager_department')
+      .select('id, user_id, leave_type, start_date, end_date, reason, status, requested_at, is_half_day, manager_name, manager_department')
       .eq('user_id', userId)
       .order('requested_at', { ascending: false })
       .limit(10) // Reduced limit for dashboard - only show recent requests
